@@ -78,6 +78,7 @@ describe('runInvocationStatusCheck', () => {
     options: {
       batchSize?: number;
       maxPerRefresh?: number;
+      batchPauseMs?: number;
       onProgress?: (
         checked: number,
         total: number,
@@ -94,6 +95,7 @@ describe('runInvocationStatusCheck', () => {
       sharedKey,
       batchSize: options.batchSize ?? 2,
       maxPerRefresh: options.maxPerRefresh ?? 100,
+      batchPauseMs: options.batchPauseMs,
       shouldShare: isProblem,
       onProgress: options.onProgress,
     });
@@ -116,6 +118,22 @@ describe('runInvocationStatusCheck', () => {
       ['c', 'd'],
       ['e'],
     ]);
+  });
+
+  it('waits between batches', async () => {
+    vi.useFakeTimers();
+    const done = run(createStatusCheckState(), ['a', 'b'], {
+      batchSize: 1,
+      batchPauseMs: 250,
+    });
+
+    await vi.advanceTimersByTimeAsync(200);
+    expect(fetchStatuses).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(100);
+    expect(fetchStatuses).toHaveBeenCalledTimes(2);
+    await done;
+    vi.useRealTimers();
   });
 
   it('checks new ids first and rotates through known open ones', async () => {

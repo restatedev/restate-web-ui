@@ -773,6 +773,7 @@ export function JournalV2({
                     navigableTotal={shownProblemRows.length}
                     announcement={journalProblems.announcement}
                     checkProgress={journalProblems.childCheck.progress}
+                    checkLimit={journalProblems.childCheck.limit}
                     onPrevious={goToPreviousProblem}
                     onNext={goToNextProblem}
                   />

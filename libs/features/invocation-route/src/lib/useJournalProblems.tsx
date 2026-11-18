@@ -40,6 +40,8 @@ import type { CombinedJournalEntry } from './useProcessedJournal';
 export const INPUT_ROW = -1;
 const CHILD_CHECK_BATCH = 1_000;
 const CHILD_CHECK_MAX_PER_REFRESH = 2_000;
+const CHILD_CHECK_AUTO_LIMIT = 50_000;
+const CHILD_CHECK_BATCH_PAUSE_MS = 250;
 const CHILD_CHECK_MIN_INTERVAL_MS = 10_000;
 const CHILD_CHECK_MAX_INTERVAL_MS = 20_000;
 const CHILD_CHECK_MS_PER_UNFINISHED = 0.5;
@@ -165,6 +167,14 @@ export function useJournalProblems({
         : [],
     [rows, journalProblems],
   );
+  const [isFullCheck, setFullCheck] = useState(isProblemsOnly);
+  const checkIds = useMemo(
+    () =>
+      isFullCheck
+        ? childIdsToCheck
+        : childIdsToCheck.slice(0, CHILD_CHECK_AUTO_LIMIT),
+    [isFullCheck, childIdsToCheck],
+  );
   const [checkProgress, setCheckProgress] = useState<{
     checked: number;
     total: number;
@@ -242,6 +252,9 @@ export function useJournalProblems({
         return;
       }
       setActiveProblemKey(undefined);
+      if (problemsOnly) {
+        setFullCheck(true);
+      }
       setSearchParams(
         (previous) => {
           const next = new URLSearchParams(previous);
@@ -366,11 +379,15 @@ export function useJournalProblems({
   );
   const childCheck = useMemo(
     () => ({
-      invocationIds: childIdsToCheck,
+      invocationIds: checkIds,
       onProgress: updateCheckProgress,
       progress: checkProgress,
+      limit:
+        checkIds.length < childIdsToCheck.length
+          ? { checked: checkIds.length, total: childIdsToCheck.length }
+          : undefined,
     }),
-    [childIdsToCheck, updateCheckProgress, checkProgress],
+    [checkIds, childIdsToCheck, updateCheckProgress, checkProgress],
   );
 
   return {
@@ -418,6 +435,7 @@ export const ProblemChildCheck = memo(function ProblemChildCheck({
     enabled: true,
     batchSize: CHILD_CHECK_BATCH,
     maxPerRefresh: CHILD_CHECK_MAX_PER_REFRESH,
+    batchPauseMs: CHILD_CHECK_BATCH_PAUSE_MS,
     shouldShare: isChildProblemStatus,
     refetchInterval: (unfinished) =>
       isLive && !isScrolling && unfinished > 0

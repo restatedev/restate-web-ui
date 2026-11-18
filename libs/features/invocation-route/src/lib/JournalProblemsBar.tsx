@@ -24,6 +24,10 @@ export interface JournalProblemsBarProps {
     total: number;
     isIncomplete: boolean;
   };
+  checkLimit?: {
+    checked: number;
+    total: number;
+  };
   onPrevious: () => void;
   onNext: () => void;
 }
@@ -79,6 +83,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
   navigableTotal,
   announcement,
   checkProgress,
+  checkLimit,
   onPrevious,
   onNext,
 }: JournalProblemsBarProps) {
@@ -150,6 +155,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
             <ProblemsSummary
               stats={problemStats}
               checkProgress={checkProgress}
+              checkLimit={checkLimit}
             />
           }
           placement="top"
@@ -163,6 +169,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
             Problems
             <span className={modeCountStyles({ isSelected: isProblemsOnly })}>
               {formatNumber(problemTotal)}
+              {checkLimit && !checkProgress ? '+' : ''}
             </span>
             {checkProgress?.isIncomplete ? (
               <>
@@ -209,9 +216,11 @@ const summaryMarkStyles = tv({
 function ProblemsSummary({
   stats,
   checkProgress,
+  checkLimit,
 }: {
   stats: ProblemStats;
   checkProgress?: JournalProblemsBarProps['checkProgress'];
+  checkLimit?: JournalProblemsBarProps['checkLimit'];
 }) {
   const lines = [
     {
@@ -268,9 +277,11 @@ function ProblemsSummary({
     ? "Some child invocations aren't checked yet, trying again"
     : checkProgress
       ? 'Still looking for problems in child invocations'
-      : undefined;
+      : checkLimit
+        ? `Checked the newest ${formatNumber(checkLimit.checked)} of ${formatNumber(checkLimit.total)} children, open Problems for the rest`
+        : undefined;
   return (
-    <span className="grid grid-cols-[auto_auto_auto] items-center gap-x-2 gap-y-1 break-normal">
+    <span className="grid grid-cols-[auto_auto_1fr] items-center gap-x-2 gap-y-1 break-normal">
       {shown.length === 0 && !stats.stuckInputStatus && (
         <span className="col-span-3">
           No failed steps, retries or children in trouble
@@ -294,7 +305,11 @@ function ProblemsSummary({
           </span>
         </>
       )}
-      {note && <span className="col-span-3 text-inverse-muted">{note}</span>}
+      {note && (
+        <span className="col-span-3 max-w-[32ch] text-inverse-muted">
+          {note}
+        </span>
+      )}
     </span>
   );
 }

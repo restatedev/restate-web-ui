@@ -86,6 +86,7 @@ export async function runInvocationStatusCheck({
   sharedKey,
   batchSize,
   maxPerRefresh,
+  batchPauseMs = 0,
   shouldShare,
   onProgress,
 }: {
@@ -97,6 +98,7 @@ export async function runInvocationStatusCheck({
   sharedKey: ReturnType<typeof getInvocationStatusDetailsQueryKey>;
   batchSize: number;
   maxPerRefresh: number;
+  batchPauseMs?: number;
   shouldShare: (status?: string) => boolean;
   onProgress?: (checked: number, total: number, isIncomplete?: boolean) => void;
 }): Promise<InvocationStatusCheckData> {
@@ -151,6 +153,9 @@ export async function runInvocationStatusCheck({
   let checked = 0;
   try {
     for (let start = 0; start < ids.length; start += batchSize) {
+      if (start > 0 && batchPauseMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, batchPauseMs));
+      }
       const batch = ids.slice(start, start + batchSize);
       const data = (await adminApi(
         'query',
@@ -213,6 +218,7 @@ export function useInvocationStatusCheck(
     enabled,
     batchSize,
     maxPerRefresh,
+    batchPauseMs,
     shouldShare,
     refetchInterval,
     onProgress,
@@ -220,6 +226,7 @@ export function useInvocationStatusCheck(
     enabled: boolean;
     batchSize: number;
     maxPerRefresh: number;
+    batchPauseMs?: number;
     shouldShare: (status?: string) => boolean;
     refetchInterval: (unfinished: number) => number | false;
     onProgress?: (
@@ -277,6 +284,7 @@ export function useInvocationStatusCheck(
         sharedKey,
         batchSize,
         maxPerRefresh,
+        batchPauseMs,
         shouldShare,
         onProgress,
       }),

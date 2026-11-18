@@ -386,8 +386,8 @@ export function getChildIdsToCheck(
   childRowIndexes: number[],
 ) {
   const ids = new Set<string>();
-  for (const index of childRowIndexes) {
-    const entry = rows[index]?.entry;
+  for (let position = childRowIndexes.length - 1; position >= 0; position--) {
+    const entry = rows[childRowIndexes[position] ?? -1]?.entry;
     if (
       isTargetInvocationEntry(entry) &&
       entry.invocationId &&

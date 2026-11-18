@@ -205,7 +205,7 @@ describe('getRowProblem', () => {
 });
 
 describe('getChildIdsToCheck', () => {
-  it('checks sends and pending calls, once each', () => {
+  it('checks sends and pending calls once each, newest first', () => {
     const rows = [
       row(command(1, { type: 'OneWayCall', invocationId: 'inv_sent' })),
       row(command(2, { type: 'Call', invocationId: 'inv_done' })),
@@ -222,8 +222,8 @@ describe('getChildIdsToCheck', () => {
     );
 
     expect(getChildIdsToCheck(rows, childRowIndexes)).toEqual([
-      'inv_sent',
       'inv_open',
+      'inv_sent',
     ]);
   });
 });
