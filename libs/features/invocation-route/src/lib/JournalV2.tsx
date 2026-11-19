@@ -495,13 +495,19 @@ export function JournalV2({
     [withTimeline, hash],
   );
   const lineRow = useMemo(
-    () => (linePath ? findLineRow(entriesWithoutInput, linePath) : undefined),
+    () =>
+      linePath
+        ? findLineRow(entriesWithoutInputUnfiltered, linePath)
+        : undefined,
+    [linePath, entriesWithoutInputUnfiltered],
+  );
+  const selectedRowIndex = useMemo(
+    () => (linePath ? findLineRow(entriesWithoutInput, linePath).index : -1),
     [linePath, entriesWithoutInput],
   );
-  const selectedRowIndex = lineRow?.index ?? -1;
   const lineParent =
     lineRow && linePath && lineRow.depth < linePath.length
-      ? entriesWithoutInput[lineRow.index]?.entry
+      ? entriesWithoutInputUnfiltered[lineRow.index]?.entry
       : undefined;
   const lineChildId = isTargetInvocationEntry(lineParent)
     ? lineParent.invocationId
