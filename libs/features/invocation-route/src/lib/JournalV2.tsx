@@ -6,6 +6,7 @@ import type {
 import {
   Dispatch,
   memo,
+  type MouseEvent,
   RefCallback,
   RefObject,
   type ReactNode,
@@ -18,7 +19,12 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useLocation, useSearchParams } from 'react-router';
+import {
+  useHref,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from 'react-router';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { getDuration, SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { Link } from '@restate/ui-link';
@@ -92,6 +98,12 @@ import {
   getFocusViewport,
   getInitialInvocationIds,
 } from './journalFocus';
+import {
+  findLineRow,
+  getLineHash,
+  getRowLinePath,
+  parseLineHash,
+} from './journalLineLinks';
 import {
   getEventRelatedInvocationIds,
   getReferencedInvocationIds,
@@ -234,11 +246,6 @@ function hasPendingJournalUpdates(invocation?: JournalInvocation) {
       invocation.journal?.entries?.filter((e) => e.category === 'command')
         .length
   );
-}
-
-function getCommandIndexFromHash(hash: string) {
-  const match = /^#command-(\d+)$/.exec(hash);
-  return match ? Number(match[1]) : undefined;
 }
 
 function getJournalEntryKey(entry: JournalEntryV2 | undefined, index: number) {
@@ -480,26 +487,85 @@ export function JournalV2({
       ? virtualizer.measurementsCache[failureRowIndex]
       : undefined;
 
-  const { hash, key: locationKey } = useLocation();
+  const { pathname, search, hash, key: locationKey } = useLocation();
+  const navigate = useNavigate();
+  const lineHrefBase = useHref({ pathname, search });
+  const linePath = useMemo(
+    () => (withTimeline ? parseLineHash(hash) : undefined),
+    [withTimeline, hash],
+  );
+  const lineRow = useMemo(
+    () =>
+      linePath
+        ? findLineRow(entriesWithoutInputUnfiltered, linePath)
+        : undefined,
+    [linePath, entriesWithoutInputUnfiltered],
+  );
+  const selectedRowIndex = useMemo(
+    () => (linePath ? findLineRow(entriesWithoutInput, linePath).index : -1),
+    [linePath, entriesWithoutInput],
+  );
+  const lineParent =
+    lineRow && linePath && lineRow.depth < linePath.length
+      ? entriesWithoutInputUnfiltered[lineRow.index]?.entry
+      : undefined;
+  const lineChildId = isTargetInvocationEntry(lineParent)
+    ? lineParent.invocationId
+    : undefined;
+  const isLineCollapsed = Boolean(
+    lineChildId && !invocationIds.includes(lineChildId),
+  );
   const scrolledLocationKey = useRef<string>(undefined);
+  useEffect(() => {
+    if (
+      !lineChildId ||
+      !isLineCollapsed ||
+      scrolledLocationKey.current === locationKey
+    ) {
+      return;
+    }
+    setInvocationIds((ids) =>
+      ids.includes(lineChildId) ? ids : [...ids, lineChildId],
+    );
+  }, [lineChildId, isLineCollapsed, locationKey]);
+  const clickedLineHash = useRef<string>(undefined);
+  const onLineClick = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      if (
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+      event.preventDefault();
+      clickedLineHash.current = event.currentTarget.hash;
+      navigate(
+        { pathname, search, hash: event.currentTarget.hash },
+        { replace: true, preventScrollReset: true },
+      );
+    },
+    [navigate, pathname, search],
+  );
+
   useEffect(() => {
     if (!withTimeline || scrolledLocationKey.current === locationKey) {
       return;
     }
+    if (hash && hash === clickedLineHash.current) {
+      clickedLineHash.current = undefined;
+      scrolledLocationKey.current = locationKey;
+      return;
+    }
     if (
-      getCommandIndexFromHash(hash) !== undefined &&
-      invocationIds.some((id) => isPending[id])
+      linePath &&
+      (isLineCollapsed || invocationIds.some((id) => isPending[id]))
     ) {
       return;
     }
-    const row =
-      virtualizer.measurementsCache[
-        findCommandRow(
-          entriesWithoutInput,
-          invocationId,
-          getCommandIndexFromHash(hash),
-        )
-      ];
+    const row = virtualizer.measurementsCache[selectedRowIndex];
     const list = entriesListRef.current;
     if (!list) {
       return;
@@ -524,8 +590,9 @@ export function JournalV2({
     withTimeline,
     hash,
     locationKey,
-    entriesWithoutInput,
-    invocationId,
+    linePath,
+    isLineCollapsed,
+    selectedRowIndex,
     invocationIds,
     isPending,
     virtualizer,
@@ -570,10 +637,7 @@ export function JournalV2({
   useEffect(() => {
     const row = virtualizer.measurementsCache[focusRowIndex];
     const list = entriesListRef.current;
-    if (
-      getCommandIndexFromHash(hash) !== undefined &&
-      !hasScrolledToFocus.current
-    ) {
+    if (linePath && !hasScrolledToFocus.current) {
       hasScrolledToFocus.current = true;
       return;
     }
@@ -589,7 +653,7 @@ export function JournalV2({
         scrollMargin -
         window.innerHeight / 3,
     });
-  }, [withTimeline, focusRowIndex, virtualizer, scrollMargin, hash]);
+  }, [withTimeline, focusRowIndex, virtualizer, scrollMargin, linePath]);
   const rowCenter = (index: number) => {
     const row = virtualizer.measurementsCache[index];
     return row ? row.start - scrollMargin + row.size / 2 : index * 36;
@@ -956,6 +1020,9 @@ export function JournalV2({
                               failureRow={failureRow}
                               focusInvocationId={focusInvocationId}
                               activeRowIndex={activeProblemIndex}
+                              selectedRowIndex={selectedRowIndex}
+                              lineHrefBase={lineHrefBase}
+                              onLineClick={onLineClick}
                               problemTones={journalProblems.problemTones}
                               pastRetries={journalProblems.pastRetries}
                               onToggleRetries={journalProblems.toggleRetryRow}
@@ -1023,6 +1090,7 @@ export function JournalV2({
                                   }
                                   focusInvocationId={focusInvocationId}
                                   activeRowIndex={activeProblemIndex}
+                                  selectedRowIndex={selectedRowIndex}
                                   childNow={
                                     referencedInvocationStatusesUpdatedAt
                                   }
@@ -1284,6 +1352,9 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
   failureRow,
   focusInvocationId,
   activeRowIndex,
+  selectedRowIndex,
+  lineHrefBase,
+  onLineClick,
   problemTones,
   pastRetries,
   onToggleRetries,
@@ -1298,6 +1369,9 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
   failureRow?: VirtualItem;
   focusInvocationId?: string;
   activeRowIndex?: number;
+  selectedRowIndex: number;
+  lineHrefBase: string;
+  onLineClick: (event: MouseEvent<HTMLAnchorElement>) => void;
   problemTones?: ReadonlyMap<string, ProblemTone>;
   pastRetries?: ReadonlyMap<string, PastRetries>;
   onToggleRetries: (row: CombinedJournalEntry) => void;
@@ -1317,6 +1391,7 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
       const retries = pastRetries
         ? getPastRetries(combinedEntry, pastRetries)
         : undefined;
+      const linePath = getRowLinePath(combinedEntry);
 
       return (
         <div
@@ -1324,7 +1399,8 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
           className={virtualRowStyles({
             isFocused:
               entryInvocationId === focusInvocationId ||
-              virtualItem.index === activeRowIndex,
+              virtualItem.index === activeRowIndex ||
+              virtualItem.index === selectedRowIndex,
           })}
           style={{
             position: 'absolute',
@@ -1353,6 +1429,9 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
               depth={depth}
               nextDepth={entriesWithoutInput[virtualItem.index + 1]?.depth}
               parentCommand={parentCommand}
+              lineHref={linePath && `${lineHrefBase}${getLineHash(linePath)}`}
+              isLineSelected={virtualItem.index === selectedRowIndex}
+              onLineClick={onLineClick}
               trailing={
                 retries && (
                   <PastRetriesBadge
@@ -1372,6 +1451,9 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
     },
     [
       activeRowIndex,
+      selectedRowIndex,
+      lineHrefBase,
+      onLineClick,
       data,
       entriesWithoutInput,
       focusInvocationId,
@@ -1418,6 +1500,7 @@ const VirtualizedTimeline = memo(function VirtualizedTimeline({
   isReferencedInvocationsError,
   focusInvocationId,
   activeRowIndex,
+  selectedRowIndex,
   childNow,
   shownInvocationIds,
 }: {
@@ -1434,6 +1517,7 @@ const VirtualizedTimeline = memo(function VirtualizedTimeline({
   isReferencedInvocationsError?: boolean;
   focusInvocationId?: string;
   activeRowIndex?: number;
+  selectedRowIndex: number;
   childNow?: number;
   shownInvocationIds: Set<string>;
 }) {
@@ -1480,13 +1564,15 @@ const VirtualizedTimeline = memo(function VirtualizedTimeline({
           height={virtualItem.size}
           isFocused={
             entryInvocationId === focusInvocationId ||
-            virtualItem.index === activeRowIndex
+            virtualItem.index === activeRowIndex ||
+            virtualItem.index === selectedRowIndex
           }
         />
       );
     },
     [
       activeRowIndex,
+      selectedRowIndex,
       childNow,
       data,
       entriesWithoutInput,

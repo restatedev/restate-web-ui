@@ -1,6 +1,11 @@
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
 import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
-import { ComponentType, memo, type ReactNode } from 'react';
+import {
+  ComponentType,
+  memo,
+  type MouseEventHandler,
+  type ReactNode,
+} from 'react';
 import { AttachInvocation } from './entries/AttachInvocation';
 import { Awakeable } from './entries/Awakeable';
 import { Call } from './entries/Call';
@@ -172,6 +177,16 @@ function DepthGuides({
   ));
 }
 
+const lineNumberStyles = tv({
+  base: '-mx-1 px-1 hover:text-secondary',
+  variants: {
+    isSelected: {
+      true: 'font-semibold text-primary',
+      false: '',
+    },
+  },
+});
+
 const entryContentStyles = tv({
   base: 'flex max-w-fit min-w-0 flex-auto items-baseline gap-1 [&>*]:min-w-0',
   variants: {
@@ -200,6 +215,9 @@ export const Entry = memo(function Entry({
   compact = false,
   showEventTime = false,
   trailing,
+  lineHref,
+  isLineSelected = false,
+  onLineClick,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -211,6 +229,9 @@ export const Entry = memo(function Entry({
   compact?: boolean;
   showEventTime?: boolean;
   trailing?: ReactNode;
+  lineHref?: string;
+  isLineSelected?: boolean;
+  onLineClick?: MouseEventHandler<HTMLAnchorElement>;
 }) {
   const length =
     invocation?.journal_commands_size ?? invocation?.journal_size ?? 1;
@@ -291,10 +312,6 @@ export const Entry = memo(function Entry({
               ),
             ),
         })}
-        {...(entry.category === 'command' &&
-          depth === 0 && {
-            id: `command-${entry.commandIndex}`,
-          })}
       >
         <DepthGuides depth={depth} nextDepth={nextDepth} />
         <div
@@ -302,7 +319,19 @@ export const Entry = memo(function Entry({
           className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-faint"
         >
           {entry?.category === 'command' ? (
-            (entry?.commandIndex ?? entry?.index ?? 0)
+            lineHref ? (
+              <a
+                href={lineHref}
+                onClick={onLineClick}
+                tabIndex={-1}
+                aria-current={isLineSelected ? 'location' : undefined}
+                className={lineNumberStyles({ isSelected: isLineSelected })}
+              >
+                {entry.commandIndex ?? entry.index ?? 0}
+              </a>
+            ) : (
+              (entry?.commandIndex ?? entry?.index ?? 0)
+            )
           ) : (
             <div className="mt-0.5 mr-1 hidden w-full border-b border-dashed border-neutral/30" />
           )}
