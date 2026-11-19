@@ -209,6 +209,30 @@ function getPopoverElement(triggerEl: HTMLElement | null | undefined) {
 let closeActiveHoverPopover: (() => void) | null = null;
 let isActiveHoverPopoverPinned = false;
 let activeHoverPopoverTrigger: HTMLElement | null = null;
+let activeHoverPopoverHandoffDelay = 0;
+
+function isPointInRect(x: number, y: number, rect: DOMRect) {
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
+function isPointInNestedPopover(x: number, y: number, popoverEl: HTMLElement) {
+  const popovers = document.querySelectorAll('[data-trigger][aria-labelledby]');
+  for (const nestedPopoverEl of popovers) {
+    const nestedTriggerEl = document.getElementById(
+      nestedPopoverEl.getAttribute('aria-labelledby') ?? '',
+    );
+    if (
+      nestedPopoverEl instanceof HTMLElement &&
+      nestedTriggerEl &&
+      popoverEl.contains(nestedTriggerEl) &&
+      (isPointInRect(x, y, nestedPopoverEl.getBoundingClientRect()) ||
+        isPointInPolygon(x, y, getPolygon(nestedTriggerEl, nestedPopoverEl)))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
 
 function isInsideActiveHoverPopover(triggerEl: HTMLElement | undefined) {
   return Boolean(
@@ -297,11 +321,13 @@ export function PopoverHoverTrigger({
       closeActiveHoverPopover = close;
       isActiveHoverPopoverPinned = isPinned;
       activeHoverPopoverTrigger = triggerEl ?? null;
+      activeHoverPopoverHandoffDelay = handoffDelay;
       return () => {
         if (closeActiveHoverPopover === close) {
           closeActiveHoverPopover = null;
           isActiveHoverPopoverPinned = false;
           activeHoverPopoverTrigger = null;
+          activeHoverPopoverHandoffDelay = 0;
         }
       };
     }
@@ -313,6 +339,7 @@ export function PopoverHoverTrigger({
     clearOpenTimeout,
     clearCloseTimeout,
     getTriggerEl,
+    handoffDelay,
   ]);
 
   const isPointInSafeArea = useCallback(
@@ -325,12 +352,9 @@ export function PopoverHoverTrigger({
         return false;
       }
 
-      const popoverRect = popoverEl.getBoundingClientRect();
       if (
-        x >= popoverRect.left &&
-        x <= popoverRect.right &&
-        y >= popoverRect.top &&
-        y <= popoverRect.bottom
+        isPointInRect(x, y, popoverEl.getBoundingClientRect()) ||
+        isPointInNestedPopover(x, y, popoverEl)
       ) {
         return true;
       }
@@ -393,14 +417,14 @@ export function PopoverHoverTrigger({
       return;
     }
     const canHandOff = Boolean(closeActiveHoverPopover);
-    if (canHandOff && (isNested || handoffDelay === 0)) {
+    const delay = canHandOff
+      ? Math.max(handoffDelay, activeHoverPopoverHandoffDelay)
+      : openDelay;
+    if (canHandOff && (isNested || delay === 0)) {
       open();
     } else {
       clearOpenTimeout();
-      openTimeoutRef.current = setTimeout(
-        open,
-        canHandOff ? handoffDelay : openDelay,
-      );
+      openTimeoutRef.current = setTimeout(open, delay);
     }
   }, [
     clearCloseTimeout,

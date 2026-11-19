@@ -64,7 +64,12 @@ export function useHoverPinPopover(onOpenChange?: (isOpen: boolean) => void) {
         return;
       }
       modeAtPressStartRef.current = modeRef.current;
-      if (event.type === 'pointerdown' && modeRef.current === 'hover') {
+      if (
+        event.type === 'pointerdown' &&
+        'button' in event &&
+        event.button === 0 &&
+        modeRef.current === 'hover'
+      ) {
         setMode('pinned');
       }
     },
