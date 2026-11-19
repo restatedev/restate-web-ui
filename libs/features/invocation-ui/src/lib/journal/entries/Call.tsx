@@ -8,9 +8,41 @@ import { ExpandInvocationButton } from './ExpandInvocationButton';
 import { EntryExpression } from './EntryExpression';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 import { Value } from '../Value';
+import { useIsFit } from '../fitRows';
+import { FitServiceTarget } from './FitServiceTarget';
 
 const styles = tv({
   base: 'relative flex flex-auto flex-row items-center gap-1.5',
+});
+
+const invocationStyles = tv({
+  base: 'mr-2',
+  variants: {
+    isFit: {
+      true: 'ml-0.5 shrink-0 @max-[860px]/journal:mr-px [&_[data-invocation-icon]]:size-5.5 [&_[data-invocation-icon]]:rounded-md [&_[data-invocation-icon]>svg]:p-0.5 [&_[data-invocation-icon]>svg]:text-secondary',
+      false: '-ml-1',
+    },
+  },
+});
+
+const expressionStyles = tv({
+  base: '',
+  variants: {
+    isFit: {
+      true: '@max-[860px]/journal:mr-px',
+      false: '',
+    },
+  },
+});
+
+const separatorStyles = tv({
+  base: '-ml-1.5 text-subtle',
+  variants: {
+    isFit: {
+      true: 'hidden',
+      false: '',
+    },
+  },
 });
 export function Call({
   entry,
@@ -19,12 +51,14 @@ export function Call({
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }>
 >) {
+  const isFit = useIsFit();
   return (
     <>
       <div className={styles({})}>
         <EntryExpression
           entry={entry}
           invocation={invocation}
+          className={expressionStyles({ isFit: isFit })}
           input={
             <>
               {entry.name && (
@@ -42,25 +76,35 @@ export function Call({
                 />
               )}
               {entry.name && ', '}
-              {entry.serviceName && entry.handlerName && (
-                <ServiceTarget
-                  scope={entry.scope}
-                  service={entry.serviceName}
-                  serviceKey={entry.serviceKey}
-                  handler={entry.handlerName}
-                  showHandler={false}
-                  density="compact"
-                  className="mx-0.5"
-                  chipClassName="font-sans text-2xs not-italic"
-                />
-              )}
+              {entry.serviceName &&
+                entry.handlerName &&
+                (isFit ? (
+                  <FitServiceTarget
+                    scope={entry.scope}
+                    service={entry.serviceName}
+                    serviceKey={entry.serviceKey}
+                    handler={entry.handlerName}
+                  />
+                ) : (
+                  <ServiceTarget
+                    scope={entry.scope}
+                    service={entry.serviceName}
+                    serviceKey={entry.serviceKey}
+                    handler={entry.handlerName}
+                    showHandler={false}
+                    density="compact"
+                    className="mx-0.5"
+                    chipClassName="font-sans text-2xs not-italic"
+                  />
+                ))}
             </>
           }
           chain={
             <Expression
               name={'.' + entry.handlerName}
               operationSymbol=""
-              className="pr-0 [&>*>*>*]:flex-auto"
+              isInline
+              className={isFit ? undefined : 'pr-0 [&>*>*>*]:flex-auto'}
               input={
                 <LazyJournalEntryPayload.Input
                   invocationId={invocation?.id}
@@ -83,10 +127,10 @@ export function Call({
         />
         {entry.invocationId && (
           <>
-            <div className="-ml-1.5 text-subtle">,</div>
+            <div className={separatorStyles({ isFit: isFit })}>,</div>
             <InvocationId
               id={entry.invocationId}
-              className="mr-2 -ml-1"
+              className={invocationStyles({ isFit: isFit })}
               size="icon"
             />
           </>

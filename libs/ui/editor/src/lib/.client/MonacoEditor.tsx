@@ -5,6 +5,22 @@ import * as monaco from './monaco';
 import { showFoldedArrayLengths } from './foldedArrayLengths';
 
 const MAX_EDITOR_FORMAT_LENGTH = 10_000_000;
+const LINE_HEIGHT_PX = 18;
+const VERTICAL_PADDING_PX = 24;
+const MAX_COUNTED_LINES = 200;
+
+function getInitialHeight(value: string) {
+  let lines = 1;
+  let index = value.indexOf('\n');
+  while (index !== -1 && lines < MAX_COUNTED_LINES) {
+    lines += 1;
+    index = value.indexOf('\n', index + 1);
+  }
+  return Math.max(
+    value.length / 100,
+    lines > 1 ? lines * LINE_HEIGHT_PX + VERTICAL_PADDING_PX : 0,
+  );
+}
 
 function isFormattableJson(value?: string) {
   try {
@@ -141,10 +157,9 @@ export function MonacoEditor({
       showFoldedArrayLengths(editor),
     ];
 
+    updateStyles();
     if (shouldFormat) {
       void formatEditor();
-    } else {
-      updateStyles();
     }
 
     return () => {
@@ -179,7 +194,7 @@ export function MonacoEditor({
   return (
     <div
       ref={setEl}
-      style={{ height: `clamp(2.625rem, ${value.length / 100}px, 45vh)` }}
+      style={{ height: `clamp(2.625rem, ${getInitialHeight(value)}px, 45vh)` }}
       className={styles({
         className: applyTheme ? editorColors() : undefined,
       })}

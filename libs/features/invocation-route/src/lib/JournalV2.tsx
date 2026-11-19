@@ -138,6 +138,16 @@ import {
 import { JournalProblemsBar } from './JournalProblemsBar';
 import { PastRetriesBadge } from './PastRetriesBadge';
 
+const virtualListStyles = tv({
+  base: 'overflow-clip',
+  variants: {
+    isFit: {
+      true: '@container/journal',
+      false: '',
+    },
+  },
+});
+
 const virtualRowStyles = tv({
   base: '',
   variants: {
@@ -829,6 +839,7 @@ export function JournalV2({
           areAllInvocationsCompleted={areAllInvocationsCompleted}
           isLive={isLive}
           detail={detail}
+          isFit={withTimeline}
         >
           <SnapshotTimeProvider lastSnapshot={snapshotAt}>
             <Suspense
@@ -1017,6 +1028,7 @@ export function JournalV2({
                               isRetryRowExpanded={
                                 journalProblems.isRetryRowExpanded
                               }
+                              isFit={withTimeline}
                             />
                             {journalAndInvocationData && (
                               <div className="flex items-center gap-1.5 px-6 py-2 font-sans text-xs text-muted">
@@ -1199,6 +1211,7 @@ function TimelineEngineJournalBridge({
   areAllInvocationsCompleted,
   isLive,
   detail,
+  isFit,
   children,
 }: {
   invocationIds: string[];
@@ -1212,6 +1225,7 @@ function TimelineEngineJournalBridge({
   areAllInvocationsCompleted: boolean;
   isLive: boolean;
   detail: JournalDetail;
+  isFit: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -1226,6 +1240,7 @@ function TimelineEngineJournalBridge({
       error={error}
       isLive={!areAllInvocationsCompleted && isLive}
       detail={detail}
+      isFit={isFit}
     >
       <ServiceCatalogProvider>{children}</ServiceCatalogProvider>
     </JournalContextProvider>
@@ -1348,6 +1363,7 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
   pastRetries,
   onToggleRetries,
   isRetryRowExpanded,
+  isFit,
 }: {
   ref: RefCallback<HTMLDivElement>;
   virtualItems: VirtualItem[];
@@ -1366,6 +1382,7 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
   pastRetries?: ReadonlyMap<string, PastRetries>;
   onToggleRetries: (row: CombinedJournalEntry) => void;
   isRetryRowExpanded: (key: string) => boolean;
+  isFit: boolean;
 }) {
   const renderRow = useCallback(
     (virtualItem: VirtualItem) => {
@@ -1457,7 +1474,7 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
   return (
     <div
       ref={ref}
-      className="overflow-clip"
+      className={virtualListStyles({ isFit })}
       style={{
         height: totalSize,
         position: 'relative',

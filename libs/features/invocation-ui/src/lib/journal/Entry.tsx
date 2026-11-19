@@ -44,7 +44,10 @@ import { NoCommandTransientError } from './entries/TransientError';
 import { useJournalEntriesContext } from './JournalContext';
 import { useFailureRelatedCommandIndex } from './useFailureRelatedCommandIndex';
 import { tv } from '@restate/util-styles';
-import { EntryCodecProvider } from './entries/EntryCodecProvider';
+import {
+  EntryCodecProvider,
+  isTargetInvocationEntry,
+} from './entries/EntryCodecProvider';
 import { RelativeTime } from './entries/RelativeTime';
 
 export const ENTRY_COMMANDS_COMPONENTS: {
@@ -187,6 +190,26 @@ const lineNumberStyles = tv({
   },
 });
 
+const tailStyles = tv({
+  slots: {
+    base: 'relative min-w-20 flex-auto',
+    line: 'absolute top-1/2 right-0 left-0 -translate-y-px border-b border-dashed border-strong/70',
+  },
+  variants: {
+    fit: {
+      none: {},
+      plain: { base: '@max-[860px]/journal:min-w-3' },
+      expand: {
+        base: '@max-[860px]/journal:min-w-12.5',
+        line: '@max-[860px]/journal:right-7.5',
+      },
+    },
+  },
+  defaultVariants: {
+    fit: 'none',
+  },
+});
+
 const entryContentStyles = tv({
   base: 'flex max-w-fit min-w-0 flex-auto items-baseline gap-1 [&>*]:min-w-0',
   variants: {
@@ -240,7 +263,15 @@ export const Entry = memo(function Entry({
   const isPaused = invocation?.status === 'paused';
   const { commandIndex: failureCommandIndex } =
     useFailureRelatedCommandIndex(invocation);
-  const { detail, disableAwaitingHighlight } = useJournalEntriesContext();
+  const { detail, disableAwaitingHighlight, disableExpand, isFit } =
+    useJournalEntriesContext();
+  const { base: tail, line: tailLine } = tailStyles({
+    fit: !isFit
+      ? 'none'
+      : !disableExpand && isTargetInvocationEntry(entry) && entry.invocationId
+        ? 'expand'
+        : 'plain',
+  });
   const EntrySpecificComponent = (
     entry?.type
       ? entry.category === 'command'
@@ -366,8 +397,8 @@ export const Entry = memo(function Entry({
           )}
         </div>
         {trailing}
-        <div className="relative min-w-20 flex-auto">
-          <div className="absolute top-1/2 right-0 left-0 -translate-y-px border-b border-dashed border-strong/70" />
+        <div className={tail()}>
+          <div className={tailLine()} />
         </div>
       </div>
     </EntryCodecProvider>

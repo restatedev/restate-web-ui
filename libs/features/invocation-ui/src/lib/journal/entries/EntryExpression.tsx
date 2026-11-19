@@ -11,6 +11,7 @@ import { HoverTooltip } from '@restate/ui-tooltip';
 import { isEntryCompletionAmbiguous } from './isEntryCompletionAmbiguous';
 import { useRestateContext } from '@restate/features-restate-context';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
+import { getFitFailureClassName, useIsFit } from '../fitRows';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;
@@ -70,7 +71,15 @@ const CHAIN_COMMANDS_COMPONENTS: {
   SendSignal: { failure: 'reject', success: 'resolve', void: '' },
 };
 
-const styles = tv({ base: 'mr-2 overflow-hidden pr-0' });
+const styles = tv({
+  base: 'mr-2 overflow-hidden pr-0',
+  variants: {
+    isFit: {
+      true: '@max-[860px]/journal:mr-1',
+      false: '',
+    },
+  },
+});
 
 export function EntryExpression({
   entry,
@@ -103,6 +112,7 @@ export function EntryExpression({
   className?: string;
 }) {
   const { EncodingWaterMark } = useRestateContext();
+  const isFit = useIsFit();
 
   if (
     !entry ||
@@ -193,7 +203,7 @@ export function EntryExpression({
             entry.resultType
           ],
       })}
-      className={styles({ className })}
+      className={styles({ className, isFit: isFit })}
       isFunction={entry.type !== 'Output'}
       isPending={Boolean(entry?.isPending)}
       input={input}
@@ -222,7 +232,11 @@ export function EntryExpression({
               stacktrace={entry.error.stack}
               metadata={entry.error.metadata}
               isRetrying={entry.isRetrying || entry.error.isTransient}
-              className="ml-1 w-full min-w-6 grow-1 basis-20 text-2xs"
+              className={
+                isFit
+                  ? getFitFailureClassName(entry.error.message!, 'ml-1')
+                  : 'ml-1 w-full min-w-6 grow-1 basis-20 text-2xs'
+              }
             />
           )}
         </>
