@@ -59,6 +59,10 @@ export function syncDataTableColumns(
       keysByIndex.get(element.getAttribute('aria-colindex') ?? '') ?? '',
     );
     const wrapper = element.parentElement;
+    if (column && wrapper?.hasAttribute('data-panel-table-cell')) {
+      wrapper.style.width = `${column.width}px`;
+      return;
+    }
     if (!column || wrapper?.style.position !== 'absolute') return;
     wrapper.style.left = `${column.left}px`;
     wrapper.style.width = `${column.width}px`;

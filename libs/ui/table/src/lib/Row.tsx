@@ -14,6 +14,7 @@ import { Checkbox } from '@restate/ui-form-field';
 import { PropsWithChildren, ReactNode, Ref, useContext, useRef } from 'react';
 import type { Key } from 'react-aria-components';
 import { internalCellKey } from './keys';
+import { WindowedCellsContext } from './window/WindowedCellsContext';
 
 const rowStyles = tv({
   extend: focusRing,
@@ -97,7 +98,16 @@ export function Row<T extends { id?: string }>({
 
 const cellStyles = tv({
   extend: focusRing,
-  base: 'content-center truncate border-b py-2 pl-2 align-middle text-xs font-medium text-tertiary -outline-offset-2 [--selected-border:var(--border-color-accent)] group-last/row:border-b-0 group-selected/row:border-[--selected-border] last:pr-2 focus-visible:outline-2 in-[:has(+[data-selected])]:border-(--selected-border) [&.align-baseline]:content-start [&.align-bottom]:content-end [&.align-top]:content-start',
+  base: 'content-center truncate border-b py-2 pl-2 align-middle text-xs font-medium text-tertiary -outline-offset-2 [--selected-border:var(--border-color-accent)] group-last/row:border-b-0 group-selected/row:border-[--selected-border] last:pr-2 focus-visible:outline-2 [&.align-baseline]:content-start [&.align-bottom]:content-end [&.align-top]:content-start',
+  variants: {
+    isWindowed: {
+      true: 'in-[[data-before-selected]]:border-(--selected-border)',
+      false: 'in-[:has(+[data-selected])]:border-(--selected-border)',
+    },
+  },
+  defaultVariants: {
+    isWindowed: false,
+  },
 });
 
 interface CellProps extends Pick<AriaCellProps, 'id'> {
@@ -105,5 +115,8 @@ interface CellProps extends Pick<AriaCellProps, 'id'> {
 }
 
 export function Cell({ className, ...props }: PropsWithChildren<CellProps>) {
-  return <AriaCell {...props} className={cellStyles({ className })} />;
+  const isWindowed = useContext(WindowedCellsContext);
+  return (
+    <AriaCell {...props} className={cellStyles({ isWindowed, className })} />
+  );
 }

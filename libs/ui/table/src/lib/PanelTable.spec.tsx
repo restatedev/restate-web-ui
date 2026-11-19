@@ -1,4 +1,10 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { Collection } from 'react-aria-components';
 import { vi } from 'vitest';
 import { Cell, Row } from './Row';
@@ -625,5 +631,100 @@ describe('PanelTable', () => {
     });
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+  });
+});
+
+describe('PanelTable windowed', () => {
+  const items = Array.from({ length: 30 }, (_, index) => ({
+    id: `item-${index}`,
+    name: `Item ${index}`,
+  }));
+  const rowOf = (name: string) => {
+    const row = screen.getByText(name).closest<HTMLElement>('[role=row]');
+    if (!row) throw new Error(`Row ${name} was not rendered`);
+    return row;
+  };
+  const isStatic = (name: string) =>
+    rowOf(name).closest('[data-static-row]') !== null;
+  const settle = () =>
+    act(() => new Promise((resolve) => setTimeout(resolve, 200)));
+  const renderWindowed = (
+    props: Partial<Parameters<typeof PanelTable>[0]> = {},
+  ) => (
+    <PanelTable
+      aria-label="Items"
+      windowed
+      columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
+      items={items}
+      selectionMode="multiple"
+      estimatedRowHeight={44}
+      renderCell={(row) => <Cell>{row.name}</Cell>}
+      {...props}
+    />
+  );
+
+  beforeAll(() => {
+    globalThis.ResizeObserver = ResizeObserverMock;
+  });
+
+  beforeEach(() => {
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.hasAttribute('data-index') ? 44 : 0;
+      },
+    );
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('shows the selection on rows rendered as static markup', async () => {
+    const { rerender } = render(
+      renderWindowed({ selectedKeys: new Set(['item-2']) }),
+    );
+
+    expect(isStatic('Item 2')).toBe(true);
+    expect(rowOf('Item 2').getAttribute('aria-selected')).toBe('true');
+    expect(rowOf('Item 3').getAttribute('aria-selected')).toBe('false');
+
+    rerender(renderWindowed({ selectedKeys: new Set(['item-3']) }));
+    await settle();
+
+    expect(rowOf('Item 2').getAttribute('aria-selected')).toBe('false');
+    expect(rowOf('Item 3').getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('turns rows near the viewport into live rows once scrolling settles', async () => {
+    render(renderWindowed());
+
+    expect(isStatic('Item 0')).toBe(true);
+
+    await waitFor(() => expect(isStatic('Item 0')).toBe(false));
+    expect(isStatic('Item 29')).toBe(true);
+  });
+
+  it('turns a static row into a live row when the pointer moves over it', () => {
+    render(renderWindowed());
+
+    expect(isStatic('Item 1')).toBe(true);
+    fireEvent.pointerOver(rowOf('Item 1'), { pointerType: 'touch' });
+
+    expect(isStatic('Item 1')).toBe(false);
+  });
+
+  it('selects every row from the header checkbox', () => {
+    const onSelectionChange = vi.fn();
+    render(renderWindowed({ selectedKeys: new Set(), onSelectionChange }));
+
+    const selectAll = screen
+      .getByRole('grid', { name: 'Items columns' })
+      .querySelector<HTMLInputElement>('input[type="checkbox"]');
+    if (!selectAll) throw new Error('Select-all checkbox was not rendered');
+    fireEvent.click(selectAll);
+
+    expect(onSelectionChange).toHaveBeenLastCalledWith(
+      new Set(items.map((item) => item.id)),
+    );
   });
 });

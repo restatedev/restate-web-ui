@@ -86,12 +86,13 @@ import {
   useProcessedJournal,
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
-import { useWindowScrollMargin } from './useWindowScrollMargin';
 import {
   useGrowRenderWindowWhenIdle,
+  useQuietWindowVirtualizer,
   useRenderWindow,
-} from './useRenderWindow';
-import { useQuietWindowVirtualizer } from './useQuietWindowVirtualizer';
+  useWindowScrollMargin,
+  type RenderWindowOptions,
+} from '@restate/util-render-window';
 import {
   getExpandIdsToDrop,
   getFocusInvocationId,
@@ -238,6 +239,17 @@ const LIVE_REFETCH_MIN_MS = 1_000;
 const LIVE_REFETCH_MAX_MS = 10_000;
 const ENTRIES_PER_REFETCH_MS = 10;
 const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
+const MOUNTS_ACROSS_FRAMES =
+  typeof CSS !== 'undefined' && CSS.supports('-moz-appearance', 'none');
+const JOURNAL_RENDER_WINDOW: RenderWindowOptions = {
+  overscan: 24,
+  scrollAhead: 100,
+  idleRowsAbove: 100,
+  idleRowsBelow: 300,
+  step: MOUNTS_ACROSS_FRAMES ? 5 : 25,
+  maxGrowth: MOUNTS_ACROSS_FRAMES ? 20 : Infinity,
+  idleStep: 50,
+};
 
 type JournalInvocation = ReturnType<
   typeof useGetInvocationsJournalWithInvocationsV2
@@ -449,7 +461,7 @@ export function JournalV2({
   const entriesListRef = useRef<HTMLDivElement>(null);
   const [entriesListCallbackRef, scrollMargin] =
     useWindowScrollMargin(entriesListRef);
-  const renderWindow = useRenderWindow();
+  const renderWindow = useRenderWindow(JOURNAL_RENDER_WINDOW);
   const virtualizer = useQuietWindowVirtualizer({
     count: entriesWithoutInput.length,
     estimateSize: () => 36,

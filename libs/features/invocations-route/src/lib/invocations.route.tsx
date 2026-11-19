@@ -805,6 +805,7 @@ function Component() {
             <ContentPanelSection flush>
               <PanelTable
                 aria-label="Invocations"
+                windowed
                 bodyHeadingHeight={0}
                 caption={
                   <>
