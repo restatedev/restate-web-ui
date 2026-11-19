@@ -70,7 +70,7 @@ const styles = tv({
       '[&>[data-chip-segment]:not(:first-child)>[data-chip-segment-inner]]:[clip-path:polygon(4px_0,100%_0,100%_100%,0_100%)]',
       '[&>[data-chip-segment]:not(:first-child):not(:last-child)>[data-chip-segment-inner]]:[clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0_100%)]',
     ],
-    link: 'absolute inset-0 z-2 no-underline outline-offset-0 before:absolute before:inset-0 before:content-[""] hover:before:bg-tint-subtle pressed:before:bg-tint',
+    link: 'absolute inset-0 z-2 no-underline outline-offset-0 before:pointer-events-none before:absolute before:inset-0 before:content-[""] hover:before:bg-tint-subtle pressed:before:bg-tint',
   },
   variants: {
     left: {

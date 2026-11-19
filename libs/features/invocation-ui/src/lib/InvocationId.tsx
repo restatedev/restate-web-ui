@@ -57,7 +57,7 @@ const styles = tv({
         base: '',
         icon: 'mr-0 h-6 w-6 rounded-lg shadow-xs',
         text: 'w-0 text-2xs',
-        link: 'absolute -inset-px m-0.5 rounded-lg before:rounded-lg',
+        link: 'absolute -inset-px m-0.5 rounded-lg before:pointer-events-none before:rounded-lg',
         container: 'p-px',
       },
     },
