@@ -200,7 +200,7 @@ const tailStyles = tv({
       none: {},
       plain: { base: '@max-[860px]/journal:min-w-3' },
       expand: {
-        base: '@max-[860px]/journal:min-w-12.5',
+        base: '@max-[860px]/journal:min-w-12.5 @max-[420px]/journal:min-w-9',
         line: '@max-[860px]/journal:right-7.5',
       },
     },

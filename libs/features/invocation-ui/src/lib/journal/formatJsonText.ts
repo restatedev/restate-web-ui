@@ -23,9 +23,16 @@ export function formatJsonText(text: string) {
   const parts: string[] = [];
   let depth = 0;
   let index = 0;
-  const newLine = () => `\n${INDENT.repeat(depth)}`;
+  let addedLength = 0;
+  const newLine = () => {
+    addedLength += 1 + INDENT.length * depth;
+    return `\n${INDENT.repeat(depth)}`;
+  };
 
   while (index < text.length) {
+    if (index + addedLength > MAX_FORMAT_LENGTH) {
+      return text;
+    }
     const char = text[index];
 
     if (char === '"') {

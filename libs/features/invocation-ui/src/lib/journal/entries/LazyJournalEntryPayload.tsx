@@ -400,6 +400,7 @@ function PayloadPopover({
           <PopoverContent
             className="[&_header]:px-0 [&_header]:pt-1"
             isNonModal={isFit}
+            {...(isFit && { autoFocus: hoverPin.isPinned })}
           >
             <DropdownSection
               className={content({ className: contentClassName })}

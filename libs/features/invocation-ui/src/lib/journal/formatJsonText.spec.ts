@@ -47,6 +47,13 @@ describe('formatJsonText', () => {
     expect(formatJsonText(nested).split('\n')).toHaveLength(301);
   });
 
+  it('leaves a value unformatted when indentation would blow it up', () => {
+    const items = Array.from({ length: 20_000 }, () => '1').join(',');
+    const nested = `${'['.repeat(150)}${items}${']'.repeat(150)}`;
+    expect(nested.length).toBeLessThan(50_000);
+    expect(formatJsonText(nested)).toBe(nested);
+  });
+
   it('returns scalars and non-JSON text unchanged', () => {
     expect(formatJsonText('"913206d7"')).toBe('"913206d7"');
     expect(formatJsonText('42')).toBe('42');
