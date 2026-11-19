@@ -1313,11 +1313,11 @@ const RowChunk = memo(
 function renderInChunks(
   items: VirtualItem[],
   renderRow: RenderRow,
-  rowChunks: string[],
+  rowChunks: number[],
 ) {
-  const chunks: { key: string; items: VirtualItem[] }[] = [];
+  const chunks: { key: number; items: VirtualItem[] }[] = [];
   for (const item of items) {
-    const key = rowChunks[item.index] ?? '';
+    const key = rowChunks[item.index] ?? 0;
     const last = chunks.at(-1);
     if (last?.key === key) {
       last.items.push(item);
@@ -1354,7 +1354,7 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
   scrollMargin: number;
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
-  rowChunks: string[];
+  rowChunks: number[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
   failureRow?: VirtualItem;
   focusInvocationId?: string;
@@ -1499,7 +1499,7 @@ const VirtualizedTimeline = memo(function VirtualizedTimeline({
   scrollMargin: number;
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
-  rowChunks: string[];
+  rowChunks: number[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
   relatedEntriesByInvocation: Map<string, Map<number, JournalEntryV2[]>>;
   referencedInvocations?: Record<

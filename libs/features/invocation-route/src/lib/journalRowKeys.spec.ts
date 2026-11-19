@@ -50,42 +50,22 @@ describe('getRowKeys', () => {
 });
 
 describe('getRowChunks', () => {
-  const commands = (count: number) =>
-    Array.from({ length: count }, (_, commandIndex) =>
+  it('keeps every row in its chunk when an invocation expands', () => {
+    const rows = Array.from({ length: 120 }, (_, commandIndex) =>
       row('inv_parent', { category: 'command', type: 'Run', commandIndex }),
     );
-  const nested = (count: number) =>
-    Array.from({ length: count }, (_, index) =>
+    const nested = Array.from({ length: 70 }, (_, index) =>
       row('inv_child', { category: 'command', type: 'Run', index }, 1),
     );
-
-  it('keeps every row in its chunk when a small invocation expands', () => {
-    const rows = commands(120);
     const chunks = getRowChunks(rows);
     const expanded = getRowChunks([
       ...rows.slice(0, 11),
-      ...nested(20),
+      ...nested,
       ...rows.slice(11),
     ]);
 
-    expect(new Set(chunks).size).toBe(3);
-    expect([...expanded.slice(0, 11), ...expanded.slice(31)]).toEqual(chunks);
-    expect(new Set(expanded.slice(11, 31))).toEqual(new Set([chunks[10]]));
-  });
-
-  it('splits a long nested invocation and never reuses a chunk later', () => {
-    const rows = commands(60);
-    const expanded = getRowChunks([
-      ...rows.slice(0, 11),
-      ...nested(130),
-      ...rows.slice(11),
-    ]);
-    const runs = expanded.filter(
-      (chunk, index) => chunk !== expanded[index - 1],
-    );
-
-    expect(new Set(runs).size).toBe(runs.length);
-    expect(runs.length).toBe(5);
-    expect(expanded.slice(0, 60)).toEqual(Array(60).fill(expanded[0]));
+    expect(new Set(chunks)).toEqual(new Set([0, 1, 2]));
+    expect([...expanded.slice(0, 11), ...expanded.slice(81)]).toEqual(chunks);
+    expect(new Set(expanded.slice(11, 81))).toEqual(new Set([0]));
   });
 });

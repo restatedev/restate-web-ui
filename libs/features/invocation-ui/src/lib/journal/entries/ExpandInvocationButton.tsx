@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Spinner } from '@restate/ui-loading';
@@ -19,56 +18,34 @@ export function ExpandInvocationButton({
 }) {
   const { addInvocationId, removeInvocationId, disableExpand } =
     useJournalEntriesContext();
-  const { invocationIds, isPending, error } = useJournalExpansionContext();
+  const {
+    isPending,
+    invocationIds,
+    error: invocationsError,
+  } = useJournalExpansionContext();
   const isCircularRef = useIsCircularRef(invocationId, parentInvocationId);
 
   if (disableExpand || !invocationId) {
     return null;
   }
 
-  return (
-    <ExpandInvocationToggle
-      invocationId={invocationId}
-      isCircularRef={isCircularRef}
-      isExpanded={!isCircularRef && invocationIds.includes(invocationId)}
-      isPending={isPending?.[invocationId]}
-      error={error?.[invocationId]}
-      onExpand={addInvocationId}
-      onCollapse={removeInvocationId}
-    />
-  );
-}
+  const isExpanded = !isCircularRef && invocationIds.includes(invocationId);
+  const invokedIsPending = isPending?.[invocationId];
+  const invokedError = invocationsError?.[invocationId];
 
-const ExpandInvocationToggle = memo(function ExpandInvocationToggle({
-  invocationId,
-  isCircularRef,
-  isExpanded,
-  isPending,
-  error,
-  onExpand,
-  onCollapse,
-}: {
-  invocationId: string;
-  isCircularRef: boolean;
-  isExpanded: boolean;
-  isPending?: boolean;
-  error?: Error | null;
-  onExpand?: (id: string) => void;
-  onCollapse?: (id: string) => void;
-}) {
   return (
     <div className="absolute top-0 right-1 bottom-0 flex items-center">
       {isCircularRef ? (
         <CircularRefWarning />
-      ) : error ? (
-        <CallInvokedLoadingError error={error} className="" />
+      ) : invokedError ? (
+        <CallInvokedLoadingError error={invokedError} className="" />
       ) : (
         <Button
           onClick={() => {
-            if (isExpanded) {
-              onCollapse?.(invocationId);
+            if (invocationIds.includes(invocationId)) {
+              removeInvocationId?.(invocationId);
             } else {
-              onExpand?.(invocationId);
+              addInvocationId?.(invocationId);
             }
           }}
           variant="icon"
@@ -76,7 +53,7 @@ const ExpandInvocationToggle = memo(function ExpandInvocationToggle({
           aria-label={isExpanded ? 'Collapse invocation' : 'Expand invocation'}
           aria-expanded={isExpanded}
         >
-          {isPending ? (
+          {invokedIsPending ? (
             <Spinner />
           ) : (
             <Icon
@@ -88,4 +65,4 @@ const ExpandInvocationToggle = memo(function ExpandInvocationToggle({
       )}
     </div>
   );
-});
+}

@@ -15,31 +15,15 @@ export function getRowKeys(rows: CombinedJournalEntry[]) {
 }
 
 export function getRowChunks(rows: CombinedJournalEntry[]) {
-  let bucket = 0;
-  let command = 0;
-  let nestedRows = 0;
-  let suffix = '';
+  let chunk = 0;
   return rows.map(({ depth, entry }) => {
-    if (depth > 0) {
-      nestedRows += 1;
-      if (nestedRows < ROWS_PER_CHUNK) {
-        return `${bucket}${suffix}`;
-      }
-      suffix = `+${command}`;
-      return `${bucket}/${command}/${Math.floor(nestedRows / ROWS_PER_CHUNK)}`;
-    }
-    nestedRows = 0;
     if (
+      depth === 0 &&
       entry?.category === 'command' &&
       typeof entry.commandIndex === 'number'
     ) {
-      command = entry.commandIndex;
-      const next = Math.floor(command / ROWS_PER_CHUNK);
-      if (next > bucket) {
-        bucket = next;
-        suffix = '';
-      }
+      chunk = Math.max(chunk, Math.floor(entry.commandIndex / ROWS_PER_CHUNK));
     }
-    return `${bucket}${suffix}`;
+    return chunk;
   });
 }
