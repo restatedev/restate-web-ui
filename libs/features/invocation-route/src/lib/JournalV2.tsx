@@ -139,7 +139,7 @@ import { JournalProblemsBar } from './JournalProblemsBar';
 import { PastRetriesBadge } from './PastRetriesBadge';
 
 const virtualRowStyles = tv({
-  base: '',
+  base: 'isolate',
   variants: {
     isFocused: {
       true: 'bg-accent-subtle/50',
@@ -1394,11 +1394,10 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
           })}
           style={{
             position: 'absolute',
-            top: 0,
+            top: virtualItem.start - scrollMargin,
             left: 0,
             width: '100%',
             height: virtualItem.size,
-            transform: `translateY(${virtualItem.start - scrollMargin}px)`,
           }}
         >
           {problemTones?.has(getProblemRowKey(combinedEntry) ?? '') && (
@@ -1627,11 +1626,10 @@ const TimelineRow = memo(function TimelineRow({
       className={virtualRowStyles({ isFocused, hasTimeline: hasProgress })}
       style={{
         position: 'absolute',
-        top: 0,
+        top,
         left: 0,
         width: '100%',
         height,
-        transform: `translateY(${top}px)`,
       }}
     >
       {hasProgress && (
