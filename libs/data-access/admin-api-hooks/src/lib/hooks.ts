@@ -1626,10 +1626,8 @@ export function useGetInvocationsJournalWithInvocationsV2(
       return {
         data: invocationIds.reduce(
           (combined, invocationId, index) => {
-            return {
-              ...combined,
-              [invocationId]: results.at(index)?.data,
-            };
+            const data = results.at(index)?.data;
+            return data ? { ...combined, [invocationId]: data } : combined;
           },
           {} as Record<
             string,

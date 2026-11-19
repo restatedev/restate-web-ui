@@ -6,7 +6,7 @@ import type {
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
 import { formatDurations } from '@restate/util-intl';
 import { getDuration } from '@restate/util-snapshot-time';
-import { CSSProperties, PropsWithChildren, use } from 'react';
+import { CSSProperties, memo, PropsWithChildren, use } from 'react';
 import { tv } from '@restate/util-styles';
 import { useJournalTimelineContext } from '@restate/features-invocation-ui';
 import { useTimelineEngineContext } from '@restate/ui-timeline-zoom';
@@ -356,7 +356,7 @@ function getLineVariant(
 const entryProgressStyles = tv({
   base: '[&~&]:hidden',
 });
-export function EntryProgress(
+export const EntryProgress = memo(function EntryProgress(
   props: PropsWithChildren<{
     entry?: JournalEntryV2;
     className?: string;
@@ -382,7 +382,7 @@ export function EntryProgress(
       />
     </ErrorBoundary>
   );
-}
+});
 
 const markerStyles = tv({
   base: 'absolute right-2 left-2',

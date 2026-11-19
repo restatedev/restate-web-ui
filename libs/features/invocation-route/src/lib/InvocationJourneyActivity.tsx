@@ -105,7 +105,6 @@ function ActivityJournalRows({
 }) {
   const invocation = details.invocation;
   const journalContext = {
-    invocationIds: invocation ? [String(invocation.id)] : [],
     detail: { ...COMPACT_DETAIL, errors: true, lifecycle: true },
     disableExpand: true,
     hideOutput: true,

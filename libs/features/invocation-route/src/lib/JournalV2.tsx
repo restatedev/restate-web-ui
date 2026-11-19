@@ -98,6 +98,7 @@ import {
   getFocusViewport,
   getInitialInvocationIds,
 } from './journalFocus';
+import { getRowChunks, getRowKeys } from './journalRowKeys';
 import {
   findLineRow,
   getLineHash,
@@ -248,18 +249,6 @@ function hasPendingJournalUpdates(invocation?: JournalInvocation) {
   );
 }
 
-function getJournalEntryKey(entry: JournalEntryV2 | undefined, index: number) {
-  if (
-    entry?.category === 'group' &&
-    'id' in entry &&
-    typeof entry.id === 'string'
-  ) {
-    return entry.id;
-  }
-
-  return entry?.index ?? index;
-}
-
 export interface JournalV2Props {
   invocationId: string;
   className?: string;
@@ -294,7 +283,6 @@ export function JournalV2({
     isPending,
     error: apiError,
     refetch,
-    invalidate,
     dataUpdatedAt: allQueriesDataUpdatedAt,
   } = useGetInvocationsJournalWithInvocationsV2(invocationIds, {
     refetchOnMount: true,
@@ -328,13 +316,9 @@ export function JournalV2({
   });
   const detail = withTimeline ? journalDetail.detail : COMPACT_DETAIL;
 
-  const addInvocationId = useCallback(
-    (id: string) => {
-      invalidate();
-      setInvocationIds((ids) => [...ids, id]);
-    },
-    [invalidate],
-  );
+  const addInvocationId = useCallback((id: string) => {
+    setInvocationIds((ids) => [...ids, id]);
+  }, []);
   const removeInvocationId = useCallback((idToBeRemoved: string) => {
     setInvocationIds((ids) => {
       return ids.filter((id) => id !== idToBeRemoved);
@@ -388,6 +372,9 @@ export function JournalV2({
   const areAllInvocationsCompleted = [...shownInvocationIds].every(
     (id) => !data[id] || data[id]?.completed_at,
   );
+  const snapshotAt = areAllInvocationsCompleted
+    ? dataUpdatedAt
+    : latestDataUpdatedAt;
   const maxEntryTimestamp = useMemo(
     () =>
       entriesWithoutInputUnfiltered.reduce(
@@ -437,16 +424,16 @@ export function JournalV2({
     Boolean(journalAndInvocationData) &&
     (journalAndInvocationData?.journal?.entries?.length ?? 0) === 0;
 
+  const rowKeys = useMemo(
+    () => getRowKeys(entriesWithoutInput),
+    [entriesWithoutInput],
+  );
   const getItemKey = useCallback(
-    (index: number) => {
-      const entry = entriesWithoutInput[index];
-      return entry
-        ? `${entry.invocationId}-${getJournalEntryKey(
-            entry.entry,
-            index,
-          )}-${entry.entry?.type}-${index}`
-        : index;
-    },
+    (index: number) => rowKeys[index] ?? index,
+    [rowKeys],
+  );
+  const rowChunks = useMemo(
+    () => getRowChunks(entriesWithoutInput),
     [entriesWithoutInput],
   );
   const entriesListRef = useRef<HTMLDivElement>(null);
@@ -836,14 +823,14 @@ export function JournalV2({
           removeInvocationId={removeInvocationId}
           start={start}
           end={end}
-          dataUpdatedAt={dataUpdatedAt}
+          dataUpdatedAt={snapshotAt}
           isPending={isPending}
           error={apiError}
           areAllInvocationsCompleted={areAllInvocationsCompleted}
           isLive={isLive}
           detail={detail}
         >
-          <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+          <SnapshotTimeProvider lastSnapshot={snapshotAt}>
             <Suspense
               fallback={
                 <ContentPanelSection>
@@ -1016,6 +1003,7 @@ export function JournalV2({
                               scrollMargin={scrollMargin}
                               totalSize={totalSize}
                               entriesWithoutInput={entriesWithoutInput}
+                              rowChunks={rowChunks}
                               data={data}
                               failureRow={failureRow}
                               focusInvocationId={focusInvocationId}
@@ -1078,6 +1066,7 @@ export function JournalV2({
                                   scrollMargin={scrollMargin}
                                   totalSize={totalSize}
                                   entriesWithoutInput={entriesWithoutInput}
+                                  rowChunks={rowChunks}
                                   data={data}
                                   relatedEntriesByInvocation={
                                     relatedEntriesByInvocation
@@ -1128,10 +1117,7 @@ export function JournalV2({
                         <ErrorBoundary
                           entry={entry}
                           className="h-9"
-                          key={`${entryInvocationId}-${entry?.category}-${entry?.type}-${getJournalEntryKey(
-                            entry,
-                            index,
-                          )}-${index}`}
+                          key={rowKeys[index]}
                         >
                           <Entry
                             invocation={invocation}
@@ -1306,8 +1292,6 @@ function ReturnToLiveButton({
   );
 }
 
-const ROW_CHUNK_SIZE = 50;
-
 type RenderRow = (virtualItem: VirtualItem) => ReactNode;
 
 const RowChunk = memo(
@@ -1326,10 +1310,14 @@ const RowChunk = memo(
     previous.items.every((item, index) => item === next.items[index]),
 );
 
-function renderInChunks(items: VirtualItem[], renderRow: RenderRow) {
-  const chunks: { key: number; items: VirtualItem[] }[] = [];
+function renderInChunks(
+  items: VirtualItem[],
+  renderRow: RenderRow,
+  rowChunks: string[],
+) {
+  const chunks: { key: string; items: VirtualItem[] }[] = [];
   for (const item of items) {
-    const key = Math.floor(item.index / ROW_CHUNK_SIZE);
+    const key = rowChunks[item.index] ?? '';
     const last = chunks.at(-1);
     if (last?.key === key) {
       last.items.push(item);
@@ -1348,6 +1336,7 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
   scrollMargin,
   totalSize,
   entriesWithoutInput,
+  rowChunks,
   data,
   failureRow,
   focusInvocationId,
@@ -1365,6 +1354,7 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
   scrollMargin: number;
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
+  rowChunks: string[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
   failureRow?: VirtualItem;
   focusInvocationId?: string;
@@ -1484,7 +1474,7 @@ const VirtualizedEntries = memo(function VirtualizedEntries({
           }}
         />
       )}
-      {renderInChunks(virtualItems, renderRow)}
+      {renderInChunks(virtualItems, renderRow, rowChunks)}
     </div>
   );
 });
@@ -1494,6 +1484,7 @@ const VirtualizedTimeline = memo(function VirtualizedTimeline({
   scrollMargin,
   totalSize,
   entriesWithoutInput,
+  rowChunks,
   data,
   relatedEntriesByInvocation,
   referencedInvocations,
@@ -1508,6 +1499,7 @@ const VirtualizedTimeline = memo(function VirtualizedTimeline({
   scrollMargin: number;
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
+  rowChunks: string[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
   relatedEntriesByInvocation: Map<string, Map<number, JournalEntryV2[]>>;
   referencedInvocations?: Record<
@@ -1591,7 +1583,7 @@ const VirtualizedTimeline = memo(function VirtualizedTimeline({
         position: 'relative',
       }}
     >
-      {renderInChunks(virtualItems, renderRow)}
+      {renderInChunks(virtualItems, renderRow, rowChunks)}
     </div>
   );
 });
