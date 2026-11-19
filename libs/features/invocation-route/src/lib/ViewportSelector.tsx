@@ -10,7 +10,7 @@ const styles = tv({
 });
 
 const panAreaStyles = tv({
-  base: 'h-full cursor-grab rounded-md bg-(--lens-fill) shadow-(--lens-shadow) backdrop-brightness-110 backdrop-saturate-[1.1] transition-shadow duration-[140ms] ease-out hover:shadow-(--lens-shadow-hover) active:shadow-(--lens-shadow-active)',
+  base: 'h-full cursor-grab rounded-md bg-(--lens-fill) shadow-(--lens-shadow) backdrop-brightness-110 backdrop-saturate-[1.1] transition-shadow duration-[140ms] ease-out hover:shadow-(--lens-shadow-hover) active:shadow-(--lens-shadow-active) supports-[-moz-appearance:none]:backdrop-filter-none',
 });
 
 const overlayStyles = tv({

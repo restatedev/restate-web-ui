@@ -8,6 +8,7 @@ import {
   memo,
   RefCallback,
   RefObject,
+  type ReactNode,
   Suspense,
   useCallback,
   useEffect,
@@ -26,14 +27,23 @@ import { Button } from '@restate/ui-button';
 import { HoverTooltip } from '@restate/ui-tooltip';
 import { useRestateContext } from '@restate/features-restate-context';
 import { ErrorBanner } from '@restate/ui-error';
-import { JournalContextProvider } from '@restate/features-invocation-ui';
+import { ServiceCatalogProvider } from '@restate/features-service-target';
+import {
+  JournalContextProvider,
+  useJournalTimelineContext,
+} from '@restate/features-invocation-ui';
 import { Indicator, Spinner } from '@restate/ui-loading';
 import { Entry } from '@restate/features-invocation-ui';
 import { useFailureRelatedCommandIndex } from '@restate/features-invocation-ui';
 import { Input } from '@restate/features-invocation-ui';
 import { isTargetInvocationEntry } from '@restate/features-invocation-ui';
-import { EntryProgress, timelineBaselineStyles } from './EntryProgress';
+import {
+  EntryProgress,
+  hasEntryProgress,
+  timelineBaselineStyles,
+} from './EntryProgress';
 import { TIMELINE_DRAW_WINDOW_INSET } from './TimelineScale';
+import { SegmentWidthProvider } from './segmentWidth';
 import {
   drawsSendTrail,
   getSendInvocationId,
@@ -55,7 +65,6 @@ import {
   useWarmInvocationStatusDetails,
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
-import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { formatDurations, formatPlurals } from '@restate/util-intl';
 import {
   TimelineEngineProvider,
@@ -72,6 +81,11 @@ import {
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
 import { useWindowScrollMargin } from './useWindowScrollMargin';
+import {
+  useGrowRenderWindowWhenIdle,
+  useRenderWindow,
+} from './useRenderWindow';
+import { useQuietWindowVirtualizer } from './useQuietWindowVirtualizer';
 import {
   getExpandIdsToDrop,
   getFocusInvocationId,
@@ -116,6 +130,10 @@ const virtualRowStyles = tv({
   variants: {
     isFocused: {
       true: 'bg-accent-subtle/50',
+      false: '',
+    },
+    hasTimeline: {
+      true: 'border-b border-transparent pr-2 pl-2',
       false: '',
     },
   },
@@ -427,16 +445,24 @@ export function JournalV2({
   const entriesListRef = useRef<HTMLDivElement>(null);
   const [entriesListCallbackRef, scrollMargin] =
     useWindowScrollMargin(entriesListRef);
-  const virtualizer = useWindowVirtualizer({
+  const renderWindow = useRenderWindow();
+  const virtualizer = useQuietWindowVirtualizer({
     count: entriesWithoutInput.length,
     estimateSize: () => 36,
-    overscan: 24,
     scrollMargin,
     getItemKey,
+    rangeExtractor: renderWindow.rangeExtractor,
   });
+  renderWindow.scrollStateRef.current = virtualizer;
   useLayoutEffect(() => {
     isScrollingRef.current = virtualizer.isScrolling;
   });
+  useGrowRenderWindowWhenIdle(
+    renderWindow,
+    virtualizer.isScrolling,
+    entriesWithoutInput.length,
+    isLive && !areAllInvocationsCompleted,
+  );
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
 
@@ -643,7 +669,10 @@ export function JournalV2({
         ...new Set([
           ...getReferencedInvocationIds(
             withTimeline
-              ? virtualItems.map(({ index }) => entriesWithoutInput[index])
+              ? entriesWithoutInput.slice(
+                  Math.max(0, (virtualizer.range?.startIndex ?? 0) - 24),
+                  (virtualizer.range?.endIndex ?? -1) + 25,
+                )
               : entriesWithoutInput,
           ),
           ...eventRelatedInvocationIds,
@@ -976,26 +1005,30 @@ export function JournalV2({
                                   ?.cancelEvent
                               }
                             >
-                              <VirtualizedTimeline
-                                virtualItems={virtualItems}
-                                scrollMargin={scrollMargin}
-                                totalSize={totalSize}
-                                entriesWithoutInput={entriesWithoutInput}
-                                data={data}
-                                relatedEntriesByInvocation={
-                                  relatedEntriesByInvocation
-                                }
-                                referencedInvocations={
-                                  referencedInvocationStatuses?.invocations
-                                }
-                                isReferencedInvocationsError={
-                                  isReferencedInvocationStatusesError
-                                }
-                                focusInvocationId={focusInvocationId}
-                                activeRowIndex={activeProblemIndex}
-                                childNow={referencedInvocationStatusesUpdatedAt}
-                                shownInvocationIds={shownInvocationIds}
-                              />
+                              <SegmentWidthProvider>
+                                <VirtualizedTimeline
+                                  virtualItems={virtualItems}
+                                  scrollMargin={scrollMargin}
+                                  totalSize={totalSize}
+                                  entriesWithoutInput={entriesWithoutInput}
+                                  data={data}
+                                  relatedEntriesByInvocation={
+                                    relatedEntriesByInvocation
+                                  }
+                                  referencedInvocations={
+                                    referencedInvocationStatuses?.invocations
+                                  }
+                                  isReferencedInvocationsError={
+                                    isReferencedInvocationStatusesError
+                                  }
+                                  focusInvocationId={focusInvocationId}
+                                  activeRowIndex={activeProblemIndex}
+                                  childNow={
+                                    referencedInvocationStatusesUpdatedAt
+                                  }
+                                  shownInvocationIds={shownInvocationIds}
+                                />
+                              </SegmentWidthProvider>
                             </ScrollableTimeline>
                           </ContentPanelSection>
                         </div>
@@ -1140,7 +1173,7 @@ function TimelineEngineJournalBridge({
       isLive={!areAllInvocationsCompleted && isLive}
       detail={detail}
     >
-      {children}
+      <ServiceCatalogProvider>{children}</ServiceCatalogProvider>
     </JournalContextProvider>
   );
 }
@@ -1205,7 +1238,43 @@ function ReturnToLiveButton({
   );
 }
 
-function VirtualizedEntries({
+const ROW_CHUNK_SIZE = 50;
+
+type RenderRow = (virtualItem: VirtualItem) => ReactNode;
+
+const RowChunk = memo(
+  function RowChunk({
+    items,
+    renderRow,
+  }: {
+    items: VirtualItem[];
+    renderRow: RenderRow;
+  }) {
+    return <>{items.map(renderRow)}</>;
+  },
+  (previous, next) =>
+    previous.renderRow === next.renderRow &&
+    previous.items.length === next.items.length &&
+    previous.items.every((item, index) => item === next.items[index]),
+);
+
+function renderInChunks(items: VirtualItem[], renderRow: RenderRow) {
+  const chunks: { key: number; items: VirtualItem[] }[] = [];
+  for (const item of items) {
+    const key = Math.floor(item.index / ROW_CHUNK_SIZE);
+    const last = chunks.at(-1);
+    if (last?.key === key) {
+      last.items.push(item);
+    } else {
+      chunks.push({ key, items: [item] });
+    }
+  }
+  return chunks.map((chunk) => (
+    <RowChunk key={chunk.key} items={chunk.items} renderRow={renderRow} />
+  ));
+}
+
+const VirtualizedEntries = memo(function VirtualizedEntries({
   ref,
   virtualItems,
   scrollMargin,
@@ -1234,6 +1303,85 @@ function VirtualizedEntries({
   onToggleRetries: (row: CombinedJournalEntry) => void;
   isRetryRowExpanded: (key: string) => boolean;
 }) {
+  const renderRow = useCallback(
+    (virtualItem: VirtualItem) => {
+      const combinedEntry = entriesWithoutInput[virtualItem.index];
+      if (!combinedEntry) return null;
+      const {
+        invocationId: entryInvocationId,
+        entry,
+        depth,
+        parentCommand,
+      } = combinedEntry;
+      const invocation = data?.[entryInvocationId];
+      const retries = pastRetries
+        ? getPastRetries(combinedEntry, pastRetries)
+        : undefined;
+
+      return (
+        <div
+          key={virtualItem.key}
+          className={virtualRowStyles({
+            isFocused:
+              entryInvocationId === focusInvocationId ||
+              virtualItem.index === activeRowIndex,
+          })}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: virtualItem.size,
+            transform: `translateY(${virtualItem.start - scrollMargin}px)`,
+          }}
+        >
+          {problemTones?.has(getProblemRowKey(combinedEntry) ?? '') && (
+            <span
+              aria-hidden
+              className={problemMarkStyles({
+                tone: problemTones.get(getProblemRowKey(combinedEntry) ?? ''),
+              })}
+            />
+          )}
+          <ErrorBoundary
+            entry={entry}
+            className="sticky top-[var(--cp-content-top,0px)] h-9"
+          >
+            <Entry
+              invocation={invocation}
+              entry={entry}
+              depth={depth}
+              nextDepth={entriesWithoutInput[virtualItem.index + 1]?.depth}
+              parentCommand={parentCommand}
+              trailing={
+                retries && (
+                  <PastRetriesBadge
+                    retries={retries}
+                    hasFailed={entry?.resultType === 'failure'}
+                    isExpanded={isRetryRowExpanded(
+                      getRetryKey(combinedEntry) ?? '',
+                    )}
+                    onToggle={() => onToggleRetries(combinedEntry)}
+                  />
+                )
+              }
+            />
+          </ErrorBoundary>
+        </div>
+      );
+    },
+    [
+      activeRowIndex,
+      data,
+      entriesWithoutInput,
+      focusInvocationId,
+      isRetryRowExpanded,
+      onToggleRetries,
+      pastRetries,
+      problemTones,
+      scrollMargin,
+    ],
+  );
   return (
     <div
       ref={ref}
@@ -1254,77 +1402,12 @@ function VirtualizedEntries({
           }}
         />
       )}
-      {virtualItems.map((virtualItem) => {
-        const combinedEntry = entriesWithoutInput[virtualItem.index];
-        if (!combinedEntry) return null;
-        const {
-          invocationId: entryInvocationId,
-          entry,
-          depth,
-          parentCommand,
-        } = combinedEntry;
-        const invocation = data?.[entryInvocationId];
-        const retries = pastRetries
-          ? getPastRetries(combinedEntry, pastRetries)
-          : undefined;
-
-        return (
-          <div
-            key={virtualItem.key}
-            className={virtualRowStyles({
-              isFocused:
-                entryInvocationId === focusInvocationId ||
-                virtualItem.index === activeRowIndex,
-            })}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: virtualItem.size,
-              transform: `translateY(${virtualItem.start - scrollMargin}px)`,
-            }}
-          >
-            {problemTones?.has(getProblemRowKey(combinedEntry) ?? '') && (
-              <span
-                aria-hidden
-                className={problemMarkStyles({
-                  tone: problemTones.get(getProblemRowKey(combinedEntry) ?? ''),
-                })}
-              />
-            )}
-            <ErrorBoundary
-              entry={entry}
-              className="sticky top-[var(--cp-content-top,0px)] h-9"
-            >
-              <Entry
-                invocation={invocation}
-                entry={entry}
-                depth={depth}
-                nextDepth={entriesWithoutInput[virtualItem.index + 1]?.depth}
-                parentCommand={parentCommand}
-                trailing={
-                  retries && (
-                    <PastRetriesBadge
-                      retries={retries}
-                      hasFailed={entry?.resultType === 'failure'}
-                      isExpanded={isRetryRowExpanded(
-                        getRetryKey(combinedEntry) ?? '',
-                      )}
-                      onToggle={() => onToggleRetries(combinedEntry)}
-                    />
-                  )
-                }
-              />
-            </ErrorBoundary>
-          </div>
-        );
-      })}
+      {renderInChunks(virtualItems, renderRow)}
     </div>
   );
-}
+});
 
-function VirtualizedTimeline({
+const VirtualizedTimeline = memo(function VirtualizedTimeline({
   virtualItems,
   scrollMargin,
   totalSize,
@@ -1354,6 +1437,67 @@ function VirtualizedTimeline({
   childNow?: number;
   shownInvocationIds: Set<string>;
 }) {
+  const renderRow = useCallback(
+    (virtualItem: VirtualItem) => {
+      const combinedEntry = entriesWithoutInput[virtualItem.index];
+      if (!combinedEntry) return null;
+      const { invocationId: entryInvocationId, entry } = combinedEntry;
+      const relatedEntries =
+        typeof entry?.index === 'number'
+          ? relatedEntriesByInvocation.get(entryInvocationId)?.get(entry.index)
+          : undefined;
+      const targetInvocationId =
+        entry?.isPending &&
+        isTargetInvocationEntry(entry) &&
+        entry.type !== 'OneWayCall'
+          ? entry.invocationId
+          : undefined;
+      const targetInvocation = targetInvocationId
+        ? referencedInvocations?.[targetInvocationId]
+        : undefined;
+      const isTargetInvocationStatusPending =
+        Boolean(targetInvocationId) &&
+        !targetInvocation &&
+        !isReferencedInvocationsError;
+      const sendInvocationId = getSendInvocationId(entry);
+      const sendChild = sendInvocationId
+        ? referencedInvocations?.[sendInvocationId]
+        : undefined;
+      return (
+        <TimelineRow
+          key={virtualItem.key}
+          entry={entry}
+          invocation={data?.[entryInvocationId]}
+          precomputedRelatedEntries={relatedEntries}
+          targetInvocationStatus={targetInvocation?.status}
+          isTargetInvocationStatusPending={isTargetInvocationStatusPending}
+          sendChild={sendChild}
+          childNow={sendChild ? childNow : undefined}
+          isSendChildShown={
+            sendInvocationId ? shownInvocationIds.has(sendInvocationId) : false
+          }
+          top={virtualItem.start - scrollMargin}
+          height={virtualItem.size}
+          isFocused={
+            entryInvocationId === focusInvocationId ||
+            virtualItem.index === activeRowIndex
+          }
+        />
+      );
+    },
+    [
+      activeRowIndex,
+      childNow,
+      data,
+      entriesWithoutInput,
+      focusInvocationId,
+      isReferencedInvocationsError,
+      referencedInvocations,
+      relatedEntriesByInvocation,
+      scrollMargin,
+      shownInvocationIds,
+    ],
+  );
   return (
     <div
       style={{
@@ -1361,74 +1505,12 @@ function VirtualizedTimeline({
         position: 'relative',
       }}
     >
-      {virtualItems.map((virtualItem) => {
-        const combinedEntry = entriesWithoutInput[virtualItem.index];
-        if (!combinedEntry) return null;
-        const { invocationId: entryInvocationId, entry } = combinedEntry;
-        const relatedEntries =
-          typeof entry?.index === 'number'
-            ? relatedEntriesByInvocation
-                .get(entryInvocationId)
-                ?.get(entry.index)
-            : undefined;
-        const targetInvocationId =
-          entry?.isPending &&
-          isTargetInvocationEntry(entry) &&
-          entry.type !== 'OneWayCall'
-            ? entry.invocationId
-            : undefined;
-        const targetInvocation = targetInvocationId
-          ? referencedInvocations?.[targetInvocationId]
-          : undefined;
-        const isTargetInvocationStatusPending =
-          Boolean(targetInvocationId) &&
-          !targetInvocation &&
-          !isReferencedInvocationsError;
-        const sendInvocationId = getSendInvocationId(entry);
-        const sendChild = sendInvocationId
-          ? referencedInvocations?.[sendInvocationId]
-          : undefined;
-
-        return (
-          <div
-            key={virtualItem.key}
-            className={virtualRowStyles({
-              isFocused:
-                entryInvocationId === focusInvocationId ||
-                virtualItem.index === activeRowIndex,
-            })}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: virtualItem.size,
-              transform: `translateY(${virtualItem.start - scrollMargin}px)`,
-            }}
-          >
-            <TimelineContainer
-              invocationId={entryInvocationId}
-              entry={entry}
-              invocation={data?.[entryInvocationId]}
-              precomputedRelatedEntries={relatedEntries}
-              targetInvocationStatus={targetInvocation?.status}
-              isTargetInvocationStatusPending={isTargetInvocationStatusPending}
-              sendChild={sendChild}
-              childNow={sendChild ? childNow : undefined}
-              isSendChildShown={
-                sendInvocationId
-                  ? shownInvocationIds.has(sendInvocationId)
-                  : false
-              }
-            />
-          </div>
-        );
-      })}
+      {renderInChunks(virtualItems, renderRow)}
     </div>
   );
-}
+});
 
-const TimelineContainer = memo(function TimelineContainer({
+const TimelineRow = memo(function TimelineRow({
   entry,
   invocation,
   precomputedRelatedEntries,
@@ -1437,8 +1519,10 @@ const TimelineContainer = memo(function TimelineContainer({
   sendChild,
   childNow,
   isSendChildShown,
+  top,
+  height,
+  isFocused,
 }: {
-  invocationId: string;
   entry?: JournalEntryV2;
   invocation?: ReturnType<
     typeof useGetInvocationsJournalWithInvocationsV2
@@ -1449,29 +1533,48 @@ const TimelineContainer = memo(function TimelineContainer({
   sendChild?: SendChild;
   childNow?: number;
   isSendChildShown: boolean;
+  top: number;
+  height: number;
+  isFocused: boolean;
 }) {
+  const { start } = useJournalTimelineContext();
   const hasSendTrail = drawsSendTrail(
     entry,
     invocation,
     precomputedRelatedEntries,
   );
+  const hasProgress = hasEntryProgress(entry, invocation, start, hasSendTrail);
   return (
-    <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
-      <div
-        className={timelineBaselineStyles({ isHidden: hasSendTrail })}
-        style={TIMELINE_DRAW_WINDOW_INSET}
-      />
-      <EntryProgress
-        entry={entry}
-        invocation={invocation}
-        precomputedRelatedEntries={precomputedRelatedEntries}
-        targetInvocationStatus={targetInvocationStatus}
-        isTargetInvocationStatusPending={isTargetInvocationStatusPending}
-        drawSendTrail={hasSendTrail}
-        isSendChildShown={isSendChildShown}
-        sendChild={sendChild}
-        childNow={childNow}
-      />
+    <div
+      className={virtualRowStyles({ isFocused, hasTimeline: hasProgress })}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height,
+        transform: `translateY(${top}px)`,
+      }}
+    >
+      {hasProgress && (
+        <>
+          <div
+            className={timelineBaselineStyles({ isHidden: hasSendTrail })}
+            style={TIMELINE_DRAW_WINDOW_INSET}
+          />
+          <EntryProgress
+            entry={entry}
+            invocation={invocation}
+            precomputedRelatedEntries={precomputedRelatedEntries}
+            targetInvocationStatus={targetInvocationStatus}
+            isTargetInvocationStatusPending={isTargetInvocationStatusPending}
+            drawSendTrail={hasSendTrail}
+            isSendChildShown={isSendChildShown}
+            sendChild={sendChild}
+            childNow={childNow}
+          />
+        </>
+      )}
     </div>
   );
 });

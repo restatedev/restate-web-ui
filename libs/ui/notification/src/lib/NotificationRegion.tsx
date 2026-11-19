@@ -12,7 +12,7 @@ export function NotificationRegion() {
     >
       <ToastRegion
         queue={notificationQueue}
-        className="relative flex h-10 min-h-10 w-full flex-col flex-nowrap items-stretch justify-between [&_li:first-child+*+*>*]:z-60 [&_li:first-child+*+*>*]:-translate-y-3 [&_li:first-child+*+*>*]:scale-90 [&_li:first-child+*+*~*>*]:invisible [&_li:first-child+*+*~*>*]:z-60 [&_li:first-child+*+*~*>*]:scale-50 [&_li:first-child+*>*]:z-70 [&_li:first-child+*>*]:-translate-y-1.5 [&_li:first-child+*>*]:scale-95 [&_li:first-child>*]:z-80"
+        className="relative flex h-10 min-h-10 w-full flex-col flex-nowrap items-stretch justify-between [&_li:first-child>*]:z-80 [&_li:nth-child(2)>*]:z-70 [&_li:nth-child(2)>*]:-translate-y-1.5 [&_li:nth-child(2)>*]:scale-95 [&_li:nth-child(3)>*]:z-60 [&_li:nth-child(3)>*]:-translate-y-3 [&_li:nth-child(3)>*]:scale-90 [&_li:nth-child(n+4)>*]:invisible [&_li:nth-child(n+4)>*]:z-60 [&_li:nth-child(n+4)>*]:scale-50"
       >
         {({ toast }) => (
           <Notification toast={toast} queue={notificationQueue} />

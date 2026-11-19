@@ -110,7 +110,7 @@ const styles = tv({
       left: 'straight',
       right: 'straight',
       class: {
-        root: 'shadow-xs ring-1 ring-default ring-inset group-has-[[data-pressed=true]]/chip:shadow-none',
+        root: 'shadow-xs ring-1 ring-default ring-inset [:where([data-chip]):has([data-pressed=true])_&]:shadow-none',
       },
     },
     {

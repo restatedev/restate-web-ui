@@ -33,7 +33,7 @@ function AppBarLayout({ children }: PropsWithChildren) {
       <div className="flex flex-auto flex-row pt-10 3xl:ml-[calc(-400px-2rem)] 3xl:grid 3xl:w-[calc(100%+800px+4rem)] 3xl:[grid-template-columns:400px_1fr_400px] 3xl:gap-8">
         <main
           id={ZONE_IDS[LayoutZone.Content]}
-          className="relative col-start-2 col-end-3 flex max-w-full min-w-0 flex-auto flex-col px-4 pt-8 pb-32 [&:has([data-content-panel-fill-viewport])]:min-h-0 [&:has([data-content-panel-fill-viewport])]:flex-1 [&:has([data-content-panel-fill-viewport])]:pb-0 [&:has([data-content-panel-fill-viewport])>*]:flex-1"
+          className="relative col-start-2 col-end-3 flex max-w-full min-w-0 flex-auto flex-col px-4 pt-8 pb-32 [&:has([data-content-panel-fill-viewport])]:min-h-0 [&:has([data-content-panel-fill-viewport])]:flex-1 [&:has([data-content-panel-fill-viewport])]:pb-0 [&>*:has([data-content-panel-fill-viewport])]:flex-1 [&>[data-content-panel-fill-viewport]]:flex-1"
         ></main>
         <ComplementaryOutlet id={ZONE_IDS[LayoutZone.Complementary]} />
       </div>

@@ -27,7 +27,7 @@ const CardIntentContext = createContext<CardIntent>('none');
 const cardStyles = tv({
   slots: {
     wrapper: 'flex max-w-full min-w-0 flex-col',
-    box: "relative isolate flex max-w-full min-w-0 flex-auto flex-col divide-y divide-default overflow-hidden rounded-xl border bg-subtle shadow-xs before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[800px_400px_at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1 [&>*+*]:shadow-[inset_0_1px_0_var(--box-shadow-color-edge)]",
+    box: "relative isolate flex max-w-full min-w-0 flex-auto flex-col divide-y divide-default overflow-hidden rounded-xl border bg-subtle shadow-xs before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[800px_400px_at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1 [&>*:not(:first-child)]:shadow-[inset_0_1px_0_var(--box-shadow-color-edge)]",
   },
   variants: {
     intent: {

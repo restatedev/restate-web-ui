@@ -6,7 +6,7 @@ import type {
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
 import { formatDurations } from '@restate/util-intl';
 import { getDuration } from '@restate/util-snapshot-time';
-import { CSSProperties, PropsWithChildren } from 'react';
+import { CSSProperties, PropsWithChildren, use } from 'react';
 import { tv } from '@restate/util-styles';
 import { useJournalTimelineContext } from '@restate/features-invocation-ui';
 import { useTimelineEngineContext } from '@restate/ui-timeline-zoom';
@@ -32,6 +32,11 @@ import {
   TIMELINE_ENTRY_DRAW_WINDOW_MARGINS,
   timelineEntrySpanStyle,
 } from './TimelineScale';
+import {
+  SegmentWidthContext,
+  type SegmentWidthStore,
+  useIsSegmentWide,
+} from './segmentWidth';
 
 const pointStyles = tv({
   base: 'relative h-full w-[2px] rounded-full',
@@ -386,9 +391,44 @@ const markerStyles = tv({
       true: 'top-[0.225rem] h-3.5',
       false: 'top-[0.4rem] h-2',
     },
+    hideWhenNarrow: {
+      true: '@max-[1rem]/segment:hidden',
+      false: '',
+    },
   },
-  defaultVariants: { isPending: false },
+  defaultVariants: { isPending: false, hideWhenNarrow: true },
 });
+
+const relatedEntryStyles = tv({
+  base: 'absolute inset-0',
+  variants: {
+    hideWhenNarrow: {
+      true: '@max-[1rem]/segment:hidden',
+      false: '',
+    },
+  },
+  defaultVariants: { hideWhenNarrow: true },
+});
+
+function WideSegmentOnly({
+  store,
+  entry,
+  invocation,
+  children,
+}: PropsWithChildren<{
+  store: SegmentWidthStore;
+  entry: JournalEntryV2;
+  invocation?: ReturnType<
+    typeof useGetInvocationJournalWithInvocationV2
+  >['data'];
+}>) {
+  const span = getEntrySpan(entry, invocation, useJournalTimelineContext());
+  const isWide = useIsSegmentWide(
+    store,
+    span.isPoint ? 0 : (span.relativeEnd || 0) - (span.relativeStart || 0),
+  );
+  return isWide ? children : null;
+}
 
 function InnerEntryProgress({
   className,
@@ -557,6 +597,39 @@ function InnerEntryProgress({
     isTargetInvocationStatusPending,
   );
   const isLineDashed = !isPoint && DASHED_LINE_VARIANTS.has(lineVariant);
+  const segmentWidthStore = use(SegmentWidthContext);
+  const markers = Number(relevantEntries?.length) > 0 && (
+    <div
+      className={markerStyles({
+        isPending: entry.isPending,
+        hideWhenNarrow: !segmentWidthStore,
+      })}
+    >
+      {relevantEntries?.map((relevantEntry) => {
+        return (
+          <InnerEntryProgress
+            key={relevantEntry.index}
+            entry={relevantEntry}
+            invocation={invocation}
+            className={relatedEntryStyles({
+              hideWhenNarrow: !segmentWidthStore,
+            })}
+          />
+        );
+      })}
+      {startTransientError &&
+        endTransientError &&
+        transientErrorTimes.length > 0 && (
+          <div
+            className="absolute top-px bottom-px max-w-full rounded-full bg-[linear-gradient(to_right,--theme(--background-color-warning-strong/0)_0px,--theme(--background-color-warning-strong/1)_20px,--theme(--background-color-warning-strong/1)_calc(100%-20px),--theme(--background-color-warning-strong/0)_100%)] transition-all duration-300"
+            style={{
+              left: `max(calc(${scaleTimelinePercent((startTransientError - start) / (end - start))} - 20px), 0px)`,
+              right: `max(calc(${scaleTimelinePercentFromEnd((endTransientError - start) / (end - start))} - 20px), ${entryEnd || unambiguousEnd ? scaleTimelinePercentFromEnd((new Date((entryEnd || unambiguousEnd)!).getTime() - start) / (end - start)) : '0%'}, 0px)`,
+            }}
+          />
+        )}
+    </div>
+  );
   return (
     <>
       <EntryProgressContainer
@@ -610,39 +683,86 @@ function InnerEntryProgress({
           <div className="h-full w-full" />
         </EntryTooltip>
       </EntryProgressContainer>
-      {Number(relevantEntries?.length) > 0 && (
-        <EntryProgressContainer
-          className="@container/segment h-0"
-          entry={entry}
-          invocation={invocation}
-        >
-          <div className="@max-[1rem]/segment:[&~*]:hidden" />
-          <div className={markerStyles({ isPending: entry.isPending })}>
-            {relevantEntries?.map((relevantEntry) => {
-              return (
-                <InnerEntryProgress
-                  key={relevantEntry.index}
-                  entry={relevantEntry}
-                  invocation={invocation}
-                  className="absolute inset-0 @max-[1rem]/segment:hidden"
-                />
-              );
-            })}
-            {startTransientError &&
-              endTransientError &&
-              transientErrorTimes.length > 0 && (
-                <div
-                  className="absolute top-px bottom-px max-w-full rounded-full bg-[linear-gradient(to_right,--theme(--background-color-warning-strong/0)_0px,--theme(--background-color-warning-strong/1)_20px,--theme(--background-color-warning-strong/1)_calc(100%-20px),--theme(--background-color-warning-strong/0)_100%)] transition-all duration-300"
-                  style={{
-                    left: `max(calc(${scaleTimelinePercent((startTransientError - start) / (end - start))} - 20px), 0px)`,
-                    right: `max(calc(${scaleTimelinePercentFromEnd((endTransientError - start) / (end - start))} - 20px), ${entryEnd || unambiguousEnd ? scaleTimelinePercentFromEnd((new Date((entryEnd || unambiguousEnd)!).getTime() - start) / (end - start)) : '0%'}, 0px)`,
-                  }}
-                />
-              )}
-          </div>
-        </EntryProgressContainer>
-      )}
+      {markers &&
+        (segmentWidthStore ? (
+          <WideSegmentOnly
+            store={segmentWidthStore}
+            entry={entry}
+            invocation={invocation}
+          >
+            {markers}
+          </WideSegmentOnly>
+        ) : (
+          <EntryProgressContainer
+            className="@container/segment h-0"
+            entry={entry}
+            invocation={invocation}
+          >
+            {markers}
+          </EntryProgressContainer>
+        ))}
     </>
+  );
+}
+
+function getEntrySpan(
+  entry: JournalEntryV2,
+  invocation: ReturnType<
+    typeof useGetInvocationJournalWithInvocationV2
+  >['data'],
+  {
+    start,
+    end,
+    dataUpdatedAt,
+  }: { start: number; end: number; dataUpdatedAt: number },
+  isCopiedFromRestart?: boolean,
+) {
+  const { unambiguousEnd } = isEntryCompletionAmbiguous(entry, invocation);
+  const entryStart = isCopiedFromRestart
+    ? start
+    : entry?.start
+      ? new Date(entry.start).getTime()
+      : undefined;
+  const entryEnd = unambiguousEnd
+    ? new Date(unambiguousEnd).getTime()
+    : entry?.end
+      ? new Date(entry.end ?? entry.start).getTime()
+      : undefined;
+
+  const isPoint =
+    isCopiedFromRestart || Boolean(!entryEnd && !entry?.isPending);
+
+  const rangeDuration = end - start;
+  const relativeStart = entryStart
+    ? (entryStart - start) / rangeDuration
+    : entryStart;
+  const relativeEnd = entryEnd
+    ? (entryEnd - start) / rangeDuration
+    : entry?.isPending
+      ? (dataUpdatedAt - start) / rangeDuration
+      : undefined;
+  return { isPoint, relativeStart, relativeEnd };
+}
+
+export function hasEntryProgress(
+  entry: JournalEntryV2 | undefined,
+  invocation: ReturnType<
+    typeof useGetInvocationJournalWithInvocationV2
+  >['data'],
+  start: number,
+  drawSendTrail?: boolean,
+) {
+  if (!entry?.start) {
+    return false;
+  }
+  return (
+    drawSendTrail ||
+    entry.type !== 'Event: Paused' ||
+    Boolean(
+      invocation?.invoked_by === 'restart_as_new' &&
+      start &&
+      new Date(entry.start).getTime() < start,
+    )
   );
 }
 
@@ -664,39 +784,18 @@ export function EntryProgressContainer({
   isCopiedFromRestart?: boolean;
   hasDashedLine?: boolean;
 }>) {
-  const { start, end, dataUpdatedAt } = useJournalTimelineContext();
-
-  const rangeStart = start;
-  const rangeEnd = end;
+  const timeline = useJournalTimelineContext();
 
   if (!entry?.start) {
     return null;
   }
 
-  const { unambiguousEnd } = isEntryCompletionAmbiguous(entry, invocation);
-  const entryStart = isCopiedFromRestart
-    ? start
-    : entry?.start
-      ? new Date(entry.start).getTime()
-      : undefined;
-  const entryEnd = unambiguousEnd
-    ? new Date(unambiguousEnd).getTime()
-    : entry?.end
-      ? new Date(entry.end ?? entry.start).getTime()
-      : undefined;
-
-  const isPoint =
-    isCopiedFromRestart || Boolean(!entryEnd && !entry?.isPending);
-
-  const rangeDuration = rangeEnd - rangeStart;
-  const relativeStart = entryStart
-    ? (entryStart - rangeStart) / rangeDuration
-    : entryStart;
-  const relativeEnd = entryEnd
-    ? (entryEnd - rangeStart) / rangeDuration
-    : entry?.isPending
-      ? (dataUpdatedAt - rangeStart) / rangeDuration
-      : undefined;
+  const { isPoint, relativeStart, relativeEnd } = getEntrySpan(
+    entry,
+    invocation,
+    timeline,
+    isCopiedFromRestart,
+  );
 
   return (
     <div

@@ -59,7 +59,6 @@ const styles = tv({
         text: 'w-0 text-2xs',
         link: 'absolute -inset-px m-0.5 rounded-lg before:rounded-lg',
         container: 'p-px',
-        linkIcon: 'h-0 w-0',
       },
     },
   },
@@ -113,7 +112,7 @@ export function InvocationId({
       variant="secondary"
       className={linkStyle()}
     >
-      <Icon name={IconName.ChevronRight} className={linkIcon()} />
+      {!isIcon && <Icon name={IconName.ChevronRight} className={linkIcon()} />}
     </Link>
   );
 
