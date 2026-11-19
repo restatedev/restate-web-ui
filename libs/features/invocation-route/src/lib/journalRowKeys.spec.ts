@@ -67,5 +67,12 @@ describe('getRowChunks', () => {
     expect(new Set(chunks)).toEqual(new Set([0, 1, 2]));
     expect([...expanded.slice(0, 11), ...expanded.slice(81)]).toEqual(chunks);
     expect(new Set(expanded.slice(11, 81))).toEqual(new Set([0]));
+
+    const retries = Array.from({ length: 400 }, () =>
+      row('inv_parent', { category: 'event', type: 'Event: TransientError' }),
+    );
+    expect(new Set(getRowChunks([...rows.slice(0, 1), ...retries])).size).toBe(
+      9,
+    );
   });
 });

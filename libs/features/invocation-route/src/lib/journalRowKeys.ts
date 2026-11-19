@@ -15,15 +15,11 @@ export function getRowKeys(rows: CombinedJournalEntry[]) {
 }
 
 export function getRowChunks(rows: CombinedJournalEntry[]) {
-  let chunk = 0;
-  return rows.map(({ depth, entry }) => {
-    if (
-      depth === 0 &&
-      entry?.category === 'command' &&
-      typeof entry.commandIndex === 'number'
-    ) {
-      chunk = Math.max(chunk, Math.floor(entry.commandIndex / ROWS_PER_CHUNK));
+  let rootRows = 0;
+  return rows.map(({ depth }) => {
+    if (depth === 0) {
+      rootRows += 1;
     }
-    return chunk;
+    return Math.floor(Math.max(rootRows - 1, 0) / ROWS_PER_CHUNK);
   });
 }
