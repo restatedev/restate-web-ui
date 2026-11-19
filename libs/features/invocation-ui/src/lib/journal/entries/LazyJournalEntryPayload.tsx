@@ -357,8 +357,10 @@ function PayloadPopover({
             >
               {isVoid ? (
                 <Button
+                  ref={hoverPin.triggerRef}
                   className={trigger({ className: 'shrink-0' })}
                   variant="secondary"
+                  onClick={hoverPin.onPress}
                 >
                   <span className={triggerLabelStyle()}>
                     {triggerLabel}
