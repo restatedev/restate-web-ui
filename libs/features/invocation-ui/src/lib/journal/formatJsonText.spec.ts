@@ -40,6 +40,13 @@ describe('formatJsonText', () => {
     );
   });
 
+  it('leaves very deeply nested values unformatted', () => {
+    const deep = `${'['.repeat(5000)}${']'.repeat(5000)}`;
+    expect(formatJsonText(deep)).toBe(deep);
+    const nested = `${'['.repeat(150)}1${']'.repeat(150)}`;
+    expect(formatJsonText(nested).split('\n')).toHaveLength(301);
+  });
+
   it('returns scalars and non-JSON text unchanged', () => {
     expect(formatJsonText('"913206d7"')).toBe('"913206d7"');
     expect(formatJsonText('42')).toBe('42');

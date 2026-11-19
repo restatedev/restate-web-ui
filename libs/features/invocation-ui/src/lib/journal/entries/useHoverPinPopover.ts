@@ -5,11 +5,13 @@ import {
   useState,
   type SyntheticEvent,
 } from 'react';
+import { usePreventScroll } from 'react-aria';
 
 type Mode = 'closed' | 'hover' | 'pinned';
 
 export function useHoverPinPopover(onOpenChange?: (isOpen: boolean) => void) {
-  const [mode, setMode] = useState<Mode>('closed');
+  const [mode, setModeState] = useState<Mode>('closed');
+  const modeRef = useRef<Mode>('closed');
   const triggerRef = useRef<HTMLButtonElement>(null);
   const modeAtPressStartRef = useRef<Mode>('closed');
   const onOpenChangeRef = useRef(onOpenChange);
@@ -18,6 +20,13 @@ export function useHoverPinPopover(onOpenChange?: (isOpen: boolean) => void) {
   useEffect(() => {
     onOpenChangeRef.current = onOpenChange;
   });
+
+  usePreventScroll({ isDisabled: mode !== 'pinned' });
+
+  const setMode = useCallback((nextMode: Mode) => {
+    modeRef.current = nextMode;
+    setModeState(nextMode);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -44,26 +53,36 @@ export function useHoverPinPopover(onOpenChange?: (isOpen: boolean) => void) {
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('keydown', onKeyDown, true);
     };
-  }, [isOpen]);
+  }, [isOpen, setMode]);
 
   const handlePressStart = useCallback(
     (event: SyntheticEvent) => {
       if (
-        event.target instanceof Node &&
-        triggerRef.current?.contains(event.target)
+        !(event.target instanceof Node) ||
+        !triggerRef.current?.contains(event.target)
       ) {
-        modeAtPressStartRef.current = mode;
+        return;
+      }
+      modeAtPressStartRef.current = modeRef.current;
+      if (event.type === 'pointerdown' && modeRef.current === 'hover') {
+        setMode('pinned');
       }
     },
-    [mode],
+    [setMode],
   );
 
-  const handleOpenChange = useCallback((nextIsOpen: boolean) => {
-    setMode(nextIsOpen ? 'hover' : 'closed');
-    if (nextIsOpen) {
-      onOpenChangeRef.current?.(true);
-    }
-  }, []);
+  const handleOpenChange = useCallback(
+    (nextIsOpen: boolean) => {
+      if (modeRef.current === 'pinned') {
+        return;
+      }
+      setMode(nextIsOpen ? 'hover' : 'closed');
+      if (nextIsOpen) {
+        onOpenChangeRef.current?.(true);
+      }
+    },
+    [setMode],
+  );
 
   const handlePress = useCallback(() => {
     const nextMode =
@@ -72,7 +91,7 @@ export function useHoverPinPopover(onOpenChange?: (isOpen: boolean) => void) {
     if (nextMode === 'pinned') {
       onOpenChangeRef.current?.(true);
     }
-  }, []);
+  }, [setMode]);
 
   return {
     isOpen,

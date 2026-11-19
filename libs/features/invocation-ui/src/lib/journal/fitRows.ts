@@ -7,19 +7,28 @@ export function useIsFit() {
 
 const FAILURE_SHRINK_LENGTH = 16;
 
-const fitFailureStyles = tv({
+const failureStyles = tv({
   base: 'text-2xs',
   variants: {
-    size: {
+    fit: {
+      none: '',
       long: 'min-w-32 flex-[0_1000000000000_auto]',
       short: 'shrink-0',
     },
   },
 });
 
-export function getFitFailureClassName(message: string, className?: string) {
-  return fitFailureStyles({
-    size: message.length > FAILURE_SHRINK_LENGTH ? 'long' : 'short',
+export function getFailureClassName(
+  isFit: boolean,
+  message = '',
+  className?: string,
+) {
+  return failureStyles({
+    fit: !isFit
+      ? 'none'
+      : message.length > FAILURE_SHRINK_LENGTH
+        ? 'long'
+        : 'short',
     className,
   });
 }

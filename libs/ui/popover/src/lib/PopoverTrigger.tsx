@@ -174,6 +174,15 @@ function getPolygon(
 const HOVER_OPEN_DELAY = 250;
 const HOVER_CLOSE_DELAY = 50;
 
+function getPopoverElement(triggerEl: HTMLElement | null | undefined) {
+  if (!triggerEl?.id || typeof document === 'undefined') {
+    return null;
+  }
+  return document.querySelector(
+    `[data-trigger][aria-labelledby="${triggerEl.id}"]`,
+  );
+}
+
 // Mirrors react-aria's global tooltip manager (which Popover lacks): at most
 // one hover popover is open at a time, and while one is open, hovering another
 // trigger hands off immediately instead of waiting for the warmup delay.
@@ -199,16 +208,26 @@ const HOVER_CLOSE_DELAY = 50;
 //     safe so ancestors stay open while the pointer is in a nested card.
 let closeActiveHoverPopover: (() => void) | null = null;
 let isActiveHoverPopoverPinned = false;
+let activeHoverPopoverTrigger: HTMLElement | null = null;
+
+function isInsideActiveHoverPopover(triggerEl: HTMLElement | undefined) {
+  return Boolean(
+    triggerEl &&
+    getPopoverElement(activeHoverPopoverTrigger)?.contains(triggerEl),
+  );
+}
 
 export function PopoverHoverTrigger({
   children,
   openDelay = HOVER_OPEN_DELAY,
   closeDelay = HOVER_CLOSE_DELAY,
+  handoffDelay = 0,
   isPinned = false,
   isHoverDisabled = false,
 }: PropsWithChildren<{
   openDelay?: number;
   closeDelay?: number;
+  handoffDelay?: number;
   isPinned?: boolean;
   isHoverDisabled?: boolean;
 }>) {
@@ -251,42 +270,69 @@ export function PopoverHoverTrigger({
   const open = useCallback(() => {
     clearOpenTimeout();
     clearCloseTimeout();
-    if (closeActiveHoverPopover && closeActiveHoverPopover !== close) {
+    const isNested = isInsideActiveHoverPopover(getTriggerEl());
+    if (
+      closeActiveHoverPopover &&
+      closeActiveHoverPopover !== close &&
+      !isNested
+    ) {
+      if (isActiveHoverPopoverPinned) {
+        return;
+      }
       closeActiveHoverPopover();
     }
     setIsOpen?.(true);
-  }, [clearOpenTimeout, clearCloseTimeout, close, setIsOpen]);
+  }, [clearOpenTimeout, clearCloseTimeout, close, getTriggerEl, setIsOpen]);
 
   useEffect(() => {
     if (isOpen) {
       clearOpenTimeout();
-      closeActiveHoverPopover = close;
-      isActiveHoverPopoverPinned = isPinned;
       if (isPinned) {
         clearCloseTimeout();
       }
+      const triggerEl = getTriggerEl();
+      if (isInsideActiveHoverPopover(triggerEl)) {
+        return undefined;
+      }
+      closeActiveHoverPopover = close;
+      isActiveHoverPopoverPinned = isPinned;
+      activeHoverPopoverTrigger = triggerEl ?? null;
       return () => {
         if (closeActiveHoverPopover === close) {
           closeActiveHoverPopover = null;
           isActiveHoverPopoverPinned = false;
+          activeHoverPopoverTrigger = null;
         }
       };
     }
     return undefined;
-  }, [isOpen, isPinned, close, clearOpenTimeout, clearCloseTimeout]);
+  }, [
+    isOpen,
+    isPinned,
+    close,
+    clearOpenTimeout,
+    clearCloseTimeout,
+    getTriggerEl,
+  ]);
 
   const isPointInSafeArea = useCallback(
     (x: number, y: number) => {
       const triggerEl = getTriggerEl();
-      const popoverEl =
-        typeof document !== 'undefined' &&
-        document.querySelector(
-          `[data-trigger][aria-labelledby="${triggerEl?.id}"]`,
-        );
+      const popoverEl = getPopoverElement(triggerEl);
       if (
         !(triggerEl instanceof HTMLElement && popoverEl instanceof HTMLElement)
       ) {
         return false;
+      }
+
+      const popoverRect = popoverEl.getBoundingClientRect();
+      if (
+        x >= popoverRect.left &&
+        x <= popoverRect.right &&
+        y >= popoverRect.top &&
+        y <= popoverRect.bottom
+      ) {
+        return true;
       }
 
       // Check if mouse is inside the polygon
@@ -300,8 +346,8 @@ export function PopoverHoverTrigger({
         document.querySelectorAll('[aria-expanded]'),
       );
       for (const trigger of allTriggers) {
-        // Skip our own trigger
-        if (trigger === triggerEl) continue;
+        // Skip our own trigger and the triggers inside our own popover
+        if (trigger === triggerEl || popoverEl.contains(trigger)) continue;
 
         // Check if mouse is within this trigger's bounding box
         if (trigger instanceof HTMLElement) {
@@ -342,15 +388,25 @@ export function PopoverHoverTrigger({
     if (isOpen || isHoverDisabled) {
       return;
     }
-    if (closeActiveHoverPopover && !isActiveHoverPopoverPinned) {
+    const isNested = isInsideActiveHoverPopover(getTriggerEl());
+    if (isActiveHoverPopoverPinned && !isNested) {
+      return;
+    }
+    const canHandOff = Boolean(closeActiveHoverPopover);
+    if (canHandOff && (isNested || handoffDelay === 0)) {
       open();
     } else {
       clearOpenTimeout();
-      openTimeoutRef.current = setTimeout(open, openDelay);
+      openTimeoutRef.current = setTimeout(
+        open,
+        canHandOff ? handoffDelay : openDelay,
+      );
     }
   }, [
     clearCloseTimeout,
     clearOpenTimeout,
+    getTriggerEl,
+    handoffDelay,
     isHoverDisabled,
     isOpen,
     open,

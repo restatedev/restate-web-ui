@@ -11,7 +11,7 @@ import { HoverTooltip } from '@restate/ui-tooltip';
 import { isEntryCompletionAmbiguous } from './isEntryCompletionAmbiguous';
 import { useRestateContext } from '@restate/features-restate-context';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
-import { getFitFailureClassName, useIsFit } from '../fitRows';
+import { getFailureClassName, useIsFit } from '../fitRows';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;
@@ -77,6 +77,16 @@ const styles = tv({
     isFit: {
       true: '@max-[860px]/journal:mr-1',
       false: '',
+    },
+  },
+});
+
+const errorStyles = tv({
+  base: 'ml-1',
+  variants: {
+    isFit: {
+      true: '',
+      false: 'w-full min-w-6 grow-1 basis-20',
     },
   },
 });
@@ -232,11 +242,11 @@ export function EntryExpression({
               stacktrace={entry.error.stack}
               metadata={entry.error.metadata}
               isRetrying={entry.isRetrying || entry.error.isTransient}
-              className={
-                isFit
-                  ? getFitFailureClassName(entry.error.message!, 'ml-1')
-                  : 'ml-1 w-full min-w-6 grow-1 basis-20 text-2xs'
-              }
+              className={getFailureClassName(
+                isFit,
+                entry.error.message,
+                errorStyles({ isFit }),
+              )}
             />
           )}
         </>

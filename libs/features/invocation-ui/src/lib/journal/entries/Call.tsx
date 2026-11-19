@@ -35,6 +35,16 @@ const expressionStyles = tv({
   },
 });
 
+const chainStyles = tv({
+  base: '',
+  variants: {
+    isFit: {
+      true: '',
+      false: 'pr-0 [&>*>*>*]:flex-auto',
+    },
+  },
+});
+
 const separatorStyles = tv({
   base: '-ml-1.5 text-subtle',
   variants: {
@@ -104,7 +114,7 @@ export function Call({
               name={'.' + entry.handlerName}
               operationSymbol=""
               isInline
-              className={isFit ? undefined : 'pr-0 [&>*>*>*]:flex-auto'}
+              className={chainStyles({ isFit })}
               input={
                 <LazyJournalEntryPayload.Input
                   invocationId={invocation?.id}

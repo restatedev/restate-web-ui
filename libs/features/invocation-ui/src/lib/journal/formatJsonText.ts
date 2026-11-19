@@ -1,4 +1,5 @@
 const MAX_FORMAT_LENGTH = 1_000_000;
+const MAX_DEPTH = 200;
 const INDENT = '  ';
 
 function isWhitespace(char: string | undefined) {
@@ -45,6 +46,9 @@ export function formatJsonText(text: string) {
         index = next + 1;
       } else {
         depth += 1;
+        if (depth > MAX_DEPTH) {
+          return text;
+        }
         parts.push(char, newLine());
         index += 1;
       }

@@ -23,7 +23,7 @@ import { Headers } from '../Headers';
 import { Failure } from '../Failure';
 import { useRestateContext } from '@restate/features-restate-context';
 import { useJournalEntriesContext } from '../JournalContext';
-import { getFitFailureClassName, useIsFit } from '../fitRows';
+import { getFailureClassName, useIsFit } from '../fitRows';
 import { useHoverPinPopover } from './useHoverPinPopover';
 import {
   StaticCodecOptionsProvider,
@@ -97,6 +97,7 @@ const fitTriggerStyles = tv({
 
 const HOVER_OPEN_DELAY_MS = 700;
 const HOVER_CLOSE_DELAY_MS = 100;
+const HOVER_HANDOFF_DELAY_MS = 250;
 const HOVER_MAX_PAYLOAD_BYTES = 100 * 1024;
 
 type PayloadField = keyof Pick<
@@ -333,8 +334,10 @@ function PayloadPopover({
         className={value()}
         onPointerEnter={preloadEditor}
         onFocus={preloadEditor}
-        onPointerDownCapture={hoverPin.onPressStart}
-        onKeyDownCapture={hoverPin.onPressStart}
+        {...(isFit && {
+          onPointerDownCapture: hoverPin.onPressStart,
+          onKeyDownCapture: hoverPin.onPressStart,
+        })}
       >
         <Popover
           {...(isFit
@@ -345,6 +348,7 @@ function PayloadPopover({
             <PopoverHoverTrigger
               openDelay={HOVER_OPEN_DELAY_MS}
               closeDelay={HOVER_CLOSE_DELAY_MS}
+              handoffDelay={HOVER_HANDOFF_DELAY_MS}
               isPinned={hoverPin.isPinned}
               isHoverDisabled={
                 isVoid ||
@@ -385,12 +389,7 @@ function PayloadPopover({
                 )}
                 <span className={triggerLabelStyle()}>
                   {triggerLabel}
-                  {!isVoid && detail.size && (
-                    <PayloadSizeBadge
-                      size={size}
-                      className="text-3xs font-normal text-subtle"
-                    />
-                  )}
+                  {sizeBadge}
                   <span className="inline-block w-3" />
                 </span>
               </Button>
@@ -501,7 +500,7 @@ function LazyValue({
         restate_code={failure.restate_code}
         metadata={failure.metadata}
         isRetrying={entry.isRetrying}
-        className={isFit ? getFitFailureClassName(failure.message) : 'text-2xs'}
+        className={getFailureClassName(isFit, failure.message)}
       />
     );
   }
