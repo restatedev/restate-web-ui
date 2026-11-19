@@ -85,6 +85,7 @@ export function Value({
           value={editorValue}
           editorRef={editorRef}
           readonly
+          isFormatted={renderWhenReady}
           key={displayValue}
           className={editorClassName({ className })}
         />

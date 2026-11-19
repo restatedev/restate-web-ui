@@ -9,6 +9,8 @@ import { usePreventScroll } from 'react-aria';
 
 type Mode = 'closed' | 'hover' | 'pinned';
 
+const pinnedPopover: { close?: () => void } = {};
+
 export function useHoverPinPopover(onOpenChange?: (isOpen: boolean) => void) {
   const [mode, setModeState] = useState<Mode>('closed');
   const modeRef = useRef<Mode>('closed');
@@ -23,10 +25,33 @@ export function useHoverPinPopover(onOpenChange?: (isOpen: boolean) => void) {
 
   usePreventScroll({ isDisabled: mode !== 'pinned' });
 
-  const setMode = useCallback((nextMode: Mode) => {
-    modeRef.current = nextMode;
-    setModeState(nextMode);
+  const closeSelf = useCallback(() => {
+    modeRef.current = 'closed';
+    setModeState('closed');
   }, []);
+
+  const setMode = useCallback(
+    (nextMode: Mode) => {
+      if (nextMode === 'pinned' && pinnedPopover.close !== closeSelf) {
+        pinnedPopover.close?.();
+        pinnedPopover.close = closeSelf;
+      } else if (nextMode !== 'pinned' && pinnedPopover.close === closeSelf) {
+        pinnedPopover.close = undefined;
+      }
+      modeRef.current = nextMode;
+      setModeState(nextMode);
+    },
+    [closeSelf],
+  );
+
+  useEffect(
+    () => () => {
+      if (pinnedPopover.close === closeSelf) {
+        pinnedPopover.close = undefined;
+      }
+    },
+    [closeSelf],
+  );
 
   useEffect(() => {
     if (!isOpen) {
@@ -47,11 +72,26 @@ export function useHoverPinPopover(onOpenChange?: (isOpen: boolean) => void) {
         setMode('closed');
       }
     };
+    const onClick = (event: MouseEvent) => {
+      const target = event.target;
+      const triggerId = triggerRef.current?.id;
+      if (
+        triggerId &&
+        target instanceof Element &&
+        target.closest('[data-trigger]')?.getAttribute('aria-labelledby') ===
+          triggerId &&
+        !target.closest('[role="dialog"]')
+      ) {
+        setMode('closed');
+      }
+    };
     document.addEventListener('pointerdown', onPointerDown, true);
     document.addEventListener('keydown', onKeyDown, true);
+    document.addEventListener('click', onClick, true);
     return () => {
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('keydown', onKeyDown, true);
+      document.removeEventListener('click', onClick, true);
     };
   }, [isOpen, setMode]);
 

@@ -2,19 +2,30 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { useHoverPinPopover } from './useHoverPinPopover';
 
-function Harness({ onOpen }: { onOpen?: (isOpen: boolean) => void }) {
+function Harness({
+  onOpen,
+  name = 'chip',
+}: {
+  onOpen?: (isOpen: boolean) => void;
+  name?: string;
+}) {
   const { isOpen, isPinned, triggerRef, onOpenChange, onPress, onPressStart } =
     useHoverPinPopover(onOpen);
   return (
     <div onPointerDownCapture={onPressStart} onKeyDownCapture={onPressStart}>
-      <button ref={triggerRef} onClick={onPress}>
-        chip
+      <button ref={triggerRef} id={name} onClick={onPress}>
+        {name}
       </button>
       <button onClick={() => onOpenChange(true)}>request open</button>
       <button onClick={() => onOpenChange(false)}>request close</button>
-      <output>{isPinned ? 'pinned' : isOpen ? 'hover' : 'closed'}</output>
+      <output aria-label={name}>
+        {isPinned ? 'pinned' : isOpen ? 'hover' : 'closed'}
+      </output>
       <p>outside</p>
-      <div data-trigger="DialogTrigger">inside popover</div>
+      <div data-trigger="DialogTrigger" aria-labelledby={name}>
+        <button>dismiss {name}</button>
+        <div role="dialog">inside popover</div>
+      </div>
     </div>
   );
 }
@@ -94,5 +105,34 @@ describe('useHoverPinPopover', () => {
     fireEvent.keyDown(chip, { key: 'Enter' });
     fireEvent.click(chip);
     expect(state()).toBe('closed');
+  });
+
+  it('closes when the hidden dismiss button of its popover is activated', () => {
+    render(<Harness />);
+    press();
+    fireEvent.click(screen.getByText('inside popover'));
+    expect(state()).toBe('pinned');
+    fireEvent.click(screen.getByRole('button', { name: 'dismiss chip' }));
+    expect(state()).toBe('closed');
+  });
+
+  it('keeps one popover pinned at a time', () => {
+    render(
+      <>
+        <Harness name="input" />
+        <Harness name="result" />
+      </>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'input' }));
+    expect(screen.getByRole('status', { name: 'input' }).textContent).toBe(
+      'pinned',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'result' }));
+    expect(screen.getByRole('status', { name: 'input' }).textContent).toBe(
+      'closed',
+    );
+    expect(screen.getByRole('status', { name: 'result' }).textContent).toBe(
+      'pinned',
+    );
   });
 });

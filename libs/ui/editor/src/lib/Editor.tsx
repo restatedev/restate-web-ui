@@ -29,6 +29,7 @@ export function Editor({
   onInput,
   applyTheme,
   autoFocus,
+  isFormatted,
 }: {
   value?: string;
   className?: string;
@@ -37,6 +38,7 @@ export function Editor({
   onInput?: (value: string) => void;
   applyTheme?: boolean;
   autoFocus?: boolean;
+  isFormatted?: boolean;
 }) {
   const hydrated = useHydrated();
   if (typeof value === 'undefined') {
@@ -65,6 +67,7 @@ export function Editor({
               onInput={onInput}
               applyTheme={applyTheme}
               autoFocus={autoFocus}
+              isFormatted={isFormatted}
             />
           </Suspense>
         ) : (

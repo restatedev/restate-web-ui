@@ -47,7 +47,7 @@ const fitStyles = tv({
       },
     },
     isNameElastic: {
-      true: { name: 'min-w-[7ch] shrink @max-[420px]/journal:min-w-[4ch]' },
+      true: { name: 'min-w-[7ch] shrink @max-[480px]/journal:min-w-[4ch]' },
     },
   },
 });

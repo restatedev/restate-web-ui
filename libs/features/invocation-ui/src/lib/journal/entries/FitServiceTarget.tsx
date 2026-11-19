@@ -3,9 +3,9 @@ import { tv } from '@restate/util-styles';
 import { getFitTargetSegments } from '../fitRows';
 
 const MIN_WIDTH =
-  'min-w-20 @max-[540px]/journal:min-w-16 @max-[420px]/journal:min-w-7';
+  'min-w-20 @max-[540px]/journal:min-w-16 @max-[480px]/journal:min-w-7';
 const CROWDED_MIN_WIDTH =
-  'min-w-16 @max-[540px]/journal:min-w-12 @max-[420px]/journal:min-w-7';
+  'min-w-16 @max-[540px]/journal:min-w-12 @max-[480px]/journal:min-w-7';
 
 const styles = tv({
   slots: {
@@ -13,7 +13,7 @@ const styles = tv({
     service: 'ml-0.5 flex-[0_10000_auto] [&_[data-chip-segment-inner]]:pl-1.5',
     serviceKey:
       'mr-0.5 flex-[0_100000000_auto] [&_[data-chip-segment-inner]]:pl-1.5 [&_[data-chip-segment-inner]]:text-[100%] @max-[860px]/journal:[&_[data-chip-segment-inner]]:pr-2',
-    scope: 'ml-0.5 flex-[0_1000000_auto] @max-[420px]/journal:hidden',
+    scope: 'ml-0.5 flex-[0_1000000_auto]',
   },
   variants: {
     scope: {

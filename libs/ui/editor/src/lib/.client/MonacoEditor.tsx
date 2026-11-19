@@ -42,6 +42,7 @@ export function MonacoEditor({
   onInput,
   applyTheme = true,
   autoFocus,
+  isFormatted = false,
 }: {
   value?: string;
   editorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
@@ -49,6 +50,7 @@ export function MonacoEditor({
   onInput?: (value: string) => void;
   applyTheme?: boolean;
   autoFocus?: boolean;
+  isFormatted?: boolean;
 }) {
   const [el, setEl] = useState<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -57,7 +59,8 @@ export function MonacoEditor({
     }
 
     const isLargeValue = (value?.length ?? 0) > MAX_EDITOR_FORMAT_LENGTH;
-    const shouldFormat = !isLargeValue && isFormattableJson(value);
+    const shouldFormat =
+      !isFormatted && !isLargeValue && isFormattableJson(value);
 
     const editor = monaco.editor.create(el, {
       value,
@@ -167,7 +170,16 @@ export function MonacoEditor({
       editor.dispose();
       editorRef.current = null;
     };
-  }, [value, el, editorRef, readonly, onInput, applyTheme, autoFocus]);
+  }, [
+    value,
+    el,
+    editorRef,
+    readonly,
+    onInput,
+    applyTheme,
+    autoFocus,
+    isFormatted,
+  ]);
 
   useEffect(() => {
     const editor = editorRef.current;
