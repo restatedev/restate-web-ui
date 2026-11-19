@@ -174,4 +174,27 @@ describe('useProcessedJournal', () => {
 
     expect(rows(data)).toEqual(['0 inv_root Call', '1 inv_child Pending']);
   });
+
+  it('records the calls each nested row sits under', () => {
+    const data = {
+      inv_root: invocation('inv_root', [
+        command(0, 1, 'Run'),
+        command(1, 2, 'Call', 'inv_child'),
+      ]),
+      inv_child: invocation('inv_child', [
+        command(0, 1, 'OneWayCall', 'inv_grandchild'),
+      ]),
+      inv_grandchild: invocation('inv_grandchild', [command(0, 1, 'Run')]),
+    } as unknown as Data;
+
+    const { result } = renderHook(() =>
+      useProcessedJournal('inv_root', data, COMPACT, new Map()),
+    );
+
+    expect(
+      result.current.entriesWithoutInput.map(
+        ({ invocationId, commandPath }) => `${invocationId} ${commandPath}`,
+      ),
+    ).toEqual(['inv_root ', 'inv_root ', 'inv_child 2', 'inv_grandchild 2,1']);
+  });
 });

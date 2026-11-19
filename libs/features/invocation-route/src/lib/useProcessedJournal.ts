@@ -25,6 +25,7 @@ export type CombinedJournalEntry = {
   depth: number;
   parentCommand?: JournalEntryV2;
   parentInvocationId?: string;
+  commandPath?: number[];
 };
 
 type LifecycleData = {
@@ -168,6 +169,7 @@ function getCombinedJournal(
   depth = 0,
   visited: Set<string> = new Set(),
   parentInvocationId?: string,
+  commandPath: number[] = [],
 ): CombinedJournalEntry[] {
   if (visited.has(invocationId)) {
     return [];
@@ -178,11 +180,11 @@ function getCombinedJournal(
   const processed = preprocessedData.get(invocationId);
 
   if (!entries || entries.length === 0) {
-    return [{ invocationId, depth }];
+    return [{ invocationId, depth, commandPath }];
   }
 
   if (!processed) {
-    return [{ invocationId, depth }];
+    return [{ invocationId, depth, commandPath }];
   }
 
   const {
@@ -213,6 +215,7 @@ function getCombinedJournal(
       depth,
       parentCommand,
       parentInvocationId,
+      commandPath,
     });
 
     if (
@@ -227,6 +230,9 @@ function getCombinedJournal(
         depth + 1,
         visited,
         invocationId,
+        typeof entry.commandIndex === 'number'
+          ? [...commandPath, entry.commandIndex]
+          : commandPath,
       );
       combinedEntries.push(...nestedEntries);
     }
