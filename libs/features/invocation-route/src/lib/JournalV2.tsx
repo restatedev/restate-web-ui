@@ -509,18 +509,19 @@ export function JournalV2({
   const isLineCollapsed = Boolean(
     lineChildId && !invocationIds.includes(lineChildId),
   );
-  const expandedForLine = useRef(new Set<string>());
+  const scrolledLocationKey = useRef<string>(undefined);
   useEffect(() => {
     if (
       !lineChildId ||
       !isLineCollapsed ||
-      expandedForLine.current.has(lineChildId)
+      scrolledLocationKey.current === locationKey
     ) {
       return;
     }
-    expandedForLine.current.add(lineChildId);
-    addInvocationId(lineChildId);
-  }, [lineChildId, isLineCollapsed, addInvocationId]);
+    setInvocationIds((ids) =>
+      ids.includes(lineChildId) ? ids : [...ids, lineChildId],
+    );
+  }, [lineChildId, isLineCollapsed, locationKey]);
   const clickedLineHash = useRef<string>(undefined);
   const onLineClick = useCallback(
     (event: MouseEvent<HTMLAnchorElement>) => {
@@ -543,7 +544,6 @@ export function JournalV2({
     [navigate, pathname, search],
   );
 
-  const scrolledLocationKey = useRef<string>(undefined);
   useEffect(() => {
     if (!withTimeline || scrolledLocationKey.current === locationKey) {
       return;
