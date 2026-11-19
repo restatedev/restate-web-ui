@@ -45,6 +45,20 @@ type PreprocessedInvocationData = {
   lifecycleData: LifecycleData;
 };
 
+const preprocessedByEntries = new WeakMap<
+  JournalEntryV2[],
+  PreprocessedInvocationData
+>();
+
+function getPreprocessedInvocationData(entries: JournalEntryV2[]) {
+  let processed = preprocessedByEntries.get(entries);
+  if (!processed) {
+    processed = preprocessInvocationData(entries);
+    preprocessedByEntries.set(entries, processed);
+  }
+  return processed;
+}
+
 // Call/OneWayCall/AttachInvocation commands point at another invocation whose
 // journal is also loaded; getCombinedJournal recurses into them.
 function isExpandable(
@@ -341,7 +355,7 @@ export function useProcessedJournal(
         const entries = invData?.journal?.entries;
         if (!entries) continue;
 
-        const processed = preprocessInvocationData(entries);
+        const processed = getPreprocessedInvocationData(entries);
         preprocessedData.set(invId, processed);
         relatedEntriesByInvocation.set(invId, processed.relatedEntriesMap);
         lifecycleDataByInvocation.set(invId, processed.lifecycleData);

@@ -1,7 +1,11 @@
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Spinner } from '@restate/ui-loading';
-import { useIsCircularRef, useJournalEntriesContext } from '../JournalContext';
+import {
+  useIsCircularRef,
+  useJournalEntriesContext,
+  useJournalExpansionContext,
+} from '../JournalContext';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 import { CircularRefWarning } from './CircularRefWarning';
 
@@ -12,14 +16,13 @@ export function ExpandInvocationButton({
   invocationId?: string;
   parentInvocationId?: string;
 }) {
+  const { addInvocationId, removeInvocationId, disableExpand } =
+    useJournalEntriesContext();
   const {
-    addInvocationId,
-    removeInvocationId,
     isPending,
     invocationIds,
     error: invocationsError,
-    disableExpand,
-  } = useJournalEntriesContext();
+  } = useJournalExpansionContext();
   const isCircularRef = useIsCircularRef(invocationId, parentInvocationId);
 
   if (disableExpand || !invocationId) {

@@ -8,21 +8,25 @@ import {
 import { COMPACT_DETAIL, type JournalDetail } from './useJournalDetail';
 
 const JournalEntriesContext = createContext<{
-  invocationIds: string[];
   addInvocationId?: (id: string) => void;
   removeInvocationId?: (id: string) => void;
-  isPending?: Record<string, boolean | undefined>;
-  error?: Record<string, Error | null | undefined>;
   detail: JournalDetail;
   disableExpand?: boolean;
   hideOutput?: boolean;
   disableAwaitingHighlight?: boolean;
 }>({
-  invocationIds: [],
   detail: COMPACT_DETAIL,
 });
 
 export { JournalEntriesContext };
+
+const JournalExpansionContext = createContext<{
+  invocationIds: string[];
+  isPending?: Record<string, boolean | undefined>;
+  error?: Record<string, Error | null | undefined>;
+}>({
+  invocationIds: [],
+});
 
 const JournalTimelineContext = createContext<{
   start: number;
@@ -67,22 +71,13 @@ export function JournalContextProvider({
   detail: JournalDetail;
 }>) {
   const entriesValue = useMemo(
-    () => ({
-      invocationIds,
-      addInvocationId,
-      removeInvocationId,
-      isPending,
-      error,
-      detail,
-    }),
-    [
-      invocationIds,
-      addInvocationId,
-      removeInvocationId,
-      isPending,
-      error,
-      detail,
-    ],
+    () => ({ addInvocationId, removeInvocationId, detail }),
+    [addInvocationId, removeInvocationId, detail],
+  );
+
+  const expansionValue = useMemo(
+    () => ({ invocationIds, isPending, error }),
+    [invocationIds, isPending, error],
   );
 
   const timelineValue = useMemo(
@@ -99,15 +94,21 @@ export function JournalContextProvider({
 
   return (
     <JournalEntriesContext.Provider value={entriesValue}>
-      <JournalTimelineContext.Provider value={timelineValue}>
-        {children}
-      </JournalTimelineContext.Provider>
+      <JournalExpansionContext.Provider value={expansionValue}>
+        <JournalTimelineContext.Provider value={timelineValue}>
+          {children}
+        </JournalTimelineContext.Provider>
+      </JournalExpansionContext.Provider>
     </JournalEntriesContext.Provider>
   );
 }
 
 export function useJournalEntriesContext() {
   return use(JournalEntriesContext);
+}
+
+export function useJournalExpansionContext() {
+  return use(JournalExpansionContext);
 }
 
 export function useJournalTimelineContext() {
@@ -118,7 +119,7 @@ export function useIsCircularRef(
   calledInvocationId: string | undefined,
   callerInvocationId: string | undefined,
 ) {
-  const { invocationIds } = useJournalEntriesContext();
+  const { invocationIds } = useJournalExpansionContext();
   if (!calledInvocationId) return false;
   const calledIdx = invocationIds.indexOf(String(calledInvocationId));
   if (calledIdx === -1) return false;
