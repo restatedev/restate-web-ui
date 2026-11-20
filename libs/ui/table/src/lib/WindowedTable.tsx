@@ -129,11 +129,12 @@ function createLayoutDelegate(stateRef: LayoutStateRef): LayoutDelegate {
     },
     getVisibleRect() {
       const scrollMargin = stateRef.current?.scrollMargin ?? 0;
+      const top = window.scrollY - scrollMargin;
       return new Rect(
         window.scrollX,
-        Math.max(0, window.scrollY - scrollMargin),
+        Math.max(0, top),
         window.innerWidth,
-        window.innerHeight,
+        Math.max(0, window.innerHeight + Math.min(0, top)),
       );
     },
     getContentSize() {
@@ -185,17 +186,23 @@ function getColumnsSignature(collection: TableCollection) {
   ]);
 }
 
-const staticCells = new WeakMap<object, TableCellNode[]>();
+const staticCells = new WeakMap<
+  object,
+  { collection: object; cells: TableCellNode[] }
+>();
 
 function getStaticCells(collection: TableCollection, row: CollectionNode) {
-  let cells = staticCells.get(row);
-  if (!cells) {
-    cells = Array.from(collection.getChildren?.(row.key) ?? []).filter(
-      (node) => node.type === 'cell',
-    );
-    staticCells.set(row, cells);
-  }
-  return cells;
+  const cached = staticCells.get(row);
+  if (cached?.collection === collection) return cached.cells;
+  const cells = Array.from(collection.getChildren?.(row.key) ?? []).filter(
+    (node) => node.type === 'cell',
+  );
+  const isSame =
+    cached?.cells.length === cells.length &&
+    cells.every((cell, index) => cell === cached.cells[index]);
+  const entry = { collection, cells: isSame ? cached.cells : cells };
+  staticCells.set(row, entry);
+  return entry.cells;
 }
 
 function addKeys(keys: Key[]) {
@@ -435,46 +442,50 @@ const StaticRow = memo(function StaticRow({
         data-selection-mode={hasSelection ? selectionMode : undefined}
         data-level={level}
       >
-        {cells.map((cell) => {
-          const start = cell.colIndex ?? cell.index;
-          const width = cellWidth(cell, columnKeyAt, columnWidths);
-          const children = cell.props?.children;
-          return (
-            <div
-              key={cell.key}
-              role="presentation"
-              data-panel-table-cell=""
-              style={{ flex: 'none', width }}
-            >
+        <CollectionRendererContext.Provider value={DefaultCollectionRenderer}>
+          {cells.map((cell) => {
+            const start = cell.colIndex ?? cell.index;
+            const width = cellWidth(cell, columnKeyAt, columnWidths);
+            const children = cell.props?.children;
+            return (
               <div
-                role={columns.rowHeaders.has(start) ? 'rowheader' : 'gridcell'}
-                className={resolveClassName(
-                  cell.props?.className,
-                  { ...values, columnIndex: start },
-                  'react-aria-Cell',
-                )}
-                data-rac=""
-                aria-colindex={start + 1}
-                data-column-index={start}
-                data-level={level}
+                key={cell.key}
+                role="presentation"
+                data-panel-table-cell=""
+                style={{ flex: 'none', width }}
               >
-                {cell.key === selectionCellKey ? (
-                  <Checkbox
-                    slot="selection"
-                    aria-label="Select"
-                    isSelected={isSelected}
-                    isDisabled={isSelectionDisabled}
-                    isReadOnly
-                  />
-                ) : typeof children === 'function' ? (
-                  children({ ...values, columnIndex: start })
-                ) : (
-                  children
-                )}
+                <div
+                  role={
+                    columns.rowHeaders.has(start) ? 'rowheader' : 'gridcell'
+                  }
+                  className={resolveClassName(
+                    cell.props?.className,
+                    { ...values, columnIndex: start },
+                    'react-aria-Cell',
+                  )}
+                  data-rac=""
+                  aria-colindex={start + 1}
+                  data-column-index={start}
+                  data-level={level}
+                >
+                  {cell.key === selectionCellKey ? (
+                    <Checkbox
+                      slot="selection"
+                      aria-label="Select"
+                      isSelected={isSelected}
+                      isDisabled={isSelectionDisabled}
+                      isReadOnly
+                    />
+                  ) : typeof children === 'function' ? (
+                    children({ ...values, columnIndex: start })
+                  ) : (
+                    children
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </CollectionRendererContext.Provider>
       </div>
     </div>
   );

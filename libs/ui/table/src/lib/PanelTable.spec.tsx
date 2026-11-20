@@ -5,7 +5,12 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { Collection } from 'react-aria-components';
+import { useContext } from 'react';
+import {
+  Collection,
+  CollectionRendererContext,
+  DefaultCollectionRenderer,
+} from 'react-aria-components';
 import { vi } from 'vitest';
 import { Cell, Row } from './Row';
 import { PanelTable, type PanelTableProps } from './PanelTable';
@@ -711,6 +716,26 @@ describe('PanelTable windowed', () => {
     fireEvent.pointerOver(rowOf('Item 1'), { pointerType: 'touch' });
 
     expect(isStatic('Item 1')).toBe(false);
+  });
+
+  it('renders static cell content with the default collection renderer', () => {
+    function RendererProbe() {
+      const renderer = useContext(CollectionRendererContext);
+      return renderer === DefaultCollectionRenderer ? 'default' : 'windowed';
+    }
+    render(
+      renderWindowed({
+        renderCell: (row) => (
+          <Cell>
+            <span>{row.name}</span>
+            <RendererProbe />
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Item 29')).toBe(true);
+    expect(rowOf('Item 29').textContent).toBe('Item 29default');
   });
 
   it('selects every row from the header checkbox', () => {
