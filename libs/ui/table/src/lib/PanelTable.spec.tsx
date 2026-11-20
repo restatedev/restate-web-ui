@@ -11,6 +11,10 @@ import {
   Collection,
   CollectionRendererContext,
   DefaultCollectionRenderer,
+  Menu,
+  MenuItem,
+  MenuTrigger,
+  Popover,
 } from 'react-aria-components';
 import { vi } from 'vitest';
 import { Cell, Row } from './Row';
@@ -911,6 +915,66 @@ describe('PanelTable windowed', () => {
     const button = screen.getByRole('button', { name: 'Open Item 25' });
     await waitFor(() => expect(document.activeElement).toBe(button));
     expect(button.hasAttribute('data-focus-visible')).toBe(false);
+  });
+
+  it('keeps a static row static while a menu opened from it is open', async () => {
+    const onAction = vi.fn();
+    render(
+      renderWindowed({
+        renderCell: (row) => (
+          <Cell>
+            <span>{row.name}</span>
+            <MenuTrigger>
+              <Button>{`Actions for ${row.name}`}</Button>
+              <Popover>
+                <Menu onAction={(key) => onAction(row.id, key)}>
+                  <MenuItem id="kill">Kill</MenuItem>
+                </Menu>
+              </Popover>
+            </MenuTrigger>
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Item 25')).toBe(true);
+    const trigger = screen.getByRole('button', {
+      name: 'Actions for Item 25',
+    });
+    fireEvent.pointerDown(trigger, { pointerType: 'touch' });
+    fireEvent.pointerUp(trigger, { pointerType: 'touch' });
+    fireEvent.click(trigger, { detail: 1 });
+    expect(screen.getByRole('menu')).toBeTruthy();
+
+    act(() => {
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(600);
+      window.dispatchEvent(new Event('scroll'));
+    });
+    for (let step = 0; step < 10; step++) {
+      await act(() => new Promise((resolve) => setTimeout(resolve, 60)));
+    }
+    expect(isStatic('Item 29')).toBe(false);
+    expect(isStatic('Item 25')).toBe(true);
+
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Kill' }));
+    expect(onAction).toHaveBeenCalledWith('item-25', 'kill');
+  });
+
+  it('renders the row React Aria focuses while the scroll range is frozen', () => {
+    const manyItems = Array.from({ length: 300 }, (_, index) => ({
+      id: `item-${index}`,
+      name: `Item ${index}`,
+    }));
+    render(renderWindowed({ items: manyItems }));
+    act(() => rowOf('Item 0').focus());
+
+    act(() => {
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(3000);
+      window.dispatchEvent(new Event('scroll'));
+    });
+    fireEvent.keyDown(rowOf('Item 0'), { key: 'End' });
+
+    expect(document.activeElement).toBe(rowOf('Item 299'));
   });
 
   it('renders static cell content with the default collection renderer', () => {

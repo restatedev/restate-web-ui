@@ -46,7 +46,7 @@ import { WindowedCellsContext } from './window/WindowedCellsContext';
 
 const IDLE_CELLS_PER_SIDE = 3000;
 const IDLE_CELLS_PER_STEP = 200;
-const MIN_IDLE_ROWS = 50;
+const MIN_IDLE_ROWS = 10;
 const MAX_IDLE_ROWS = 1000;
 const MAX_IDLE_STEP = 20;
 const SKIP_FAR_ROW_PAINT =
@@ -56,6 +56,8 @@ const KEEP_LIVE_MARGIN = LIVE_MARGIN * 4;
 const SETTLE_BATCH = 8;
 const SETTLE_DELAY_MS = 30;
 const REPLAYED_SLOTS = '[slot=selection], [slot=chevron]';
+const STATIC_ROW_IN_USE =
+  '[data-static-row] [aria-expanded=true]:not([role=row])';
 const NATIVE_CONTROLS =
   'a[href], button, input, select, textarea, label, summary, [tabindex]:not([tabindex="-1"]), [contenteditable]:not([contenteditable="false"]), [role=button], [role=link]';
 
@@ -269,6 +271,22 @@ function getStaticCells(collection: TableCollection, row: CollectionNode) {
   return entry.cells;
 }
 
+function getStaticRowsInUse(container: Element, rows: readonly { key: Key }[]) {
+  const keys = new Set<Key>();
+  const active = document.activeElement;
+  const elements = [
+    ...container.querySelectorAll(STATIC_ROW_IN_USE),
+    ...(active && container.contains(active) ? [active] : []),
+  ];
+  for (const element of elements) {
+    const index =
+      element.closest<HTMLElement>('[data-static-row]')?.dataset.index;
+    const key = index ? rows[Number(index)]?.key : undefined;
+    if (key != null) keys.add(key);
+  }
+  return keys;
+}
+
 function addKeys(keys: Key[]) {
   return (current: ReadonlySet<Key>) => {
     let next: Set<Key> | null = null;
@@ -411,6 +429,83 @@ const WindowedRow = memo(function WindowedRow({
   );
 });
 
+const StaticSelectionCheckbox = memo(function StaticSelectionCheckbox({
+  id,
+  labelledBy,
+  isSelected,
+  isDisabled,
+}: {
+  id: string;
+  labelledBy: string | undefined;
+  isSelected: boolean;
+  isDisabled: boolean;
+}) {
+  return (
+    <Checkbox
+      slot="selection"
+      id={id}
+      aria-label="Select"
+      aria-labelledby={labelledBy}
+      isSelected={isSelected}
+      isDisabled={isDisabled}
+      excludeFromTabOrder
+    />
+  );
+});
+
+const StaticCell = memo(function StaticCell({
+  cell,
+  width,
+  id,
+  isRowHeader,
+  level,
+  isExpanded,
+  hasChildItems,
+  isTreeColumn,
+  values,
+  children,
+}: PropsWithChildren<{
+  cell: TableCellNode;
+  width: number;
+  id: string;
+  isRowHeader: boolean;
+  level: number;
+  isExpanded: boolean;
+  hasChildItems: boolean;
+  isTreeColumn: boolean;
+  values: Record<string, unknown> | undefined;
+}>) {
+  const start = cell.colIndex ?? cell.index;
+  const content = cell.props?.children;
+  return (
+    <div
+      role="presentation"
+      data-panel-table-cell=""
+      style={{ flex: 'none', width }}
+    >
+      <div
+        id={isRowHeader ? id : undefined}
+        role={isRowHeader ? 'rowheader' : 'gridcell'}
+        className={resolveClassName(
+          cell.props?.className,
+          values ?? {},
+          'react-aria-Cell',
+        )}
+        data-rac=""
+        aria-colindex={start + 1}
+        data-column-index={start}
+        data-expanded={isExpanded || undefined}
+        data-has-child-items={hasChildItems || undefined}
+        data-level={level}
+        data-tree-column={isTreeColumn || undefined}
+      >
+        {children ??
+          (typeof content === 'function' ? content(values) : content)}
+      </div>
+    </div>
+  );
+});
+
 const StaticRow = memo(function StaticRow({
   node,
   cells,
@@ -487,20 +582,24 @@ const StaticRow = memo(function StaticRow({
       .join(' ') || undefined;
   const labelledBy = (ownId: string) =>
     rowHeaderIds ? `${ownId} ${rowHeaderIds}` : undefined;
-  const buttonSlots = {
-    slots: {
-      [DEFAULT_SLOT]: {},
-      chevron: {
-        id: `${id}-chevron`,
-        isDisabled,
-        excludeFromTabOrder: true,
-        preventFocusOnPress: true,
-        'aria-label': isExpanded ? 'Collapse' : 'Expand',
-        'aria-labelledby': labelledBy(`${id}-chevron`),
+  const chevronLabelledBy = labelledBy(`${id}-chevron`);
+  const buttonSlots = useMemo(
+    () => ({
+      slots: {
+        [DEFAULT_SLOT]: {},
+        chevron: {
+          id: `${id}-chevron`,
+          isDisabled,
+          excludeFromTabOrder: true,
+          preventFocusOnPress: true,
+          'aria-label': isExpanded ? 'Collapse' : 'Expand',
+          'aria-labelledby': chevronLabelledBy,
+        },
+        drag: {},
       },
-      drag: {},
-    },
-  };
+    }),
+    [id, isDisabled, isExpanded, chevronLabelledBy],
+  );
   return (
     <div
       role="presentation"
@@ -551,60 +650,36 @@ const StaticRow = memo(function StaticRow({
           <ButtonContext.Provider value={buttonSlots}>
             {cells.map((cell) => {
               const start = cell.colIndex ?? cell.index;
-              const width = cellWidth(cell, columnKeyAt, columnWidths);
-              const children = cell.props?.children;
               const isTreeColumn = cell.index === columns.treeIndex;
-              const cellValues = {
-                ...values,
-                columnIndex: start,
-                isTreeColumn,
-              };
+              const needsValues =
+                typeof cell.props?.className === 'function' ||
+                typeof cell.props?.children === 'function';
               return (
-                <div
+                <StaticCell
                   key={cell.key}
-                  role="presentation"
-                  data-panel-table-cell=""
-                  style={{ flex: 'none', width }}
+                  cell={cell}
+                  width={cellWidth(cell, columnKeyAt, columnWidths)}
+                  id={`${id}-${start}`}
+                  isRowHeader={columns.rowHeaders.has(start)}
+                  level={level}
+                  isExpanded={isExpanded}
+                  hasChildItems={hasChildItems}
+                  isTreeColumn={isTreeColumn}
+                  values={
+                    needsValues
+                      ? { ...values, columnIndex: start, isTreeColumn }
+                      : undefined
+                  }
                 >
-                  <div
-                    id={
-                      columns.rowHeaders.has(start)
-                        ? `${id}-${start}`
-                        : undefined
-                    }
-                    role={
-                      columns.rowHeaders.has(start) ? 'rowheader' : 'gridcell'
-                    }
-                    className={resolveClassName(
-                      cell.props?.className,
-                      cellValues,
-                      'react-aria-Cell',
-                    )}
-                    data-rac=""
-                    aria-colindex={start + 1}
-                    data-column-index={start}
-                    data-expanded={isExpanded || undefined}
-                    data-has-child-items={hasChildItems || undefined}
-                    data-level={level}
-                    data-tree-column={isTreeColumn || undefined}
-                  >
-                    {cell.key === selectionCellKey ? (
-                      <Checkbox
-                        slot="selection"
-                        id={`${id}-selection`}
-                        aria-label="Select"
-                        aria-labelledby={labelledBy(`${id}-selection`)}
-                        isSelected={isSelected}
-                        isDisabled={isSelectionDisabled}
-                        excludeFromTabOrder
-                      />
-                    ) : typeof children === 'function' ? (
-                      children(cellValues)
-                    ) : (
-                      children
-                    )}
-                  </div>
-                </div>
+                  {cell.key === selectionCellKey ? (
+                    <StaticSelectionCheckbox
+                      id={`${id}-selection`}
+                      labelledBy={labelledBy(`${id}-selection`)}
+                      isSelected={isSelected}
+                      isDisabled={isSelectionDisabled}
+                    />
+                  ) : undefined}
+                </StaticCell>
               );
             })}
           </ButtonContext.Provider>
@@ -709,7 +784,13 @@ function WindowedRows({
             setCatchUp((value) => value + 1);
           });
         }
-        return rendered;
+        const missing = persistedIndexes.filter(
+          (index) => index < count && !rendered.includes(index),
+        );
+        if (!missing.length) return rendered;
+        const result = [...rendered, ...missing].sort((a, b) => a - b);
+        renderedIndexesRef.current = result;
+        return result;
       }
       const indexes = windowRangeExtractor(range);
       let result = indexes;
@@ -797,11 +878,13 @@ function WindowedRows({
       if (key != null && !liveKeys.has(key)) missing.push(index);
     }
     let update: ((current: ReadonlySet<Key>) => ReadonlySet<Key>) | null = null;
+    let promoted: Key[] = [];
     let delay = SETTLE_DELAY_MS;
     if (missing.length) {
       missing.sort((a, b) => Math.abs(a - center) - Math.abs(b - center));
       const batch = missing.slice(0, SETTLE_BATCH);
-      update = addKeys(batch.flatMap((index) => rows[index]?.key ?? []));
+      promoted = batch.flatMap((index) => rows[index]?.key ?? []);
+      update = addKeys(promoted);
       if (batch.some((index) => index >= visibleStart && index <= visibleEnd)) {
         delay = 0;
       }
@@ -827,11 +910,22 @@ function WindowedRows({
     const next = update;
     let timeout: ReturnType<typeof setTimeout>;
     const apply = () => {
-      if (sizerRef.current?.parentElement?.matches(':active')) {
+      const container = sizerRef.current?.parentElement;
+      if (container?.matches(':active')) {
         timeout = setTimeout(apply, SETTLE_DELAY_MS);
         return;
       }
-      startTransition(() => setLiveKeys(next));
+      startTransition(() =>
+        setLiveKeys((current) => {
+          const inUse =
+            container && promoted.length
+              ? getStaticRowsInUse(container, rowsRef.current)
+              : null;
+          return inUse?.size
+            ? addKeys(promoted.filter((key) => !inUse.has(key)))(current)
+            : next(current);
+        }),
+      );
     };
     timeout = setTimeout(apply, delay);
     return () => clearTimeout(timeout);
