@@ -36,6 +36,7 @@ function ManualFocusDialog({
       ref={ref}
       role="dialog"
       tabIndex={-1}
+      id={dialogProps?.id}
       aria-labelledby={dialogProps?.['aria-labelledby']}
       className={dialogStyles()}
     >
