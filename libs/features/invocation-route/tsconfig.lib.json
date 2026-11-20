@@ -81,6 +81,9 @@
       "path": "../../ui/split-button/tsconfig.lib.json"
     },
     {
+      "path": "../../util/render-window/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/content-panel/tsconfig.lib.json"
     },
     {

@@ -9,7 +9,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { Button } from '@restate/ui-button';
 import { Spinner } from '@restate/ui-loading';
 import { tv } from '@restate/util-styles';
-import { ComponentProps, PropsWithChildren, ReactNode } from 'react';
+import { ComponentProps, PropsWithChildren, ReactNode, useState } from 'react';
 
 const menuTriggerStyles = tv({
   base: 'trigger flex items-center justify-center rounded-l-md rounded-r-md px-1 py-1 [font-size:inherit] [line-height:inherit] group-focus-within:z-2',
@@ -38,7 +38,7 @@ const styles = tv({
   variants: {
     mini: {
       true: {
-        base: '[&:has(.trigger[data-pressed=true])>.primary]:hidden [&:hover:has(.trigger:not([data-pressed=true]))_.trigger]:rounded-l-none',
+        base: '[&:not([data-menu-open]):hover_.trigger]:rounded-l-none [&[data-menu-open]>.primary]:hidden',
         primary: 'primary contents',
       },
       false: { base: '', primary: 'contents' },
@@ -68,10 +68,14 @@ export function SplitButton({
   isPending?: boolean;
 }>) {
   const { base, primary } = styles({ mini });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
-    <div className={base({ className })}>
+    <div
+      className={base({ className })}
+      data-menu-open={isMenuOpen || undefined}
+    >
       <div className={primary()}>{children}</div>
-      <Dropdown>
+      <Dropdown onOpenChange={setIsMenuOpen}>
         <DropdownTrigger>
           <Button
             aria-label="Actions"

@@ -16,15 +16,19 @@ import {
   Column as AriaColumn,
   ResizableTableContainer,
   Toolbar as AriaToolbar,
-  Virtualizer,
 } from 'react-aria-components';
 import type { Key, SortDescriptor } from 'react-aria-components';
 import { tv } from '@restate/util-styles';
 import { Cell, Row, type RowDataAttributes } from './Row';
 import { Column, TableHeader, TableBody } from './Table';
 import { getNextSortDescriptor } from './sort';
-import { PanelTableLayout } from './PanelTableLayout';
-import { columnKey, fromColumnKey, tableBodyKeyProps } from './keys';
+import { WindowedTable } from './WindowedTable';
+import {
+  columnKey,
+  fromColumnKey,
+  SELECTION_COLUMN_KEY,
+  tableBodyKeyProps,
+} from './keys';
 import {
   keepIfSame,
   LEFT_SPACER_ID,
@@ -126,7 +130,7 @@ const styles = tv({
     virtualized: {
       true: {
         dataTableInner:
-          'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:min-h-[43px] [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=rowgroup]]:relative [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowgroup]]:[background-image:linear-gradient(to_top,var(--border-color-default)_1px,transparent_1px)] [&_[role=rowgroup]]:[background-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:[background-repeat:repeat-y] [&_[role=rowgroup]]:before:pointer-events-none [&_[role=rowgroup]]:before:absolute [&_[role=rowgroup]]:before:inset-0 [&_[role=rowgroup]]:before:bg-emphasis/70 [&_[role=rowgroup]]:before:[mask-image:var(--panel-table-skeleton)] [&_[role=rowgroup]]:before:[mask-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:before:[mask-repeat:repeat-y] [&_[role=rowgroup]]:before:content-[""] [&_[role=rowgroup]>[role=presentation]]:bg-subtle [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:min-h-[43px] [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
+          'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:min-h-[43px] [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:flex [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=row]]:[content-visibility:visible] [&_[role=rowgroup]]:relative [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowgroup]]:[background-image:linear-gradient(to_top,var(--border-color-default)_1px,transparent_1px)] [&_[role=rowgroup]]:[background-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:[background-repeat:repeat-y] [&_[role=rowgroup]]:before:pointer-events-none [&_[role=rowgroup]]:before:absolute [&_[role=rowgroup]]:before:inset-0 [&_[role=rowgroup]]:before:bg-emphasis/70 [&_[role=rowgroup]]:before:[mask-image:var(--panel-table-skeleton)] [&_[role=rowgroup]]:before:[mask-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:before:[mask-repeat:repeat-y] [&_[role=rowgroup]]:before:content-[""] [&_[role=rowgroup]>[role=presentation]]:bg-subtle [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:min-h-[43px] [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
       },
     },
   },
@@ -441,10 +445,29 @@ export function PanelTable<
 
   const dataTableSelectionWidth =
     selectionMode && selectionMode !== 'none' ? SELECTION_WIDTH : undefined;
-  const layoutOptions = useMemo(
-    () => ({ estimatedRowHeight, headingHeight: bodyHeadingHeight }),
-    [bodyHeadingHeight, estimatedRowHeight],
-  );
+  const dataTableColumnWidths = useMemo(() => {
+    const widths = new Map<Key, number>(columnWidths);
+    widths.set(columnKey(LEFT_SPACER_ID), SPACER_WIDTH);
+    widths.set(columnKey(RIGHT_SPACER_ID), SPACER_WIDTH);
+    if (dataTableSelectionWidth && !widths.has(SELECTION_COLUMN_KEY)) {
+      widths.set(SELECTION_COLUMN_KEY, dataTableSelectionWidth);
+    }
+    for (const col of columns) {
+      const key = columnKey(col.id);
+      if (widths.has(key)) continue;
+      widths.set(
+        key,
+        col.width ??
+          (typeof col.defaultWidth === 'number' ? col.defaultWidth : 120),
+      );
+    }
+    return widths;
+  }, [columnWidths, columns, dataTableSelectionWidth]);
+  const dataTableWidth = useMemo(() => {
+    let total = 0;
+    for (const width of dataTableColumnWidths.values()) total += width;
+    return total;
+  }, [dataTableColumnWidths]);
   const skeletonStyle = useMemo(() => {
     if (!isVirtualized) return undefined;
     const height = estimatedRowHeight;
@@ -524,9 +547,14 @@ export function PanelTable<
   );
 
   const body = isVirtualized ? (
-    <Virtualizer layout={PanelTableLayout} layoutOptions={layoutOptions}>
+    <WindowedTable
+      columnWidths={dataTableColumnWidths}
+      totalWidth={dataTableWidth}
+      estimatedRowHeight={estimatedRowHeight}
+      headingHeight={bodyHeadingHeight}
+    >
       {dataTable}
-    </Virtualizer>
+    </WindowedTable>
   ) : (
     dataTable
   );

@@ -1,8 +1,24 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
-import { Collection } from 'react-aria-components';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
+import { useContext } from 'react';
+import {
+  Button,
+  Collection,
+  CollectionRendererContext,
+  DefaultCollectionRenderer,
+  Menu,
+  MenuItem,
+  MenuTrigger,
+  Popover,
+} from 'react-aria-components';
 import { vi } from 'vitest';
 import { Cell, Row } from './Row';
-import { PanelTable } from './PanelTable';
+import { PanelTable, type PanelTableProps } from './PanelTable';
 import { PanelTableQuickOpenCaption } from './PanelTableQuickOpen';
 
 class ResizeObserverMock implements ResizeObserver {
@@ -559,7 +575,7 @@ describe('PanelTable', () => {
     },
   );
 
-  it('moves body columns with the header while a column is resized', () => {
+  it('moves live body columns with the header while a column is resized and static ones once it ends', () => {
     const observerOf = stubResizeObservers();
     render(
       <PanelTable
@@ -568,7 +584,10 @@ describe('PanelTable', () => {
           { id: 'name', name: 'Name', isRowHeader: true },
           { id: 'status', name: 'Status' },
         ]}
-        items={[{ id: 'one', name: 'One' }]}
+        items={Array.from({ length: 30 }, (_, index) => ({
+          id: `row-${index}`,
+          name: `Row ${index}`,
+        }))}
         renderCell={(row) => <Cell>{row.name}</Cell>}
       />,
     );
@@ -593,8 +612,20 @@ describe('PanelTable', () => {
         return { left: 0, width: 0, ...rects.get(this) } as DOMRect;
       },
     );
-    const wrapperOf = (selector: string) =>
-      body.querySelector(selector)?.parentElement?.style;
+    const rowOf = (name: string) => {
+      const row = screen
+        .getAllByText(name)[0]
+        ?.closest<HTMLElement>('[role=row]');
+      if (!row) throw new Error(`Row ${name} was not rendered`);
+      return row;
+    };
+    const wrapperWidth = (name: string, colIndex: number) =>
+      rowOf(name).querySelector(`[aria-colindex="${colIndex}"]`)?.parentElement
+        ?.style.width;
+
+    expect(rowOf('Row 0').closest('[data-static-row]')).toBeNull();
+    expect(rowOf('Row 29').closest('[data-static-row]')).not.toBeNull();
+    const staticWidth = wrapperWidth('Row 29', 3);
 
     act(() => {
       fireEvent.pointerDown(resizer, { pointerId: 1, button: 0, clientX: 0 });
@@ -606,24 +637,507 @@ describe('PanelTable', () => {
       body.querySelector<HTMLElement>('[role=columnheader][aria-colindex="2"]')
         ?.style.width,
     ).toBe('120px');
-    expect(wrapperOf('[role=rowheader]')).toMatchObject({
-      left: '8px',
-      width: '120px',
-    });
-    expect(wrapperOf('[role=gridcell][aria-colindex="3"]')).toMatchObject({
-      left: '128px',
-      width: '180px',
-    });
+    expect(wrapperWidth('Row 0', 2)).toBe('120px');
+    expect(wrapperWidth('Row 0', 3)).toBe('180px');
+    expect(wrapperWidth('Row 29', 3)).toBe(staticWidth);
 
     act(() => {
       fireEvent.pointerUp(document, { pointerId: 1, clientX: 40 });
     });
 
-    expect(wrapperOf('[role=gridcell][aria-colindex="3"]')).toMatchObject({
-      left: '128px',
-      width: '180px',
-    });
+    expect(wrapperWidth('Row 0', 3)).toBe('180px');
+    expect(wrapperWidth('Row 29', 2)).toBe('120px');
+    expect(wrapperWidth('Row 29', 3)).toBe('180px');
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+  });
+});
+
+describe('PanelTable windowed', () => {
+  const items = Array.from({ length: 30 }, (_, index) => ({
+    id: `item-${index}`,
+    name: `Item ${index}`,
+  }));
+  const rowOf = (name: string) => {
+    const row = screen.getByText(name).closest<HTMLElement>('[role=row]');
+    if (!row) throw new Error(`Row ${name} was not rendered`);
+    return row;
+  };
+  const isStatic = (name: string) =>
+    rowOf(name).closest('[data-static-row]') !== null;
+  const settle = () =>
+    act(() => new Promise((resolve) => setTimeout(resolve, 200)));
+  const renderWindowed = (
+    props: Partial<PanelTableProps<(typeof items)[number]>> = {},
+  ) => (
+    <PanelTable
+      aria-label="Items"
+      columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
+      items={items}
+      selectionMode="multiple"
+      estimatedRowHeight={44}
+      renderCell={(row) => <Cell>{row.name}</Cell>}
+      {...props}
+    />
+  );
+
+  beforeAll(() => {
+    globalThis.ResizeObserver = ResizeObserverMock;
+  });
+
+  beforeEach(() => {
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.hasAttribute('data-index') ? 44 : 0;
+      },
+    );
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('shows the selection on rows rendered as static markup', async () => {
+    const { rerender } = render(
+      renderWindowed({ selectedKeys: new Set(['item-26']) }),
+    );
+
+    expect(isStatic('Item 26')).toBe(true);
+    expect(rowOf('Item 26').getAttribute('aria-selected')).toBe('true');
+    expect(rowOf('Item 27').getAttribute('aria-selected')).toBe('false');
+
+    rerender(renderWindowed({ selectedKeys: new Set(['item-27']) }));
+    await settle();
+
+    expect(rowOf('Item 26').getAttribute('aria-selected')).toBe('false');
+    expect(rowOf('Item 27').getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('renders the rows of the first viewport as live rows from the start', () => {
+    render(renderWindowed());
+
+    expect(isStatic('Item 0')).toBe(false);
+    expect(isStatic('Item 17')).toBe(false);
+    expect(isStatic('Item 29')).toBe(true);
+  });
+
+  it('turns rows near the viewport into live rows once scrolling settles', async () => {
+    render(renderWindowed());
+    expect(isStatic('Item 29')).toBe(true);
+
+    act(() => {
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(600);
+      window.dispatchEvent(new Event('scroll'));
+    });
+
+    await waitFor(() => expect(isStatic('Item 29')).toBe(false), {
+      timeout: 3000,
+    });
+  });
+
+  it('turns a static row into a live row when the mouse moves over it', () => {
+    render(renderWindowed());
+
+    expect(isStatic('Item 25')).toBe(true);
+    fireEvent.pointerOver(rowOf('Item 25'), { pointerType: 'touch' });
+    expect(isStatic('Item 25')).toBe(true);
+
+    fireEvent.pointerMove(rowOf('Item 25'), {
+      pointerType: 'mouse',
+      movementX: 2,
+    });
+    expect(isStatic('Item 25')).toBe(false);
+  });
+
+  it('selects a static row when its checkbox is clicked', () => {
+    const onSelectionChange = vi.fn();
+    render(renderWindowed({ selectedKeys: new Set(), onSelectionChange }));
+
+    expect(isStatic('Item 25')).toBe(true);
+    const checkbox = rowOf('Item 25').querySelector<HTMLInputElement>(
+      'input[type="checkbox"]',
+    );
+    if (!checkbox) throw new Error('Row checkbox was not rendered');
+    fireEvent.pointerDown(checkbox, { pointerType: 'mouse' });
+    fireEvent.pointerUp(checkbox, { pointerType: 'mouse' });
+    fireEvent.click(checkbox, { detail: 1 });
+
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    expect([...(onSelectionChange.mock.lastCall?.[0] ?? [])]).toEqual([
+      'item-25',
+    ]);
+    expect(isStatic('Item 25')).toBe(false);
+    expect(document.activeElement).toBe(
+      rowOf('Item 25').querySelector('input[type="checkbox"]'),
+    );
+  });
+
+  it('runs the action of a static row when the row is clicked', () => {
+    const onRowAction = vi.fn();
+    render(renderWindowed({ onRowAction }));
+
+    expect(isStatic('Item 25')).toBe(true);
+    fireEvent.pointerDown(screen.getByText('Item 25'), {
+      pointerType: 'mouse',
+    });
+    fireEvent.pointerUp(screen.getByText('Item 25'), { pointerType: 'mouse' });
+    fireEvent.click(screen.getByText('Item 25'), { detail: 1 });
+
+    expect(onRowAction).toHaveBeenCalledTimes(1);
+    expect(onRowAction).toHaveBeenCalledWith('item-25');
+    expect(document.activeElement).toBe(screen.getByText('Item 25'));
+  });
+
+  it('replays a screen reader click on a static checkbox without moving focus', () => {
+    const onSelectionChange = vi.fn();
+    render(renderWindowed({ selectedKeys: new Set(), onSelectionChange }));
+
+    const checkbox = rowOf('Item 25').querySelector<HTMLInputElement>(
+      'input[type="checkbox"]',
+    );
+    if (!checkbox) throw new Error('Row checkbox was not rendered');
+    fireEvent.click(checkbox);
+
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    expect([...(onSelectionChange.mock.lastCall?.[0] ?? [])]).toEqual([
+      'item-25',
+    ]);
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('keeps rows static while a pointer is pressed in the table', async () => {
+    render(renderWindowed());
+    const matches = Element.prototype.matches;
+    let isPressed = true;
+    vi.spyOn(Element.prototype, 'matches').mockImplementation(function (
+      this: Element,
+      selector: string,
+    ) {
+      return selector === ':active' ? isPressed : matches.call(this, selector);
+    });
+
+    act(() => {
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(600);
+      window.dispatchEvent(new Event('scroll'));
+    });
+    for (let step = 0; step < 10; step++) {
+      await act(() => new Promise((resolve) => setTimeout(resolve, 60)));
+    }
+    expect(isStatic('Item 29')).toBe(true);
+
+    isPressed = false;
+    await waitFor(() => expect(isStatic('Item 29')).toBe(false), {
+      timeout: 3000,
+    });
+  });
+
+  it('names static row checkboxes like live ones and keeps them out of the tab order', () => {
+    render(renderWindowed());
+
+    expect(isStatic('Item 0')).toBe(false);
+    expect(isStatic('Item 29')).toBe(true);
+    expect(
+      screen.getByRole('checkbox', { name: 'Select Item 0' }),
+    ).toBeTruthy();
+    const staticCheckbox = screen.getByRole('checkbox', {
+      name: 'Select Item 29',
+    });
+    expect(staticCheckbox.getAttribute('tabindex')).toBe('-1');
+    expect(staticCheckbox.hasAttribute('aria-readonly')).toBe(false);
+    expect(screen.getByRole('row', { name: 'Item 29' })).toBe(rowOf('Item 29'));
+  });
+
+  it('leaves links and other controls in static rows to the browser', () => {
+    const onRowAction = vi.fn();
+    render(
+      renderWindowed({
+        onRowAction,
+        renderCell: (row) => (
+          <Cell>
+            <a href={`#${row.id}`}>{row.name}</a>
+            <span tabIndex={0}>{`${row.name} note`}</span>
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Item 25')).toBe(true);
+    fireEvent.click(screen.getByText('Item 25'));
+    fireEvent.click(screen.getByText('Item 25 note'));
+
+    expect(onRowAction).not.toHaveBeenCalled();
+    expect(isStatic('Item 25')).toBe(true);
+  });
+
+  it('replays clicks on elements that only take focus from script', () => {
+    const onRowAction = vi.fn();
+    render(
+      renderWindowed({
+        onRowAction,
+        renderCell: (row) => (
+          <Cell>
+            <span tabIndex={-1}>{row.name}</span>
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Item 25')).toBe(true);
+    fireEvent.pointerDown(screen.getByText('Item 25'), {
+      pointerType: 'mouse',
+    });
+    fireEvent.pointerUp(screen.getByText('Item 25'), { pointerType: 'mouse' });
+    fireEvent.click(screen.getByText('Item 25'), { detail: 1 });
+
+    expect(onRowAction).toHaveBeenCalledTimes(1);
+    expect(onRowAction).toHaveBeenCalledWith('item-25');
+  });
+
+  it('moves focus into the clicked cell of a static row without a focus ring', async () => {
+    render(
+      renderWindowed({
+        renderCell: (row) => (
+          <Cell>
+            <span>{row.name}</span>
+            <Button>{`Open ${row.name}`}</Button>
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Item 25')).toBe(true);
+    fireEvent.pointerDown(screen.getByText('Item 25'), {
+      pointerType: 'mouse',
+    });
+    fireEvent.pointerUp(screen.getByText('Item 25'), { pointerType: 'mouse' });
+    fireEvent.click(screen.getByText('Item 25'), { detail: 1 });
+
+    const button = screen.getByRole('button', { name: 'Open Item 25' });
+    await waitFor(() => expect(document.activeElement).toBe(button));
+    expect(button.hasAttribute('data-focus-visible')).toBe(false);
+  });
+
+  it('keeps a static row static while a menu opened from it is open', async () => {
+    const onAction = vi.fn();
+    render(
+      renderWindowed({
+        renderCell: (row) => (
+          <Cell>
+            <span>{row.name}</span>
+            <MenuTrigger>
+              <Button>{`Actions for ${row.name}`}</Button>
+              <Popover>
+                <Menu onAction={(key) => onAction(row.id, key)}>
+                  <MenuItem id="kill">Kill</MenuItem>
+                </Menu>
+              </Popover>
+            </MenuTrigger>
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Item 25')).toBe(true);
+    const trigger = screen.getByRole('button', {
+      name: 'Actions for Item 25',
+    });
+    fireEvent.pointerDown(trigger, { pointerType: 'touch' });
+    fireEvent.pointerUp(trigger, { pointerType: 'touch' });
+    fireEvent.click(trigger, { detail: 1 });
+    expect(screen.getByRole('menu')).toBeTruthy();
+
+    act(() => {
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(600);
+      window.dispatchEvent(new Event('scroll'));
+    });
+    for (let step = 0; step < 10; step++) {
+      await act(() => new Promise((resolve) => setTimeout(resolve, 60)));
+    }
+    expect(isStatic('Item 29')).toBe(false);
+    expect(isStatic('Item 25')).toBe(true);
+
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Kill' }));
+    expect(onAction).toHaveBeenCalledWith('item-25', 'kill');
+  });
+
+  it('renders the row React Aria focuses while the scroll range is frozen', () => {
+    const manyItems = Array.from({ length: 300 }, (_, index) => ({
+      id: `item-${index}`,
+      name: `Item ${index}`,
+    }));
+    render(renderWindowed({ items: manyItems }));
+    act(() => rowOf('Item 0').focus());
+
+    act(() => {
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(3000);
+      window.dispatchEvent(new Event('scroll'));
+    });
+    fireEvent.keyDown(rowOf('Item 0'), { key: 'End' });
+
+    expect(document.activeElement).toBe(rowOf('Item 299'));
+  });
+
+  it('renders static cell content with the default collection renderer', () => {
+    function RendererProbe() {
+      const renderer = useContext(CollectionRendererContext);
+      return renderer === DefaultCollectionRenderer ? 'default' : 'windowed';
+    }
+    render(
+      renderWindowed({
+        renderCell: (row) => (
+          <Cell>
+            <span>{row.name}</span>
+            <RendererProbe />
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Item 29')).toBe(true);
+    expect(rowOf('Item 29').textContent).toBe('Item 29default');
+  });
+
+  const parents = items.map((item) => ({
+    id: item.id.replace('item', 'parent'),
+    name: item.name.replace('Item', 'Parent'),
+  }));
+  const renderTree = (
+    expandedKeys: Set<string>,
+    props: Partial<PanelTableProps<(typeof parents)[number]>> = {},
+  ) => (
+    <PanelTable
+      aria-label="Items"
+      columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
+      items={parents}
+      treeColumn="name"
+      expandedKeys={expandedKeys}
+      estimatedRowHeight={44}
+      renderCell={(row) => <Cell>{row.name}</Cell>}
+      renderChildRows={(row, columns) => (
+        <Collection
+          items={[{ id: `${row.id}-child`, name: `${row.name} child` }]}
+        >
+          {(child) => (
+            <Row id={child.id} columns={columns} hasLeadingCell>
+              {(col) => (
+                <Cell key={col.id}>
+                  {col.id === 'name' ? child.name : null}
+                </Cell>
+              )}
+            </Row>
+          )}
+        </Collection>
+      )}
+      {...props}
+    />
+  );
+
+  it('marks static tree rows as expanded and renders their child rows after them', () => {
+    const { rerender } = render(renderTree(new Set(['parent-27'])));
+
+    const parent = rowOf('Parent 27');
+    const child = rowOf('Parent 27 child');
+    expect(isStatic('Parent 27')).toBe(true);
+    expect(isStatic('Parent 27 child')).toBe(true);
+    expect(parent.getAttribute('data-expanded')).toBe('true');
+    expect(parent.getAttribute('aria-expanded')).toBe('true');
+    expect(parent.getAttribute('aria-level')).toBe('1');
+    expect(parent.hasAttribute('aria-rowindex')).toBe(false);
+    expect(child.getAttribute('aria-level')).toBe('2');
+    expect(rowOf('Parent 26').getAttribute('aria-expanded')).toBe('false');
+    expect(
+      parent.compareDocumentPosition(child) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    rerender(renderTree(new Set()));
+
+    expect(screen.queryByText('Parent 27 child')).toBeNull();
+    expect(rowOf('Parent 27').hasAttribute('data-expanded')).toBe(false);
+  });
+
+  it('expands a static tree row from its chevron', () => {
+    const onExpandedChange = vi.fn();
+    render(
+      renderTree(new Set(), {
+        onExpandedChange,
+        renderCell: (row) => (
+          <Cell>
+            <Button slot="chevron">Toggle</Button>
+            {row.name}
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Parent 27')).toBe(true);
+    const chevron = rowOf('Parent 27').querySelector('button');
+    if (!chevron) throw new Error('Chevron was not rendered');
+    expect(chevron.getAttribute('aria-label')).toBe('Expand');
+    expect(chevron.getAttribute('tabindex')).toBe('-1');
+    fireEvent.click(chevron);
+
+    expect(onExpandedChange).toHaveBeenCalledTimes(1);
+    expect(onExpandedChange).toHaveBeenLastCalledWith(new Set(['parent-27']));
+  });
+
+  it('mounts fewer rows ahead of the viewport when rows have many cells', async () => {
+    const rows = Array.from({ length: 160 }, (_, index) => ({
+      id: `row-${index}`,
+      name: `Row ${index}`,
+    }));
+    const columnsOf = (count: number) =>
+      Array.from({ length: count }, (_, index) => ({
+        id: `c${index}`,
+        name: `C${index}`,
+        isRowHeader: index === 0,
+      }));
+    const mountedRows = () =>
+      screen
+        .getByRole('grid', { name: 'Items' })
+        .querySelectorAll('[data-index]').length;
+    const settledMountedRows = async () => {
+      let count = mountedRows();
+      for (let unchanged = 0; unchanged < 4;) {
+        await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+        const next = mountedRows();
+        unchanged = next === count ? unchanged + 1 : 0;
+        count = next;
+      }
+      return count;
+    };
+    const renderTable = (columnCount: number) =>
+      render(
+        <PanelTable
+          aria-label="Items"
+          columns={columnsOf(columnCount)}
+          items={rows}
+          estimatedRowHeight={44}
+          renderCell={(row) => <Cell>{row.name}</Cell>}
+        />,
+      );
+
+    const narrow = renderTable(1);
+    expect(await settledMountedRows()).toBe(160);
+    narrow.unmount();
+
+    renderTable(30);
+    const wide = await settledMountedRows();
+    expect(wide).toBeGreaterThan(30);
+    expect(wide).toBeLessThan(60);
+  }, 20_000);
+
+  it('selects every row from the header checkbox', () => {
+    const onSelectionChange = vi.fn();
+    render(renderWindowed({ selectedKeys: new Set(), onSelectionChange }));
+
+    const selectAll = screen
+      .getByRole('grid', { name: 'Items columns' })
+      .querySelector<HTMLInputElement>('input[type="checkbox"]');
+    if (!selectAll) throw new Error('Select-all checkbox was not rendered');
+    fireEvent.click(selectAll);
+
+    expect(onSelectionChange).toHaveBeenLastCalledWith(
+      new Set(items.map((item) => item.id)),
+    );
   });
 });
