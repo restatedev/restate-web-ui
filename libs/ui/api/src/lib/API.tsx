@@ -30,7 +30,7 @@ function loadStylesheet() {
       stylesheetLoading = undefined;
       reject(new Error('Failed to load Stoplight Elements styles'));
     };
-    document.head.append(stylesheet);
+    document.head.appendChild(stylesheet);
   });
   return stylesheetLoading;
 }
@@ -60,7 +60,7 @@ function loadScript() {
       fail('Stoplight Elements did not define its elements');
     };
     script.onerror = () => fail('Failed to load Stoplight Elements');
-    document.head.append(script);
+    document.head.appendChild(script);
   });
   return scriptLoading;
 }
