@@ -56,7 +56,7 @@ const SETTLE_BATCH = 8;
 const SETTLE_DELAY_MS = 30;
 const REPLAYED_SLOTS = '[slot=selection], [slot=chevron]';
 const NATIVE_CONTROLS =
-  'a[href], button, input, select, textarea, label, summary, [tabindex], [contenteditable], [role=button], [role=link]';
+  'a[href], button, input, select, textarea, label, summary, [tabindex]:not([tabindex="-1"]), [contenteditable]:not([contenteditable="false"]), [role=button], [role=link]';
 
 type RootProps = ComponentProps<CollectionRenderer['CollectionRoot']>;
 type BranchProps = ComponentProps<CollectionRenderer['CollectionBranch']>;
@@ -867,9 +867,13 @@ function WindowedRows({
       const rowElement = target?.closest('[role=row]') ?? null;
       const row = getStaticRow(rowElement);
       if (!row || !target || !rowElement) return;
-      const slot = target.closest(REPLAYED_SLOTS)?.getAttribute('slot');
-      const control = target.closest(NATIVE_CONTROLS);
-      if (!slot && control && rowElement.contains(control)) return;
+      const inRow = (element: Element | null) =>
+        element && rowElement.contains(element) ? element : null;
+      const slot = inRow(target.closest(REPLAYED_SLOTS))?.getAttribute('slot');
+      if (!slot && inRow(target.closest(NATIVE_CONTROLS))) return;
+      const columnIndex = target
+        .closest('[aria-colindex]')
+        ?.getAttribute('aria-colindex');
       flushSync(() => setLiveKeys(addKeys([row.key])));
       const liveRow = container.querySelector<HTMLElement>(
         `[data-index="${row.index}"]:not([data-static-row]) [role=row]`,
@@ -882,7 +886,13 @@ function WindowedRows({
       if (!replayTarget) return;
       event.preventDefault();
       event.stopPropagation();
-      if (!slot || input) replayTarget.focus({ preventScroll: true });
+      const cell = columnIndex
+        ? liveRow?.querySelector<HTMLElement>(
+            `[aria-colindex="${columnIndex}"]`,
+          )
+        : null;
+      const focusTarget = slot ? input : (cell ?? liveRow);
+      if (event.detail > 0) focusTarget?.focus({ preventScroll: true });
       replayTarget.dispatchEvent(
         new MouseEvent('click', {
           bubbles: true,

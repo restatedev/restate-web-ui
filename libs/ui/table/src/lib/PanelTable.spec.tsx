@@ -781,7 +781,50 @@ describe('PanelTable windowed', () => {
 
     expect(onRowAction).toHaveBeenCalledTimes(1);
     expect(onRowAction).toHaveBeenCalledWith('item-25');
-    expect(document.activeElement).toBe(rowOf('Item 25'));
+    expect(document.activeElement).toBe(screen.getByText('Item 25'));
+  });
+
+  it('replays a screen reader click on a static checkbox without moving focus', () => {
+    const onSelectionChange = vi.fn();
+    render(renderWindowed({ selectedKeys: new Set(), onSelectionChange }));
+
+    const checkbox = rowOf('Item 25').querySelector<HTMLInputElement>(
+      'input[type="checkbox"]',
+    );
+    if (!checkbox) throw new Error('Row checkbox was not rendered');
+    fireEvent.click(checkbox);
+
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    expect([...(onSelectionChange.mock.lastCall?.[0] ?? [])]).toEqual([
+      'item-25',
+    ]);
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('keeps rows static while a pointer is pressed in the table', async () => {
+    render(renderWindowed());
+    const matches = Element.prototype.matches;
+    let isPressed = true;
+    vi.spyOn(Element.prototype, 'matches').mockImplementation(function (
+      this: Element,
+      selector: string,
+    ) {
+      return selector === ':active' ? isPressed : matches.call(this, selector);
+    });
+
+    act(() => {
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(600);
+      window.dispatchEvent(new Event('scroll'));
+    });
+    for (let step = 0; step < 10; step++) {
+      await act(() => new Promise((resolve) => setTimeout(resolve, 60)));
+    }
+    expect(isStatic('Item 29')).toBe(true);
+
+    isPressed = false;
+    await waitFor(() => expect(isStatic('Item 29')).toBe(false), {
+      timeout: 3000,
+    });
   });
 
   it('names static row checkboxes like live ones and keeps them out of the tab order', () => {
@@ -800,7 +843,7 @@ describe('PanelTable windowed', () => {
     expect(screen.getByRole('row', { name: 'Item 29' })).toBe(rowOf('Item 29'));
   });
 
-  it('leaves links in static rows to the browser', () => {
+  it('leaves links and other controls in static rows to the browser', () => {
     const onRowAction = vi.fn();
     render(
       renderWindowed({
@@ -808,6 +851,7 @@ describe('PanelTable windowed', () => {
         renderCell: (row) => (
           <Cell>
             <a href={`#${row.id}`}>{row.name}</a>
+            <span tabIndex={0}>{`${row.name} note`}</span>
           </Cell>
         ),
       }),
@@ -815,6 +859,7 @@ describe('PanelTable windowed', () => {
 
     expect(isStatic('Item 25')).toBe(true);
     fireEvent.click(screen.getByText('Item 25'));
+    fireEvent.click(screen.getByText('Item 25 note'));
 
     expect(onRowAction).not.toHaveBeenCalled();
     expect(isStatic('Item 25')).toBe(true);
