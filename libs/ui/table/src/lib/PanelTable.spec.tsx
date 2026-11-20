@@ -8,7 +8,7 @@ import {
 import { Collection } from 'react-aria-components';
 import { vi } from 'vitest';
 import { Cell, Row } from './Row';
-import { PanelTable } from './PanelTable';
+import { PanelTable, type PanelTableProps } from './PanelTable';
 import { PanelTableQuickOpenCaption } from './PanelTableQuickOpen';
 
 class ResizeObserverMock implements ResizeObserver {
@@ -649,7 +649,7 @@ describe('PanelTable windowed', () => {
   const settle = () =>
     act(() => new Promise((resolve) => setTimeout(resolve, 200)));
   const renderWindowed = (
-    props: Partial<Parameters<typeof PanelTable>[0]> = {},
+    props: Partial<PanelTableProps<(typeof items)[number]>> = {},
   ) => (
     <PanelTable
       aria-label="Items"
