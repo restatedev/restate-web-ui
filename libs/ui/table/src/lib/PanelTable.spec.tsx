@@ -754,12 +754,18 @@ describe('PanelTable windowed', () => {
       'input[type="checkbox"]',
     );
     if (!checkbox) throw new Error('Row checkbox was not rendered');
-    fireEvent.click(checkbox);
+    fireEvent.pointerDown(checkbox, { pointerType: 'mouse' });
+    fireEvent.pointerUp(checkbox, { pointerType: 'mouse' });
+    fireEvent.click(checkbox, { detail: 1 });
 
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
     expect([...(onSelectionChange.mock.lastCall?.[0] ?? [])]).toEqual([
       'item-25',
     ]);
     expect(isStatic('Item 25')).toBe(false);
+    expect(document.activeElement).toBe(
+      rowOf('Item 25').querySelector('input[type="checkbox"]'),
+    );
   });
 
   it('runs the action of a static row when the row is clicked', () => {
@@ -767,9 +773,31 @@ describe('PanelTable windowed', () => {
     render(renderWindowed({ onRowAction }));
 
     expect(isStatic('Item 25')).toBe(true);
-    fireEvent.click(screen.getByText('Item 25'));
+    fireEvent.pointerDown(screen.getByText('Item 25'), {
+      pointerType: 'mouse',
+    });
+    fireEvent.pointerUp(screen.getByText('Item 25'), { pointerType: 'mouse' });
+    fireEvent.click(screen.getByText('Item 25'), { detail: 1 });
 
+    expect(onRowAction).toHaveBeenCalledTimes(1);
     expect(onRowAction).toHaveBeenCalledWith('item-25');
+    expect(document.activeElement).toBe(rowOf('Item 25'));
+  });
+
+  it('names static row checkboxes like live ones and keeps them out of the tab order', () => {
+    render(renderWindowed());
+
+    expect(isStatic('Item 0')).toBe(false);
+    expect(isStatic('Item 29')).toBe(true);
+    expect(
+      screen.getByRole('checkbox', { name: 'Select Item 0' }),
+    ).toBeTruthy();
+    const staticCheckbox = screen.getByRole('checkbox', {
+      name: 'Select Item 29',
+    });
+    expect(staticCheckbox.getAttribute('tabindex')).toBe('-1');
+    expect(staticCheckbox.hasAttribute('aria-readonly')).toBe(false);
+    expect(screen.getByRole('row', { name: 'Item 29' })).toBe(rowOf('Item 29'));
   });
 
   it('leaves links in static rows to the browser', () => {
@@ -887,8 +915,11 @@ describe('PanelTable windowed', () => {
     expect(isStatic('Parent 27')).toBe(true);
     const chevron = rowOf('Parent 27').querySelector('button');
     if (!chevron) throw new Error('Chevron was not rendered');
+    expect(chevron.getAttribute('aria-label')).toBe('Expand');
+    expect(chevron.getAttribute('tabindex')).toBe('-1');
     fireEvent.click(chevron);
 
+    expect(onExpandedChange).toHaveBeenCalledTimes(1);
     expect(onExpandedChange).toHaveBeenLastCalledWith(new Set(['parent-27']));
   });
 
@@ -909,8 +940,8 @@ describe('PanelTable windowed', () => {
         .querySelectorAll('[data-index]').length;
     const settledMountedRows = async () => {
       let count = mountedRows();
-      for (let unchanged = 0; unchanged < 3;) {
-        await act(() => new Promise((resolve) => setTimeout(resolve, 60)));
+      for (let unchanged = 0; unchanged < 4;) {
+        await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
         const next = mountedRows();
         unchanged = next === count ? unchanged + 1 : 0;
         count = next;

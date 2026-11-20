@@ -7,6 +7,7 @@ import {
   useContext,
   useDeferredValue,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -18,7 +19,9 @@ import {
   type ReactNode,
 } from 'react';
 import {
+  ButtonContext,
   CollectionRendererContext,
+  DEFAULT_SLOT,
   DefaultCollectionRenderer,
   Rect,
   Size,
@@ -53,7 +56,7 @@ const SETTLE_BATCH = 8;
 const SETTLE_DELAY_MS = 30;
 const REPLAYED_SLOTS = '[slot=selection], [slot=chevron]';
 const NATIVE_CONTROLS =
-  'a[href], button, input, select, textarea, label, [role=button], [role=link]';
+  'a[href], button, input, select, textarea, label, summary, [tabindex], [contenteditable], [role=button], [role=link]';
 
 type RootProps = ComponentProps<CollectionRenderer['CollectionRoot']>;
 type BranchProps = ComponentProps<CollectionRenderer['CollectionBranch']>;
@@ -475,6 +478,28 @@ const StaticRow = memo(function StaticRow({
   };
   const selectionCellKey = internalCellKey(node.key, 'selection');
   const columnKeyAt = (index: number) => columns.keys[index];
+  const id = useId();
+  const rowHeaderIds =
+    cells
+      .filter((cell) => columns.rowHeaders.has(cell.colIndex ?? cell.index))
+      .map((cell) => `${id}-${cell.colIndex ?? cell.index}`)
+      .join(' ') || undefined;
+  const labelledBy = (ownId: string) =>
+    rowHeaderIds ? `${ownId} ${rowHeaderIds}` : undefined;
+  const buttonSlots = {
+    slots: {
+      [DEFAULT_SLOT]: {},
+      chevron: {
+        id: `${id}-chevron`,
+        isDisabled,
+        excludeFromTabOrder: true,
+        preventFocusOnPress: true,
+        'aria-label': isExpanded ? 'Collapse' : 'Expand',
+        'aria-labelledby': labelledBy(`${id}-chevron`),
+      },
+      drag: {},
+    },
+  };
   return (
     <div
       role="presentation"
@@ -506,6 +531,7 @@ const StaticRow = memo(function StaticRow({
           } as CSSProperties
         }
         data-rac=""
+        aria-labelledby={rowHeaderIds}
         aria-rowindex={isTree ? undefined : index + 1 + columns.headerRowCount}
         aria-level={isTree ? level : undefined}
         aria-expanded={isTree && hasChildItems ? isExpanded : undefined}
@@ -521,53 +547,66 @@ const StaticRow = memo(function StaticRow({
         data-level={level}
       >
         <CollectionRendererContext.Provider value={DefaultCollectionRenderer}>
-          {cells.map((cell) => {
-            const start = cell.colIndex ?? cell.index;
-            const width = cellWidth(cell, columnKeyAt, columnWidths);
-            const children = cell.props?.children;
-            const isTreeColumn = cell.index === columns.treeIndex;
-            const cellValues = { ...values, columnIndex: start, isTreeColumn };
-            return (
-              <div
-                key={cell.key}
-                role="presentation"
-                data-panel-table-cell=""
-                style={{ flex: 'none', width }}
-              >
+          <ButtonContext.Provider value={buttonSlots}>
+            {cells.map((cell) => {
+              const start = cell.colIndex ?? cell.index;
+              const width = cellWidth(cell, columnKeyAt, columnWidths);
+              const children = cell.props?.children;
+              const isTreeColumn = cell.index === columns.treeIndex;
+              const cellValues = {
+                ...values,
+                columnIndex: start,
+                isTreeColumn,
+              };
+              return (
                 <div
-                  role={
-                    columns.rowHeaders.has(start) ? 'rowheader' : 'gridcell'
-                  }
-                  className={resolveClassName(
-                    cell.props?.className,
-                    cellValues,
-                    'react-aria-Cell',
-                  )}
-                  data-rac=""
-                  aria-colindex={start + 1}
-                  data-column-index={start}
-                  data-expanded={isExpanded || undefined}
-                  data-has-child-items={hasChildItems || undefined}
-                  data-level={level}
-                  data-tree-column={isTreeColumn || undefined}
+                  key={cell.key}
+                  role="presentation"
+                  data-panel-table-cell=""
+                  style={{ flex: 'none', width }}
                 >
-                  {cell.key === selectionCellKey ? (
-                    <Checkbox
-                      slot="selection"
-                      aria-label="Select"
-                      isSelected={isSelected}
-                      isDisabled={isSelectionDisabled}
-                      isReadOnly
-                    />
-                  ) : typeof children === 'function' ? (
-                    children(cellValues)
-                  ) : (
-                    children
-                  )}
+                  <div
+                    id={
+                      columns.rowHeaders.has(start)
+                        ? `${id}-${start}`
+                        : undefined
+                    }
+                    role={
+                      columns.rowHeaders.has(start) ? 'rowheader' : 'gridcell'
+                    }
+                    className={resolveClassName(
+                      cell.props?.className,
+                      cellValues,
+                      'react-aria-Cell',
+                    )}
+                    data-rac=""
+                    aria-colindex={start + 1}
+                    data-column-index={start}
+                    data-expanded={isExpanded || undefined}
+                    data-has-child-items={hasChildItems || undefined}
+                    data-level={level}
+                    data-tree-column={isTreeColumn || undefined}
+                  >
+                    {cell.key === selectionCellKey ? (
+                      <Checkbox
+                        slot="selection"
+                        id={`${id}-selection`}
+                        aria-label="Select"
+                        aria-labelledby={labelledBy(`${id}-selection`)}
+                        isSelected={isSelected}
+                        isDisabled={isSelectionDisabled}
+                        excludeFromTabOrder
+                      />
+                    ) : typeof children === 'function' ? (
+                      children(cellValues)
+                    ) : (
+                      children
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </ButtonContext.Provider>
         </CollectionRendererContext.Provider>
       </div>
     </div>
@@ -785,10 +824,15 @@ function WindowedRows({
     }
     if (!update) return;
     const next = update;
-    const timeout = setTimeout(
-      () => startTransition(() => setLiveKeys(next)),
-      delay,
-    );
+    let timeout: ReturnType<typeof setTimeout>;
+    const apply = () => {
+      if (sizerRef.current?.parentElement?.matches(':active')) {
+        timeout = setTimeout(apply, SETTLE_DELAY_MS);
+        return;
+      }
+      startTransition(() => setLiveKeys(next));
+    };
+    timeout = setTimeout(apply, delay);
     return () => clearTimeout(timeout);
   }, [isScrolling, visibleStart, visibleEnd, liveKeys, rows, indexByKey]);
 
@@ -820,21 +864,26 @@ function WindowedRows({
     };
     const replayClick = (event: MouseEvent) => {
       const target = event.target instanceof Element ? event.target : null;
-      const row = getStaticRow(target?.closest('[role=row]') ?? null);
-      if (!row || !target) return;
+      const rowElement = target?.closest('[role=row]') ?? null;
+      const row = getStaticRow(rowElement);
+      if (!row || !target || !rowElement) return;
       const slot = target.closest(REPLAYED_SLOTS)?.getAttribute('slot');
-      if (!slot && target.closest(NATIVE_CONTROLS)) return;
-      event.preventDefault();
-      event.stopPropagation();
+      const control = target.closest(NATIVE_CONTROLS);
+      if (!slot && control && rowElement.contains(control)) return;
       flushSync(() => setLiveKeys(addKeys([row.key])));
-      const liveRow = container.querySelector(
+      const liveRow = container.querySelector<HTMLElement>(
         `[data-index="${row.index}"]:not([data-static-row]) [role=row]`,
       );
-      const slotted = slot ? liveRow?.querySelector(`[slot="${slot}"]`) : null;
-      (slotted
-        ? (slotted.querySelector('input') ?? slotted)
-        : liveRow
-      )?.dispatchEvent(
+      const slotted = slot
+        ? liveRow?.querySelector<HTMLElement>(`[slot="${slot}"]`)
+        : null;
+      const input = slotted?.querySelector('input');
+      const replayTarget = slot ? (input ?? slotted) : liveRow;
+      if (!replayTarget) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (!slot || input) replayTarget.focus({ preventScroll: true });
+      replayTarget.dispatchEvent(
         new MouseEvent('click', {
           bubbles: true,
           cancelable: true,
