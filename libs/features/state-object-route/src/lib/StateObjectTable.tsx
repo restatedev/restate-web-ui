@@ -130,6 +130,35 @@ const stateObjectStyles = tv({
   },
 });
 
+const readOnlyStateNoteStyles = tv({
+  base: 'flex min-w-0 items-center gap-1.5 text-0.5xs leading-snug whitespace-normal text-muted',
+  slots: {
+    icon: 'h-3.5 w-3.5 shrink-0 text-subtle',
+  },
+});
+
+export function ReadOnlyStateNote({ className }: { className?: string }) {
+  const { base, icon } = readOnlyStateNoteStyles();
+  return (
+    <span className={base({ className })}>
+      <Icon name={IconName.Security} className={icon()} />
+      <span className="min-w-0">
+        These are pages of this key’s SQL database, written by the SDK. Editing
+        them would corrupt it.
+      </span>
+    </span>
+  );
+}
+
+function isReadOnlyStateKey(
+  readOnlyKeyPrefix: string | undefined,
+  stateKey: string,
+) {
+  return (
+    readOnlyKeyPrefix !== undefined && stateKey.startsWith(readOnlyKeyPrefix)
+  );
+}
+
 export function getObjectKeyColumnName(
   serviceType: StateServiceType | undefined,
 ) {
@@ -178,6 +207,7 @@ export function StateObjectTable({
   codecOptions,
   serviceName,
   serviceType,
+  readOnlyKeyPrefix,
   isLoading,
   isLoadingPreviews,
   numOfRows,
@@ -189,6 +219,7 @@ export function StateObjectTable({
   codecOptions?: RestateCodecOptions;
   serviceName: string;
   serviceType?: StateServiceType;
+  readOnlyKeyPrefix?: string;
   isLoading?: boolean;
   isLoadingPreviews?: boolean;
   numOfRows: number;
@@ -283,9 +314,15 @@ export function StateObjectTable({
         baseUrl,
         serviceName,
         serviceType,
+        readOnlyKeyPrefix,
         isLoadingPreviews,
       ]}
-      rowDependencies={[codecOptions, visibleExpandedKeys, isLoadingPreviews]}
+      rowDependencies={[
+        codecOptions,
+        visibleExpandedKeys,
+        readOnlyKeyPrefix,
+        isLoadingPreviews,
+      ]}
       renderCell={(row, col) => (
         <StateObjectCell
           row={row}
@@ -294,6 +331,7 @@ export function StateObjectTable({
           baseUrl={baseUrl}
           serviceName={serviceName}
           serviceType={serviceType}
+          readOnlyKeyPrefix={readOnlyKeyPrefix}
           isExpanded={visibleExpandedKeys.has(row.id)}
           isLoadingPreview={isLoadingPreviews}
           onEditObject={onEditObject}
@@ -306,6 +344,7 @@ export function StateObjectTable({
           columns={tableColumns}
           codecOptions={codecOptions}
           serviceName={serviceName}
+          readOnlyKeyPrefix={readOnlyKeyPrefix}
           isExpanded={visibleExpandedKeys.has(row.id)}
           onEditValue={(stateKey) => onEditValue(row, stateKey)}
         />
@@ -319,6 +358,7 @@ export function StateEntriesTable({
   serviceName,
   serviceKey,
   scope,
+  readOnlyKeyPrefix,
   emptyPlaceholder,
   onEditValue,
 }: {
@@ -326,6 +366,7 @@ export function StateEntriesTable({
   serviceName: string;
   serviceKey: string;
   scope?: string;
+  readOnlyKeyPrefix?: string;
   emptyPlaceholder?: ReactNode;
   onEditValue: (stateKey: string) => void;
 }) {
@@ -398,12 +439,13 @@ export function StateEntriesTable({
         codecOptions,
         row,
         serviceName,
+        readOnlyKeyPrefix,
         onEditValue,
         entriesQuery.dataUpdatedAt,
         entriesQuery.hasNextPage,
         entriesQuery.isFetchingNextPage,
       ]}
-      rowDependencies={[codecOptions, row, serviceName]}
+      rowDependencies={[codecOptions, row, serviceName, readOnlyKeyPrefix]}
       renderCell={(entry, col) =>
         entry.kind === 'load_more' ? (
           <StateLoadMoreCell
@@ -418,6 +460,7 @@ export function StateEntriesTable({
             col={col}
             codecOptions={codecOptions}
             serviceName={serviceName}
+            readOnlyKeyPrefix={readOnlyKeyPrefix}
             onEditValue={onEditValue}
           />
         )
@@ -433,6 +476,7 @@ function StateObjectCell({
   baseUrl,
   serviceName,
   serviceType,
+  readOnlyKeyPrefix,
   isExpanded,
   isLoadingPreview,
   onEditObject,
@@ -444,6 +488,7 @@ function StateObjectCell({
   baseUrl: string;
   serviceName: string;
   serviceType?: StateServiceType;
+  readOnlyKeyPrefix?: string;
   isExpanded: boolean;
   isLoadingPreview?: boolean;
   onEditObject: (row: StateObjectRecord) => void;
@@ -479,8 +524,12 @@ function StateObjectCell({
   if (col.id === 'value') {
     if (isExpanded) {
       return (
-        <Cell>
-          <StateObjectRefreshingStatus row={row} serviceName={serviceName} />
+        <Cell className="whitespace-normal">
+          <StateObjectExpandedStatus
+            row={row}
+            serviceName={serviceName}
+            readOnlyKeyPrefix={readOnlyKeyPrefix}
+          />
         </Cell>
       );
     }
@@ -498,6 +547,9 @@ function StateObjectCell({
   }
 
   if (col.id === 'actions') {
+    if (readOnlyKeyPrefix !== undefined) {
+      return <Cell className={actionsCell()} />;
+    }
     return (
       <Cell className={actionsCell()}>
         <div className={actions()}>
@@ -593,12 +645,14 @@ function StateObjectIdentityTarget({
   );
 }
 
-function StateObjectRefreshingStatus({
+function StateObjectExpandedStatus({
   row,
   serviceName,
+  readOnlyKeyPrefix,
 }: {
   row: StateObjectRecord;
   serviceName: string;
+  readOnlyKeyPrefix?: string;
 }) {
   const { refreshingStatus } = stateObjectStyles();
   const { entriesQuery } = useStateObjectEntries(serviceName, row, false);
@@ -607,16 +661,20 @@ function StateObjectRefreshingStatus({
     !entriesQuery.isFetchingNextPage &&
     Boolean(entriesQuery.data);
 
-  if (!isRefreshing) {
-    return null;
+  if (isRefreshing) {
+    return (
+      <span className={refreshingStatus()}>
+        <Spinner className="h-3.5 w-3.5 shrink-0" />
+        Refreshing keys…
+      </span>
+    );
   }
 
-  return (
-    <span className={refreshingStatus()}>
-      <Spinner className="h-3.5 w-3.5 shrink-0" />
-      Refreshing keys…
-    </span>
-  );
+  if (readOnlyKeyPrefix !== undefined) {
+    return <ReadOnlyStateNote />;
+  }
+
+  return null;
 }
 
 function StateObjectCollapsedPreview({
@@ -710,6 +768,7 @@ function StateObjectChildRows({
   columns,
   codecOptions,
   serviceName,
+  readOnlyKeyPrefix,
   isExpanded,
   onEditValue,
 }: {
@@ -717,6 +776,7 @@ function StateObjectChildRows({
   columns: PanelTableColumn[];
   codecOptions?: RestateCodecOptions;
   serviceName: string;
+  readOnlyKeyPrefix?: string;
   isExpanded: boolean;
   onEditValue: (stateKey: string) => void;
 }) {
@@ -761,6 +821,7 @@ function StateObjectChildRows({
         columns,
         codecOptions,
         serviceName,
+        readOnlyKeyPrefix,
         entriesQuery.dataUpdatedAt,
         entriesQuery.error,
         entriesQuery.hasNextPage,
@@ -784,6 +845,7 @@ function StateObjectChildRows({
               col={col}
               codecOptions={codecOptions}
               serviceName={serviceName}
+              readOnlyKeyPrefix={readOnlyKeyPrefix}
               error={entriesQuery.error}
               isFetchingNextPage={entriesQuery.isFetchingNextPage}
               onLoadMore={() => entriesQuery.fetchNextPage()}
@@ -803,6 +865,7 @@ function StateChildCell({
   col,
   codecOptions,
   serviceName,
+  readOnlyKeyPrefix,
   error,
   isFetchingNextPage,
   onLoadMore,
@@ -814,6 +877,7 @@ function StateChildCell({
   col: PanelTableColumn;
   codecOptions?: RestateCodecOptions;
   serviceName: string;
+  readOnlyKeyPrefix?: string;
   error?: Error | null;
   isFetchingNextPage: boolean;
   onLoadMore: VoidFunction;
@@ -883,6 +947,7 @@ function StateChildCell({
       col={col}
       codecOptions={codecOptions}
       serviceName={serviceName}
+      readOnlyKeyPrefix={readOnlyKeyPrefix}
       onEditValue={onEditValue}
     />
   );
@@ -930,6 +995,7 @@ function StateEntryCell({
   col,
   codecOptions,
   serviceName,
+  readOnlyKeyPrefix,
   onEditValue,
 }: {
   row: StateObjectRecord;
@@ -937,10 +1003,12 @@ function StateEntryCell({
   col: PanelTableColumn;
   codecOptions?: RestateCodecOptions;
   serviceName: string;
+  readOnlyKeyPrefix?: string;
   onEditValue: (stateKey: string) => void;
 }) {
   const { stateKeyCell, actionsCell, actions, objectActionButton, sizeText } =
     stateObjectStyles();
+  const isReadOnly = isReadOnlyStateKey(readOnlyKeyPrefix, entry.name);
 
   if (col.id === 'state_key') {
     return (
@@ -968,13 +1036,16 @@ function StateEntryCell({
           row={row}
           codecOptions={codecOptions}
           serviceName={serviceName}
-          onEdit={() => onEditValue(entry.name)}
+          onEdit={isReadOnly ? undefined : () => onEditValue(entry.name)}
         />
       </Cell>
     );
   }
 
   if (col.id === 'actions') {
+    if (isReadOnly) {
+      return <Cell className={actionsCell()} />;
+    }
     return (
       <Cell className={actionsCell()}>
         <div className={actions()}>
@@ -1019,7 +1090,7 @@ function StateValuePreview({
   row: StateObjectRecord;
   codecOptions?: RestateCodecOptions;
   serviceName: string;
-  onEdit: VoidFunction;
+  onEdit?: VoidFunction;
 }) {
   const portalId = useId();
   const [isOpen, setIsOpen] = useState(false);
@@ -1090,14 +1161,16 @@ function StateValuePreview({
                 </TruncateWithTooltip>
               </span>
               <Portal id={portalId} className="mr-1 ml-auto shrink-0" />
-              <EditStateTrigger
-                onClick={onEdit}
-                variant="secondary"
-                className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
-              >
-                Edit
-                <Icon name={IconName.ExternalLink} className="h-3 w-3" />
-              </EditStateTrigger>
+              {onEdit && (
+                <EditStateTrigger
+                  onClick={onEdit}
+                  variant="secondary"
+                  className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
+                >
+                  Edit
+                  <Icon name={IconName.ExternalLink} className="h-3 w-3" />
+                </EditStateTrigger>
+              )}
             </div>
           }
         >

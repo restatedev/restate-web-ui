@@ -2,6 +2,7 @@ import type { FilterItem } from '@restate/data-access-admin-api-spec';
 import { useVersion } from '@restate/data-access-admin-api';
 import {
   isServiceStateQuery,
+  useListServices,
   useListVirtualObjectState,
   useQueryVirtualObjectState,
 } from '@restate/data-access-admin-api-hooks';
@@ -41,6 +42,7 @@ import {
 } from '@restate/features-invocations-route';
 import { useEditStateContext } from '@restate/features-edit-state';
 import { useResolvedCodecOptions } from '@restate/features-codec';
+import { getSessionObjectStateKeyPrefix } from '@restate/features-invocation-route';
 import { useRestateContext } from '@restate/features-restate-context';
 import { useIsFeatureFlagEnabled } from '@restate/util-feature-flag';
 import {
@@ -157,6 +159,10 @@ function Component() {
   const { isValid, redirectTo, services, serviceType, stateOnlyServices } =
     useValidateVirtualObject(serviceName);
   const isWorkflow = serviceType === 'workflow';
+  const { data: registeredServices } = useListServices();
+  const readOnlyKeyPrefix = getSessionObjectStateKeyPrefix(
+    registeredServices.get(serviceName),
+  );
   const { baseUrl } = useRestateContext();
   const showStateStorage = useIsFeatureFlagEnabled(
     'FEATURE_STATE_STORAGE_BREAKDOWN',
@@ -352,6 +358,7 @@ function Component() {
                   codecOptions={resolvedServiceCodecOptions}
                   serviceName={serviceName}
                   serviceType={serviceType}
+                  readOnlyKeyPrefix={readOnlyKeyPrefix}
                   isLoading={isStateLoading && stateObjects.length === 0}
                   isLoadingPreviews={isLoadingPreviews}
                   numOfRows={sortedItems.length || 5}

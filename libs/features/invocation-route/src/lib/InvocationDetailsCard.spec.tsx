@@ -1,7 +1,21 @@
-import type { Invocation } from '@restate/data-access-admin-api-spec';
+import type { Invocation, Service } from '@restate/data-access-admin-api-spec';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import { vi } from 'vitest';
 import { InvocationDetailsCard } from './InvocationDetailsCard';
+
+const services = vi.hoisted(() => ({ current: new Map<string, Service>() }));
+
+vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('@restate/data-access-admin-api-hooks')
+  >()),
+  useListServices: () => ({ data: services.current }),
+}));
+
+beforeEach(() => {
+  services.current = new Map();
+});
 
 const invocation: Invocation = {
   id: 'inv-details',
@@ -116,5 +130,38 @@ describe('InvocationDetailsCard', () => {
     expect(chevronIcon?.getAttribute('class')).toContain('-mr-1');
     expect(chevronIcon?.getAttribute('class')).not.toContain('group-hover');
     expect(row.querySelector(':scope > svg')).toBeNull();
+  });
+
+  it('labels a Session Object by the metadata its SDK declares', () => {
+    const notes: Service = {
+      name: 'notes',
+      ty: 'VirtualObject',
+      handlers: [],
+      revision: 1,
+      deployment_id: 'dp_notes',
+      metadata: {
+        'dev.restate.tooling.journal.hidden.names': 'sync',
+        'dev.restate.tooling.journal.hidden.name.prefix': 'v22/',
+      },
+    };
+    services.current = new Map([[notes.name, notes]]);
+
+    render(
+      <MemoryRouter>
+        <InvocationDetailsCard
+          invocation={{
+            ...invocation,
+            target: 'notes/add',
+            target_service_name: 'notes',
+            target_handler_name: 'add',
+            target_service_key: 'alice',
+            target_service_ty: 'virtual_object',
+          }}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('Session Object')).toBeTruthy();
+    expect(screen.queryByText('Virtual Object')).toBeNull();
   });
 });
