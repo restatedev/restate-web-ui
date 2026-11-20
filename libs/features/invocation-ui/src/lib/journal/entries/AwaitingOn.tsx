@@ -316,8 +316,9 @@ export function AwaitingOnEntries({
       disableExpand: true,
       hideOutput: true,
       disableAwaitingHighlight: true,
+      referenceInvocationId: String(invocation.id),
     }),
-    [parentContext],
+    [parentContext, invocation.id],
   );
 
   return (

@@ -11,6 +11,7 @@ import {
   type RestateCodecOptions,
 } from '@restate/features-codec';
 import type { PropsWithChildren } from 'react';
+import { useJournalEntriesContext } from '../JournalContext';
 
 type Invocation = ReturnType<
   typeof useGetInvocationJournalWithInvocationV2
@@ -114,9 +115,10 @@ export function EntryCodecProvider({
   entry?: JournalEntryV2;
   invocation?: Invocation;
 }>) {
+  const { referenceInvocationId } = useJournalEntriesContext();
   const targetInvocation = useGetInvocationStatusDetails(
     isTargetInvocationEntry(entry) ? entry.invocationId : undefined,
-    invocation?.id,
+    referenceInvocationId ?? invocation?.id,
   );
   const { service, key, handlerName, deploymentId } = getEntryCodecTarget(
     entry,
