@@ -51,7 +51,15 @@ const VQUEUE_ENTRY_STATUSES = [
   'scheduled',
   'backing-off',
   'yielded',
+  // Restate 1.8.2 shows what the entry is doing now: `ready` in the inbox, the
+  // stage's name while running, suspended or paused, and `unknown` for a value
+  // the server doesn't recognize. Earlier versions show the stored `started`.
   'started',
+  'ready',
+  'running',
+  'suspended',
+  'paused',
+  'unknown',
   'succeeded',
   'failed',
   'cancelled',

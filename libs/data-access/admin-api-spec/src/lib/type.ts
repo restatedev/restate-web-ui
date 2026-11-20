@@ -119,7 +119,8 @@ export const INVOCATION_STATUS_DEFINITIONS = [
     key: 'ready',
     label: 'Ready',
     stage: 'inbox',
-    vqueueStatuses: ['started'],
+    // Restate 1.8.2 shows `ready`; earlier versions show the stored `started`.
+    vqueueStatuses: ['started', 'ready'],
   },
   {
     key: 'backing-off',
