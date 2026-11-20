@@ -155,11 +155,15 @@ function renderNode(node: CollectionNode): ReactNode {
   return rendered;
 }
 
+function getRowKey(collection: BranchProps['collection'], key: Key) {
+  const node = collection.getItem(key);
+  return node?.type === 'cell' ? (node.parentKey ?? null) : key;
+}
+
 function getFocusedRowKey(state: TableStateValue | null) {
   const key = state?.selectionManager.focusedKey;
   if (state == null || key == null) return null;
-  const node = state.collection.getItem(key);
-  return node?.type === 'cell' ? (node.parentKey ?? null) : key;
+  return getRowKey(state.collection, key);
 }
 
 interface StaticColumns {
@@ -248,16 +252,16 @@ function rowWrapperStyle(offset: number): CSSProperties {
 }
 
 function cellWidth(
-  collection: TableCollection,
   cell: TableCellNode,
+  columnKeyAt: (index: number) => Key | undefined,
   columnWidths: ReadonlyMap<Key, number>,
 ) {
   const start = cell.colIndex ?? cell.index;
   const span = cell.colSpan ?? 1;
   let width = 0;
   for (let index = start; index < start + span; index++) {
-    const column = collection.columns?.[index];
-    if (column) width += columnWidths.get(column.key) ?? 0;
+    const key = columnKeyAt(index);
+    if (key != null) width += columnWidths.get(key) ?? 0;
   }
   return width;
 }
@@ -293,6 +297,8 @@ function RowCells({
   parent,
 }: Pick<BranchProps, 'collection' | 'parent'>) {
   const { columnWidths } = useContext(WindowedTableContext);
+  const columns = (collection as TableCollection).columns;
+  const columnKeyAt = (index: number) => columns?.[index]?.key;
   return Array.from(collection.getChildren?.(parent.key) ?? [], (cell) => (
     <div
       key={cell.key}
@@ -300,7 +306,7 @@ function RowCells({
       data-panel-table-cell=""
       style={{
         flex: 'none',
-        width: cellWidth(collection as TableCollection, cell, columnWidths),
+        width: cellWidth(cell, columnKeyAt, columnWidths),
       }}
     >
       {renderNode(cell)}
@@ -390,6 +396,7 @@ const StaticRow = memo(function StaticRow({
     level,
   };
   const selectionCellKey = internalCellKey(node.key, 'selection');
+  const columnKeyAt = (index: number) => columns.keys[index];
   return (
     <div
       role="presentation"
@@ -430,12 +437,7 @@ const StaticRow = memo(function StaticRow({
       >
         {cells.map((cell) => {
           const start = cell.colIndex ?? cell.index;
-          const span = cell.colSpan ?? 1;
-          let width = 0;
-          for (let column = start; column < start + span; column++) {
-            const key = columns.keys[column];
-            if (key != null) width += columnWidths.get(key) ?? 0;
-          }
+          const width = cellWidth(cell, columnKeyAt, columnWidths);
           const children = cell.props?.children;
           return (
             <div
@@ -530,12 +532,14 @@ function WindowedRows({
   const renderWindow = useRenderWindow(TABLE_RENDER_WINDOW);
   const persistedIndexes = useMemo(() => {
     if (!persistedKeys?.size) return [];
-    const indexes: number[] = [];
-    rows.forEach((row, index) => {
-      if (persistedKeys.has(row.key)) indexes.push(index);
-    });
-    return indexes;
-  }, [persistedKeys, rows]);
+    const indexes = new Set<number>();
+    for (const key of persistedKeys) {
+      const rowKey = getRowKey(collection, key);
+      const index = rowKey == null ? undefined : indexByKey.get(rowKey);
+      if (index !== undefined) indexes.add(index);
+    }
+    return Array.from(indexes).sort((a, b) => a - b);
+  }, [persistedKeys, collection, indexByKey]);
   const mergedRef = useRef<{
     base: number[];
     persisted: number[];

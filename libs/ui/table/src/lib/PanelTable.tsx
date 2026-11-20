@@ -185,7 +185,8 @@ export function PanelTable<
   ...ariaProps
 }: PanelTableProps<T, TColId>) {
   const ariaLabel = ariaProps['aria-label'];
-  const isWindowed = windowed && virtualized && items.length > 0;
+  const isWindowed =
+    windowed && !renderChildRows && virtualized && items.length > 0;
   const isVirtualized = !isWindowed && virtualized && items.length > 0;
   const {
     stickyHeaderWrapper,
