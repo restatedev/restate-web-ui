@@ -116,10 +116,12 @@ export function InvocationId({
     </Link>
   );
 
-  const idText = (
-    <span className={text()}>
-      {truncateInMiddle ? <TruncateMiddle text={id} /> : id}
-    </span>
+  const textClassName = text();
+  const idContent = truncateInMiddle ? <TruncateMiddle text={id} /> : id;
+  const idText = textClassName ? (
+    <span className={textClassName}>{idContent}</span>
+  ) : (
+    idContent
   );
 
   const element = (

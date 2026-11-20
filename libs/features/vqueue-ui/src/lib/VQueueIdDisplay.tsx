@@ -58,6 +58,8 @@ export function VQueueIdDisplay({
 }: VQueueIdDisplayProps) {
   const { base, icon, text, container } = styles({ size });
   const isIcon = size === 'icon';
+  const textClassName = text();
+  const idContent = truncateInMiddle ? <TruncateMiddle text={id} /> : id;
 
   const content = (
     <span className={container()}>
@@ -69,9 +71,11 @@ export function VQueueIdDisplay({
       </span>
       {!isIcon && (
         <span className="min-w-0 truncate">
-          <span className={text()}>
-            {truncateInMiddle ? <TruncateMiddle text={id} /> : id}
-          </span>
+          {textClassName ? (
+            <span className={textClassName}>{idContent}</span>
+          ) : (
+            idContent
+          )}
         </span>
       )}
     </span>
