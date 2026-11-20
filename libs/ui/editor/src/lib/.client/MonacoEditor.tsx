@@ -5,6 +5,22 @@ import * as monaco from './monaco';
 import { showFoldedArrayLengths } from './foldedArrayLengths';
 
 const MAX_EDITOR_FORMAT_LENGTH = 10_000_000;
+const LINE_HEIGHT_PX = 18;
+const VERTICAL_PADDING_PX = 24;
+const MAX_COUNTED_LINES = 200;
+
+function getInitialHeight(value: string) {
+  let lines = 1;
+  let index = value.indexOf('\n');
+  while (index !== -1 && lines < MAX_COUNTED_LINES) {
+    lines += 1;
+    index = value.indexOf('\n', index + 1);
+  }
+  return Math.max(
+    value.length / 100,
+    lines > 1 ? lines * LINE_HEIGHT_PX + VERTICAL_PADDING_PX : 0,
+  );
+}
 
 function isFormattableJson(value?: string) {
   try {
@@ -26,6 +42,7 @@ export function MonacoEditor({
   onInput,
   applyTheme = true,
   autoFocus,
+  isFormatted = false,
 }: {
   value?: string;
   editorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
@@ -33,6 +50,7 @@ export function MonacoEditor({
   onInput?: (value: string) => void;
   applyTheme?: boolean;
   autoFocus?: boolean;
+  isFormatted?: boolean;
 }) {
   const [el, setEl] = useState<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -41,7 +59,8 @@ export function MonacoEditor({
     }
 
     const isLargeValue = (value?.length ?? 0) > MAX_EDITOR_FORMAT_LENGTH;
-    const shouldFormat = !isLargeValue && isFormattableJson(value);
+    const shouldFormat =
+      !isFormatted && !isLargeValue && isFormattableJson(value);
 
     const editor = monaco.editor.create(el, {
       value,
@@ -141,10 +160,9 @@ export function MonacoEditor({
       showFoldedArrayLengths(editor),
     ];
 
+    updateStyles();
     if (shouldFormat) {
       void formatEditor();
-    } else {
-      updateStyles();
     }
 
     return () => {
@@ -152,7 +170,16 @@ export function MonacoEditor({
       editor.dispose();
       editorRef.current = null;
     };
-  }, [value, el, editorRef, readonly, onInput, applyTheme, autoFocus]);
+  }, [
+    value,
+    el,
+    editorRef,
+    readonly,
+    onInput,
+    applyTheme,
+    autoFocus,
+    isFormatted,
+  ]);
 
   useEffect(() => {
     const editor = editorRef.current;
@@ -179,7 +206,7 @@ export function MonacoEditor({
   return (
     <div
       ref={setEl}
-      style={{ height: `clamp(2.625rem, ${value.length / 100}px, 45vh)` }}
+      style={{ height: `clamp(2.625rem, ${getInitialHeight(value)}px, 45vh)` }}
       className={styles({
         className: applyTheme ? editorColors() : undefined,
       })}

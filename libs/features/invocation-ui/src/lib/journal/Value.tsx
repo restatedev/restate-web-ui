@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import type { editor } from 'monaco-editor';
 import { Editor } from '@restate/ui-editor';
 import { tv } from '@restate/util-styles';
@@ -13,6 +13,8 @@ import {
   PopoverHoverTrigger,
 } from '@restate/ui-popover';
 import { useDecode } from '@restate/features-codec';
+import { Spinner } from '@restate/ui-loading';
+import { formatJsonText } from './formatJsonText';
 
 const styles = tv({
   slots: {
@@ -39,31 +41,51 @@ export function Value({
   isBase64,
   showCopyButton,
   portalId,
+  renderWhenReady = false,
 }: {
   value?: string;
   className?: string;
   isBase64?: boolean;
   showCopyButton?: boolean;
   portalId?: string;
+  renderWhenReady?: boolean;
 }) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const { data, error, isPending, isFetching } = useDecode(value, isBase64);
   const displayValue = data ?? value;
+  const isDecoding = !error && (isPending || isFetching);
   const { editor: editorClassName } = styles({
-    state: !error && (isPending || isFetching) ? 'pending' : 'ready',
+    state: isDecoding ? 'pending' : 'ready',
   });
+  const editorValue = useMemo(
+    () =>
+      renderWhenReady && typeof displayValue === 'string'
+        ? formatJsonText(displayValue)
+        : displayValue,
+    [renderWhenReady, displayValue],
+  );
 
   if (typeof displayValue === 'undefined') {
     return null;
+  }
+
+  if (renderWhenReady && isDecoding) {
+    return (
+      <div className="flex items-center gap-1.5 py-2.5 pr-4 text-sm text-muted">
+        <Spinner className="h-4 w-4" />
+        Loading…
+      </div>
+    );
   }
 
   return (
     <div className="flex w-full items-center">
       <div className="relative min-w-0 flex-auto">
         <Editor
-          value={displayValue}
+          value={editorValue}
           editorRef={editorRef}
           readonly
+          isFormatted={renderWhenReady}
           key={displayValue}
           className={editorClassName({ className })}
         />

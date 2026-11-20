@@ -125,7 +125,7 @@ export function InvocationId({
   const element = (
     <div className={base({ className })}>
       <div className={container({})}>
-        <div className={icon()}>
+        <div className={icon()} data-invocation-icon>
           <Icon name={iconName} className="h-full w-full p-1 text-muted" />
         </div>
 

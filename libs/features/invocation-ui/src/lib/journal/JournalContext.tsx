@@ -14,6 +14,7 @@ const JournalEntriesContext = createContext<{
   disableExpand?: boolean;
   hideOutput?: boolean;
   disableAwaitingHighlight?: boolean;
+  isFit?: boolean;
 }>({
   detail: COMPACT_DETAIL,
 });
@@ -56,6 +57,7 @@ export function JournalContextProvider({
   containerRef,
   isLive,
   detail,
+  isFit,
 }: PropsWithChildren<{
   invocationIds: string[];
   addInvocationId?: (id: string) => void;
@@ -69,10 +71,11 @@ export function JournalContextProvider({
   containerRef?: RefObject<HTMLDivElement | null>;
   isLive: boolean;
   detail: JournalDetail;
+  isFit?: boolean;
 }>) {
   const entriesValue = useMemo(
-    () => ({ addInvocationId, removeInvocationId, detail }),
-    [addInvocationId, removeInvocationId, detail],
+    () => ({ addInvocationId, removeInvocationId, detail, isFit }),
+    [addInvocationId, removeInvocationId, detail, isFit],
   );
 
   const expansionValue = useMemo(

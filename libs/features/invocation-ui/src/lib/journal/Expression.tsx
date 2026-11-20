@@ -17,8 +17,42 @@ const styles = tv({
       true: 'font-medium italic',
       false: 'font-medium',
     },
+    isInline: {
+      true: 'contents',
+      false: '',
+    },
   },
 });
+
+const fitStyles = tv({
+  slots: {
+    content: 'text-inherits min-w-0 text-tertiary',
+    row: 'flex min-w-0 items-center',
+    name: 'flex max-w-fit min-w-0 shrink-0 items-center font-medium',
+    chain: 'base-20 min-w-0 truncate',
+    chainContent: 'text-tertiary',
+    symbol: 'shrink-0 text-subtle',
+  },
+  variants: {
+    isInline: {
+      true: {
+        content: 'contents',
+        row: 'contents',
+      },
+    },
+    isFit: {
+      true: {
+        chain: 'contents',
+        chainContent: 'contents',
+      },
+    },
+    isNameElastic: {
+      true: { name: 'min-w-[7ch] shrink @max-[480px]/journal:min-w-[4ch]' },
+    },
+  },
+});
+
+const ELASTIC_NAME_LENGTH = 7;
 
 export function Expression({
   className,
@@ -32,6 +66,7 @@ export function Expression({
   chain,
   namePrefix,
   isPending = false,
+  isInline = false,
 }: {
   className?: string;
   name: string;
@@ -47,17 +82,31 @@ export function Expression({
   // up in…", etc.) rather than a result. `hideOutput` only suppresses real
   // results, so pending entries always render their output.
   isPending?: boolean;
+  isInline?: boolean;
 }) {
-  const { hideOutput } = useJournalEntriesContext();
+  const { hideOutput, isFit = false } = useJournalEntriesContext();
   const showOutput = (isPending || !hideOutput) && output;
+  const isFitInline = isFit && isInline;
+  const {
+    content,
+    row,
+    name: nameStyle,
+    chain: chainStyle,
+    chainContent,
+    symbol,
+  } = fitStyles({
+    isInline: isFitInline,
+    isFit,
+    isNameElastic: isFitInline && name.length > ELASTIC_NAME_LENGTH,
+  });
   return (
-    <div className={styles({ className, isFunction })}>
-      <div className="text-inherits min-w-0 text-tertiary">
-        <span className="flex min-w-0 items-center">
+    <div className={styles({ className, isFunction, isInline: isFitInline })}>
+      <div className={content()}>
+        <span className={row()}>
           {prefix && (
             <span className="shrink-0 font-normal text-accent">{prefix}</span>
           )}
-          <span className="flex max-w-fit min-w-0 shrink-0 items-center font-medium">
+          <span className={nameStyle()}>
             {isHandler && (
               <Icon
                 name={IconName.Function}
@@ -76,14 +125,14 @@ export function Expression({
           {input}
           <span className="shrink-0 text-subtle">{isFunction && ')'}</span>
           {chain && (
-            <span className="base-20 min-w-0 truncate">
-              <span className="text-tertiary">{chain}</span>
+            <span className={chainStyle()}>
+              <span className={chainContent()}>{chain}</span>
               {typeof chain === 'string' ? '()' : null}
             </span>
           )}
           {showOutput && (
             <>
-              <span className="shrink-0 text-subtle">
+              <span className={symbol()}>
                 <span className="mx-[0.5ch] font-sans text-muted">
                   {operationSymbol}
                 </span>

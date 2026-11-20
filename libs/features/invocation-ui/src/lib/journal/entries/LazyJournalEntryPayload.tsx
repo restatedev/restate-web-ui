@@ -7,17 +7,24 @@ import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Spinner } from '@restate/ui-loading';
 import { DropdownSection } from '@restate/ui-dropdown';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverHoverTrigger,
+  PopoverTrigger,
+} from '@restate/ui-popover';
 import { preloadEditor } from '@restate/ui-editor';
 import { Portal } from '@restate/ui-portal';
 import { tv, cx } from '@restate/util-styles';
 import { formatBytes } from '@restate/util-intl';
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useId, useMemo, useState } from 'react';
 import { Value } from '../Value';
 import { Headers } from '../Headers';
 import { Failure } from '../Failure';
 import { useRestateContext } from '@restate/features-restate-context';
 import { useJournalEntriesContext } from '../JournalContext';
+import { getFailureClassName, useIsFit } from '../fitRows';
+import { useHoverPinPopover } from './useHoverPinPopover';
 import {
   StaticCodecOptionsProvider,
   useCodec,
@@ -83,6 +90,15 @@ const styles = tv({
     isVoid: false,
   },
 });
+
+const fitTriggerStyles = tv({
+  base: 'mx-0.5 my-0.5 flex h-5 min-w-6 shrink-0 items-center justify-center rounded-xl px-1 py-0 font-sans text-2xs font-medium whitespace-nowrap text-muted shadow-none outline-offset-0',
+});
+
+const HOVER_OPEN_DELAY_MS = 700;
+const HOVER_CLOSE_DELAY_MS = 100;
+const HOVER_HANDOFF_DELAY_MS = 250;
+const HOVER_MAX_PAYLOAD_BYTES = 100 * 1024;
 
 type PayloadField = keyof Pick<
   JournalEntryPayloads,
@@ -263,6 +279,7 @@ interface PayloadPopoverProps {
     onChange: (tab: PayloadTab) => void;
   };
   contentClassName?: string;
+  portalId: string;
 }
 
 function PayloadSizeBadge({
@@ -293,8 +310,9 @@ function PayloadPopover({
   size,
   tabs,
   contentClassName,
+  portalId,
 }: PayloadPopoverProps) {
-  const { detail } = useJournalEntriesContext();
+  const { detail, isFit = false } = useJournalEntriesContext();
   const {
     base,
     value,
@@ -302,6 +320,13 @@ function PayloadPopover({
     trigger,
     triggerLabel: triggerLabelStyle,
   } = styles({ isVoid });
+  const sizeBadge = !isVoid && detail.size && (
+    <PayloadSizeBadge
+      size={size}
+      className="text-3xs font-normal text-subtle"
+    />
+  );
+  const hoverPin = useHoverPinPopover(onOpenChange);
 
   return (
     <div className={base()}>
@@ -309,30 +334,78 @@ function PayloadPopover({
         className={value()}
         onPointerEnter={preloadEditor}
         onFocus={preloadEditor}
+        {...(isFit && {
+          onPointerDownCapture: hoverPin.onPressStart,
+          onKeyDownCapture: hoverPin.onPressStart,
+        })}
       >
-        <Popover onOpenChange={onOpenChange}>
-          <PopoverTrigger>
-            <Button className={trigger()} variant="secondary">
-              {!isVoid && (
-                <Icon name={IconName.Eye} className="mx-1.5 h-3 w-3 shrink-0" />
+        <Popover
+          {...(isFit
+            ? { isOpen: hoverPin.isOpen, onOpenChange: hoverPin.onOpenChange }
+            : { onOpenChange })}
+        >
+          {isFit ? (
+            <PopoverHoverTrigger
+              openDelay={HOVER_OPEN_DELAY_MS}
+              closeDelay={HOVER_CLOSE_DELAY_MS}
+              handoffDelay={HOVER_HANDOFF_DELAY_MS}
+              isPinned={hoverPin.isPinned}
+              isHoverDisabled={
+                isVoid ||
+                (typeof size === 'number' && size > HOVER_MAX_PAYLOAD_BYTES)
+              }
+            >
+              {isVoid ? (
+                <Button
+                  ref={hoverPin.triggerRef}
+                  className={trigger({ className: 'shrink-0' })}
+                  variant="secondary"
+                  onClick={hoverPin.onPress}
+                >
+                  <span className={triggerLabelStyle()}>
+                    {triggerLabel}
+                    <span className="inline-block w-3" />
+                  </span>
+                </Button>
+              ) : (
+                <Button
+                  ref={hoverPin.triggerRef}
+                  className={fitTriggerStyles()}
+                  variant="secondary"
+                  onClick={hoverPin.onPress}
+                  aria-label={title}
+                >
+                  <span className="font-mono leading-5">{'{…}'}</span>
+                  {sizeBadge}
+                </Button>
               )}
-              <span className={triggerLabelStyle()}>
-                {triggerLabel}
-                {!isVoid && detail.size && (
-                  <PayloadSizeBadge
-                    size={size}
-                    className="text-3xs font-normal text-subtle"
+            </PopoverHoverTrigger>
+          ) : (
+            <PopoverTrigger>
+              <Button className={trigger()} variant="secondary">
+                {!isVoid && (
+                  <Icon
+                    name={IconName.Eye}
+                    className="mx-1.5 h-3 w-3 shrink-0"
                   />
                 )}
-                <span className="inline-block w-3" />
-              </span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="[&_header]:px-0">
+                <span className={triggerLabelStyle()}>
+                  {triggerLabel}
+                  {sizeBadge}
+                  <span className="inline-block w-3" />
+                </span>
+              </Button>
+            </PopoverTrigger>
+          )}
+          <PopoverContent
+            className="[&_header]:px-0 [&_header]:pt-1"
+            isNonModal={isFit}
+            {...(isFit && { autoFocus: hoverPin.isPinned })}
+          >
             <DropdownSection
               className={content({ className: contentClassName })}
               title={
-                <div className="flex items-center text-0.5xs">
+                <div className="flex min-h-5.5 items-center text-0.5xs">
                   {tabs ? (
                     <Nav ariaCurrentValue="true" className="gap-0">
                       {tabs.items.map((tab) => (
@@ -356,7 +429,7 @@ function PayloadPopover({
                     />
                   )}
                   <div className="ml-auto">{waterMark}</div>
-                  <Portal className="ml-2" id="expression-value" />
+                  <Portal className="ml-2" id={portalId} />
                 </div>
               }
             >
@@ -409,7 +482,8 @@ function LazyValue({
 }: LazyPayloadProps) {
   const { EncodingWaterMark } = useRestateContext();
   const outputCodecOptions = useTargetInvocationCodecOptions('Output');
-  const { hideOutput } = useJournalEntriesContext();
+  const { hideOutput, isFit = false } = useJournalEntriesContext();
+  const portalId = useId();
   const isHiddenPendingEntry = hideWhenEntryIsPending && entry?.isPending;
   const { data, failure, isPending, error, isLoaded, size, onOpen } =
     useLazyPayload(
@@ -429,7 +503,7 @@ function LazyValue({
         restate_code={failure.restate_code}
         metadata={failure.metadata}
         isRetrying={entry.isRetrying}
-        className="text-2xs"
+        className={getFailureClassName(isFit, failure.message)}
       />
     );
   }
@@ -446,6 +520,7 @@ function LazyValue({
       triggerLabel={isVoid ? 'void' : title}
       isVoid={isVoid}
       size={size}
+      portalId={portalId}
       waterMark={
         EncodingWaterMark && isBase64 && data ? (
           <EncodingWaterMark value={data} />
@@ -461,7 +536,8 @@ function LazyValue({
               className="font-mono text-xs"
               isBase64={isBase64}
               showCopyButton
-              portalId="expression-value"
+              portalId={portalId}
+              renderWhenReady={isFit}
             />
           </StaticCodecOptionsProvider>
         ) : (
@@ -485,6 +561,8 @@ function LazyInput({
   const { EncodingWaterMark } = useRestateContext();
   const inputCodecOptions = useTargetInvocationCodecOptions('Input');
   const [activeTab, setActiveTab] = useState<PayloadTab>('parameters');
+  const isFit = useIsFit();
+  const portalId = useId();
 
   const { rawData, isPending, error, isLoaded, size, onOpen } = useLazyPayload(
     invocationId,
@@ -504,6 +582,7 @@ function LazyInput({
       title={title}
       triggerLabel={title}
       size={size}
+      portalId={portalId}
       waterMark={
         EncodingWaterMark &&
         isBase64 &&
@@ -533,7 +612,8 @@ function LazyInput({
                 className="font-mono text-xs"
                 isBase64={isBase64}
                 showCopyButton
-                portalId="expression-value"
+                portalId={portalId}
+                renderWhenReady={isFit}
               />
             </StaticCodecOptionsProvider>
           ) : (
@@ -542,11 +622,7 @@ function LazyInput({
             )
           )
         ) : headersData && headersData.length > 0 ? (
-          <Headers
-            headers={headersData}
-            showCopyButton
-            portalId="expression-value"
-          />
+          <Headers headers={headersData} showCopyButton portalId={portalId} />
         ) : (
           isLoaded && (
             <div className="rounded-xl border bg-surface px-4 py-2 text-xs text-muted shadow-xs">
@@ -569,6 +645,8 @@ function LazyKeys({
     entry,
     'keys',
   );
+  const isFit = useIsFit();
+  const portalId = useId();
 
   if (!entry || !invocationId) {
     return null;
@@ -579,6 +657,7 @@ function LazyKeys({
       title={title}
       triggerLabel={title}
       size={size}
+      portalId={portalId}
       onOpenChange={(isOpen) => isOpen && onOpen()}
     >
       <PayloadContent isPending={isPending} error={error}>
@@ -587,7 +666,8 @@ function LazyKeys({
             value={JSON.stringify(data)}
             className="font-mono text-xs"
             showCopyButton
-            portalId="expression-value"
+            portalId={portalId}
+            renderWhenReady={isFit}
           />
         ) : (
           isLoaded && <div className="py-2 text-xs text-muted">No keys</div>

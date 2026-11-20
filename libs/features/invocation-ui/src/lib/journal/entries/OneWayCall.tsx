@@ -12,11 +12,44 @@ import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 import { Value } from '../Value';
 import { useJournalEntriesContext } from '../JournalContext';
 import { ExpandInvocationButton } from './ExpandInvocationButton';
+import { useIsFit } from '../fitRows';
+import { FitServiceTarget } from './FitServiceTarget';
 
 const styles = tv({
   base: 'relative flex flex-auto flex-row items-center gap-1.5 pr-2',
   variants: {
     canExpand: { true: 'pr-9', false: '' },
+    isFit: { true: '@max-[860px]/journal:pr-0', false: '' },
+  },
+});
+
+const expressionStyles = tv({
+  base: 'min-w-0',
+  variants: {
+    isFit: {
+      true: '@max-[860px]/journal:mr-px',
+      false: '',
+    },
+  },
+});
+
+const chainStyles = tv({
+  base: '',
+  variants: {
+    isFit: {
+      true: '',
+      false: 'pr-0 [&>*>*>*]:flex-auto',
+    },
+  },
+});
+
+const invocationStyles = tv({
+  base: '-ml-1',
+  variants: {
+    isFit: {
+      true: 'shrink-0 @max-[860px]/journal:mr-px @max-[860px]/journal:-ml-1.5 [&_[data-invocation-icon]]:size-5.5 [&_[data-invocation-icon]]:rounded-md [&_[data-invocation-icon]>svg]:p-0.5 [&_[data-invocation-icon]>svg]:text-secondary',
+      false: '',
+    },
   },
 });
 
@@ -29,6 +62,7 @@ export function OneWayCall({
 >) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   const { disableExpand } = useJournalEntriesContext();
+  const isFit = useIsFit();
 
   const invokeTime = entry.invokeTime ?? entry.start;
   const { isPast, ...parts } = invokeTime
@@ -42,6 +76,7 @@ export function OneWayCall({
         className={styles({
           className,
           canExpand: !disableExpand && Boolean(entry.invocationId),
+          isFit: isFit,
         })}
       >
         <EntryExpression
@@ -64,25 +99,35 @@ export function OneWayCall({
                 />
               )}
               {entry.name && ', '}
-              {entry.serviceName && entry.handlerName && (
-                <ServiceTarget
-                  scope={entry.scope}
-                  service={entry.serviceName}
-                  serviceKey={entry.serviceKey}
-                  handler={entry.handlerName}
-                  showHandler={false}
-                  density="compact"
-                  className="mx-0.5"
-                  chipClassName="font-sans text-2xs not-italic"
-                />
-              )}
+              {entry.serviceName &&
+                entry.handlerName &&
+                (isFit ? (
+                  <FitServiceTarget
+                    scope={entry.scope}
+                    service={entry.serviceName}
+                    serviceKey={entry.serviceKey}
+                    handler={entry.handlerName}
+                  />
+                ) : (
+                  <ServiceTarget
+                    scope={entry.scope}
+                    service={entry.serviceName}
+                    serviceKey={entry.serviceKey}
+                    handler={entry.handlerName}
+                    showHandler={false}
+                    density="compact"
+                    className="mx-0.5"
+                    chipClassName="font-sans text-2xs not-italic"
+                  />
+                ))}
             </>
           }
           chain={
             <Expression
               name={'.' + entry.handlerName}
               operationSymbol=""
-              className="pr-0 [&>*>*>*]:flex-auto"
+              isInline
+              className={chainStyles({ isFit })}
               input={
                 <LazyJournalEntryPayload.Input
                   invocationId={invocation?.id}
@@ -93,10 +138,14 @@ export function OneWayCall({
               }
             />
           }
-          className="min-w-0"
+          className={expressionStyles({ isFit: isFit })}
         />
         {entry.invocationId && (
-          <InvocationId id={entry.invocationId} className="-ml-1" size="icon" />
+          <InvocationId
+            id={entry.invocationId}
+            className={invocationStyles({ isFit: isFit })}
+            size="icon"
+          />
         )}
         {duration && invokeTime && !isPast && (
           <div className="ml-auto inline-flex items-center gap-[0.5ch] truncate font-sans text-xs">

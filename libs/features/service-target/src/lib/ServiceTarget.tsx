@@ -8,6 +8,7 @@ import {
   Chip,
   ChipGroup,
   ChipSegment,
+  type ChipGroupDensity,
   type ChipGroupVariant,
 } from '@restate/ui-chip';
 import { Icon, IconName } from '@restate/ui-icons';
@@ -56,6 +57,18 @@ const styles = tv({
   },
 });
 
+const flatStyles = tv({ base: 'contents' });
+
+const flatSegmentStyles = tv({
+  base: 'min-w-0',
+  variants: {
+    isFirst: {
+      true: '',
+      false: '-ml-0.5',
+    },
+  },
+});
+
 const tooltipStyles = tv({
   slots: {
     root: 'grid max-w-96 min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 py-0.5 text-left',
@@ -75,8 +88,10 @@ export interface ServiceTargetProps {
   className?: string;
   chipClassName?: string;
   variant?: ChipGroupVariant;
-  density?: 'default' | 'compact';
+  density?: ChipGroupDensity;
   endContent?: ReactNode;
+  flat?: boolean;
+  segmentClassNames?: Partial<Record<ServiceTargetSegment, string>>;
 }
 
 export type ServiceTargetSegment =
@@ -107,11 +122,12 @@ function resolveServiceType(serviceType?: ServiceTargetServiceType) {
         : serviceType;
 }
 
-function TargetLinkChevron() {
+function TargetLinkChevron({ isMarked = false }: { isMarked?: boolean }) {
   return (
     <Icon
       name={IconName.ChevronRight}
       className="-mr-1 h-3.5 w-3.5 shrink-0 text-subtle"
+      {...(isMarked && { 'data-target-link-chevron': true })}
     />
   );
 }
@@ -191,6 +207,8 @@ export function ServiceTargetContent({
   variant,
   density,
   endContent,
+  flat = false,
+  segmentClassNames,
   children,
 }: PropsWithChildren<ServiceTargetProps>) {
   const { baseUrl } = useRestateContext();
@@ -334,9 +352,15 @@ export function ServiceTargetContent({
       aria-label={serviceLink?.ariaLabel}
     >
       <ChipSegment tone="raised" className={serviceStyle()}>
-        <Icon name={IconName.Box} className={serviceIcon()} />
+        <Icon
+          name={IconName.Box}
+          className={serviceIcon()}
+          {...(flat && { 'data-target-icon': true })}
+        />
         <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
-        {identityChevronSegment === 'service' && <TargetLinkChevron />}
+        {identityChevronSegment === 'service' && (
+          <TargetLinkChevron isMarked={flat} />
+        )}
         {!hasServiceKey &&
           !hasVisibleHandler &&
           !hasTrailingContent &&
@@ -361,7 +385,7 @@ export function ServiceTargetContent({
       <ChipSegment tone="muted" className={handlerStyle()}>
         <Icon name={IconName.Function} className={handlerIcon()} />
         <TruncateTooltipTrigger>{handler}()</TruncateTooltipTrigger>
-        {handlerLink && <TargetLinkChevron />}
+        {handlerLink && <TargetLinkChevron isMarked={flat} />}
         {!hasTrailingContent && endContent && (
           <span className={endContentStyle()} data-service-target-end-content>
             {endContent}
@@ -387,11 +411,19 @@ export function ServiceTargetContent({
       aria-label={serviceKeyLink?.ariaLabel}
     >
       <ChipSegment tone="subtle" className={key()}>
-        {keyIcon && <Icon name={keyIcon} className={icon()} />}
+        {keyIcon && (
+          <Icon
+            name={keyIcon}
+            className={icon()}
+            {...(flat && { 'data-target-icon': true })}
+          />
+        )}
         <TruncateTooltipTrigger>
           {serviceKey || <>&nbsp;</>}
         </TruncateTooltipTrigger>
-        {identityChevronSegment === 'serviceKey' && <TargetLinkChevron />}
+        {identityChevronSegment === 'serviceKey' && (
+          <TargetLinkChevron isMarked={flat} />
+        )}
         {!hasVisibleHandler && !hasTrailingContent && endContent && (
           <span className={endContentStyle()} data-service-target-end-content>
             {endContent}
@@ -400,6 +432,54 @@ export function ServiceTargetContent({
       </ChipSegment>
     </Chip>
   ) : null;
+
+  if (flat) {
+    const flatChips: [ServiceTargetSegment, ReactNode][] = [
+      ['service', serviceChip],
+      ['serviceKey', serviceKeyChip],
+      ['handler', hasVisibleHandler ? handlerChip : null],
+    ];
+    return (
+      <span className={flatStyles({ className })} data-service-target>
+        <ChipGroup
+          variant={variant}
+          density={resolvedDensity}
+          className="contents"
+        >
+          {hasVisibleScope && (
+            <Scope
+              value={scope}
+              className={chip({ className: chipClassName })}
+              containerClassName={scopeChip({
+                className: segmentClassNames?.scope,
+              })}
+              segmentClassName="max-w-none"
+              relationship="target"
+              href={scopeLink?.href}
+              aria-label={scopeLink?.ariaLabel}
+            />
+          )}
+          {flatChips.map(
+            ([segment, segmentChip]) =>
+              segmentChip && (
+                <TruncateWithTooltip
+                  key={segment}
+                  tooltipContent={tooltipContent}
+                  copyText={target}
+                  containerClassName={flatSegmentStyles({
+                    isFirst: segment === 'service' && !hasVisibleScope,
+                    className: segmentClassNames?.[segment],
+                  })}
+                  overflowVisible
+                >
+                  {segmentChip}
+                </TruncateWithTooltip>
+              ),
+          )}
+        </ChipGroup>
+      </span>
+    );
+  }
 
   return (
     <span className={root({ className })} data-service-target>
