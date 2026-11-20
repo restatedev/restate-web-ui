@@ -40,21 +40,20 @@ import { afterFastScroll, isScrollingFast } from './scrollSpeed';
 import { internalCellKey } from './keys';
 import { WindowedCellsContext } from './window/WindowedCellsContext';
 
-const TABLE_RENDER_WINDOW: RenderWindowOptions = {
-  overscan: 12,
-  scrollAhead: 40,
-  idleRowsAbove: 1000,
-  idleRowsBelow: 1000,
-  step: 5,
-  maxGrowth: 10,
-  idleStep: 20,
-};
+const IDLE_CELLS_PER_SIDE = 3000;
+const IDLE_CELLS_PER_STEP = 200;
+const MIN_IDLE_ROWS = 50;
+const MAX_IDLE_ROWS = 1000;
+const MAX_IDLE_STEP = 20;
 const SKIP_FAR_ROW_PAINT =
   typeof CSS !== 'undefined' && !CSS.supports('-moz-appearance', 'none');
 const LIVE_MARGIN = 4;
 const KEEP_LIVE_MARGIN = LIVE_MARGIN * 4;
 const SETTLE_BATCH = 8;
 const SETTLE_DELAY_MS = 30;
+const REPLAYED_SLOTS = '[slot=selection], [slot=chevron]';
+const NATIVE_CONTROLS =
+  'a[href], button, input, select, textarea, label, [role=button], [role=link]';
 
 type RootProps = ComponentProps<CollectionRenderer['CollectionRoot']>;
 type BranchProps = ComponentProps<CollectionRenderer['CollectionBranch']>;
@@ -63,6 +62,7 @@ type TableCollection = BranchProps['collection'] & {
   columns?: CollectionNode[];
   headerRows?: unknown[];
   rowHeaderColumnKeys?: ReadonlySet<Key>;
+  expandedKeys?: ReadonlySet<Key>;
 };
 type TableCellNode = CollectionNode & {
   colIndex?: number | null;
@@ -171,6 +171,66 @@ interface StaticColumns {
   headerRowCount: number;
   keys: Key[];
   rowHeaders: ReadonlySet<number>;
+  treeIndex: number | null;
+}
+
+interface TreeRow {
+  hasChildItems: boolean;
+  isExpanded: boolean;
+  posInSet: number;
+  setSize: number;
+}
+
+function getTreeRow(
+  collection: TableCollection,
+  node: CollectionNode,
+): TreeRow {
+  const lastChild =
+    node.lastChildKey == null ? null : collection.getItem(node.lastChildKey);
+  const hasChildItems =
+    Boolean(node.props?.hasChildItems) || lastChild?.type !== 'cell';
+  const parent =
+    node.parentKey == null ? null : collection.getItem(node.parentKey);
+  const offset =
+    parent?.type === 'item' ? (collection.columns?.length ?? 0) : 0;
+  let lastSibling =
+    parent?.lastChildKey == null
+      ? null
+      : collection.getItem(parent.lastChildKey);
+  while (
+    lastSibling &&
+    lastSibling.type !== 'item' &&
+    lastSibling.prevKey != null
+  ) {
+    lastSibling = collection.getItem(lastSibling.prevKey);
+  }
+  return {
+    hasChildItems,
+    isExpanded:
+      hasChildItems && Boolean(collection.expandedKeys?.has(node.key)),
+    posInSet: node.index - offset + 1,
+    setSize: (lastSibling?.index ?? node.index) - offset + 1,
+  };
+}
+
+function getRenderWindowOptions(cellsPerRow: number): RenderWindowOptions {
+  const cells = Math.max(1, cellsPerRow);
+  const idleRows = Math.min(
+    MAX_IDLE_ROWS,
+    Math.max(MIN_IDLE_ROWS, Math.floor(IDLE_CELLS_PER_SIDE / cells)),
+  );
+  return {
+    overscan: 12,
+    scrollAhead: 40,
+    idleRowsAbove: idleRows,
+    idleRowsBelow: idleRows,
+    step: 5,
+    maxGrowth: 10,
+    idleStep: Math.min(
+      MAX_IDLE_STEP,
+      Math.max(1, Math.floor(IDLE_CELLS_PER_STEP / cells)),
+    ),
+  };
 }
 
 function getColumnsSignature(collection: TableCollection) {
@@ -358,6 +418,10 @@ const StaticRow = memo(function StaticRow({
   isSelectionDisabled,
   isDisabled,
   selectionMode,
+  hasChildItems,
+  isExpanded,
+  posInSet,
+  setSize,
   measureElement,
 }: {
   node: CollectionNode;
@@ -370,6 +434,10 @@ const StaticRow = memo(function StaticRow({
   isSelectionDisabled: boolean;
   isDisabled: boolean;
   selectionMode: string;
+  hasChildItems: boolean;
+  isExpanded: boolean;
+  posInSet: number;
+  setSize: number;
   measureElement: (element: Element | null) => void;
 }) {
   const { columnWidths, estimatedRowHeight } = useContext(WindowedTableContext);
@@ -388,6 +456,7 @@ const StaticRow = memo(function StaticRow({
   );
   const level = (node.level ?? 0) + 1;
   const hasSelection = selectionMode !== 'none';
+  const isTree = columns.treeIndex != null;
   const values = {
     isSelected,
     isDisabled,
@@ -401,6 +470,8 @@ const StaticRow = memo(function StaticRow({
     selectionMode,
     id: node.key,
     level,
+    hasChildItems,
+    isExpanded,
   };
   const selectionCellKey = internalCellKey(node.key, 'selection');
   const columnKeyAt = (index: number) => columns.keys[index];
@@ -435,11 +506,18 @@ const StaticRow = memo(function StaticRow({
           } as CSSProperties
         }
         data-rac=""
-        aria-rowindex={index + 1 + columns.headerRowCount}
+        aria-rowindex={isTree ? undefined : index + 1 + columns.headerRowCount}
+        aria-level={isTree ? level : undefined}
+        aria-expanded={isTree && hasChildItems ? isExpanded : undefined}
+        aria-posinset={isTree ? posInSet : undefined}
+        aria-setsize={isTree ? setSize : undefined}
         aria-selected={hasSelection ? isSelected : undefined}
+        aria-disabled={isDisabled || undefined}
         data-selected={isSelected || undefined}
         data-disabled={isDisabled || undefined}
         data-selection-mode={hasSelection ? selectionMode : undefined}
+        data-expanded={isExpanded || undefined}
+        data-has-child-items={hasChildItems || undefined}
         data-level={level}
       >
         <CollectionRendererContext.Provider value={DefaultCollectionRenderer}>
@@ -447,6 +525,8 @@ const StaticRow = memo(function StaticRow({
             const start = cell.colIndex ?? cell.index;
             const width = cellWidth(cell, columnKeyAt, columnWidths);
             const children = cell.props?.children;
+            const isTreeColumn = cell.index === columns.treeIndex;
+            const cellValues = { ...values, columnIndex: start, isTreeColumn };
             return (
               <div
                 key={cell.key}
@@ -460,13 +540,16 @@ const StaticRow = memo(function StaticRow({
                   }
                   className={resolveClassName(
                     cell.props?.className,
-                    { ...values, columnIndex: start },
+                    cellValues,
                     'react-aria-Cell',
                   )}
                   data-rac=""
                   aria-colindex={start + 1}
                   data-column-index={start}
+                  data-expanded={isExpanded || undefined}
+                  data-has-child-items={hasChildItems || undefined}
                   data-level={level}
+                  data-tree-column={isTreeColumn || undefined}
                 >
                   {cell.key === selectionCellKey ? (
                     <Checkbox
@@ -477,7 +560,7 @@ const StaticRow = memo(function StaticRow({
                       isReadOnly
                     />
                   ) : typeof children === 'function' ? (
-                    children({ ...values, columnIndex: start })
+                    children(cellValues)
                   ) : (
                     children
                   )}
@@ -517,22 +600,26 @@ function WindowedRows({
   const staticState = useDeferredValue(liveState);
   const staticManager = staticState?.selectionManager;
   const focusedRowKey = getFocusedRowKey(liveState);
+  const treeColumn = liveState?.treeColumn ?? null;
   const columnsSignature = getColumnsSignature(collection as TableCollection);
   const staticColumns = useMemo<StaticColumns>(() => {
     const [headerRowCount, columns] = JSON.parse(columnsSignature) as [
       number,
       [Key, number][],
     ];
+    const keys = columns.map(([key]) => key);
+    const treeIndex = treeColumn == null ? -1 : keys.indexOf(treeColumn);
     return {
       headerRowCount,
-      keys: columns.map(([key]) => key),
+      keys,
       rowHeaders: new Set(
         columns.flatMap(([, isRowHeader], index) =>
           isRowHeader ? [index] : [],
         ),
       ),
+      treeIndex: treeIndex < 0 ? null : treeIndex,
     };
-  }, [columnsSignature]);
+  }, [columnsSignature, treeColumn]);
   const indexByKey = useMemo(
     () => new Map(rows.map((row, index) => [row.key, index])),
     [rows],
@@ -540,7 +627,12 @@ function WindowedRows({
   const sizerRef = useRef<HTMLDivElement>(null);
   const rowsRef = useRef(rows);
   const [sizerCallbackRef, scrollMargin] = useWindowScrollMargin(sizerRef);
-  const renderWindow = useRenderWindow(TABLE_RENDER_WINDOW);
+  const cellsPerRow = staticColumns.keys.length;
+  const renderWindowOptions = useMemo(
+    () => getRenderWindowOptions(cellsPerRow),
+    [cellsPerRow],
+  );
+  const renderWindow = useRenderWindow(renderWindowOptions);
   const persistedIndexes = useMemo(() => {
     if (!persistedKeys?.size) return [];
     const indexes = new Set<number>();
@@ -646,7 +738,13 @@ function WindowedRows({
   const visibleRange = virtualizer.calculateRange();
   const visibleStart = visibleRange?.startIndex ?? 0;
   const visibleEnd = visibleRange?.endIndex ?? -1;
-  const [liveKeys, setLiveKeys] = useState<ReadonlySet<Key>>(() => new Set());
+  const [liveKeys, setLiveKeys] = useState<ReadonlySet<Key>>(() => {
+    const initialRows =
+      typeof window === 'undefined'
+        ? 0
+        : Math.ceil(window.innerHeight / estimatedRowHeight) + LIVE_MARGIN;
+    return new Set(rows.slice(0, initialRows).map((row) => row.key));
+  });
   const isScrolling = virtualizer.isScrolling;
   useEffect(() => {
     if (isScrolling || visibleEnd < visibleStart) return;
@@ -697,30 +795,62 @@ function WindowedRows({
   useEffect(() => {
     const container = sizerRef.current?.parentElement;
     if (!container) return;
-    const promote = (event: PointerEvent) => {
-      if (
-        event.type === 'pointermove'
-          ? event.pointerType !== 'mouse' ||
-            (event.movementX === 0 && event.movementY === 0)
-          : event.pointerType === 'mouse'
-      ) {
-        return;
-      }
+    const getStaticRow = (target: EventTarget | null) => {
       const element =
-        event.target instanceof Element
-          ? event.target.closest<HTMLElement>('[data-static-row]')
+        target instanceof Element
+          ? target.closest<HTMLElement>('[data-static-row]')
           : null;
       const key = element
         ? rowsRef.current[Number(element.dataset.index)]?.key
         : undefined;
-      if (key == null) return;
-      flushSync(() => setLiveKeys(addKeys([key])));
+      return element && key != null
+        ? { index: element.dataset.index, key }
+        : null;
+    };
+    const promote = (event: PointerEvent) => {
+      if (
+        event.pointerType !== 'mouse' ||
+        event.buttons !== 0 ||
+        (event.movementX === 0 && event.movementY === 0)
+      ) {
+        return;
+      }
+      const row = getStaticRow(event.target);
+      if (row) flushSync(() => setLiveKeys(addKeys([row.key])));
+    };
+    const replayClick = (event: MouseEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const row = getStaticRow(target?.closest('[role=row]') ?? null);
+      if (!row || !target) return;
+      const slot = target.closest(REPLAYED_SLOTS)?.getAttribute('slot');
+      if (!slot && target.closest(NATIVE_CONTROLS)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      flushSync(() => setLiveKeys(addKeys([row.key])));
+      const liveRow = container.querySelector(
+        `[data-index="${row.index}"]:not([data-static-row]) [role=row]`,
+      );
+      const slotted = slot ? liveRow?.querySelector(`[slot="${slot}"]`) : null;
+      (slotted
+        ? (slotted.querySelector('input') ?? slotted)
+        : liveRow
+      )?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: event.view,
+          altKey: event.altKey,
+          ctrlKey: event.ctrlKey,
+          metaKey: event.metaKey,
+          shiftKey: event.shiftKey,
+        }),
+      );
     };
     container.addEventListener('pointermove', promote);
-    container.addEventListener('pointerover', promote);
+    container.addEventListener('click', replayClick, true);
     return () => {
       container.removeEventListener('pointermove', promote);
-      container.removeEventListener('pointerover', promote);
+      container.removeEventListener('click', replayClick, true);
     };
   }, []);
 
@@ -749,6 +879,7 @@ function WindowedRows({
         />
       );
     }
+    const tree = getTreeRow(collection as TableCollection, row);
     return (
       <StaticRow
         key={row.key}
@@ -766,6 +897,10 @@ function WindowedRows({
         }
         isDisabled={staticManager?.isDisabled(row.key) ?? false}
         selectionMode={staticManager?.selectionMode ?? 'none'}
+        hasChildItems={tree.hasChildItems}
+        isExpanded={tree.isExpanded}
+        posInSet={tree.posInSet}
+        setSize={tree.setSize}
         measureElement={virtualizer.measureElement}
       />
     );

@@ -16,14 +16,12 @@ import {
   Column as AriaColumn,
   ResizableTableContainer,
   Toolbar as AriaToolbar,
-  Virtualizer,
 } from 'react-aria-components';
 import type { Key, SortDescriptor } from 'react-aria-components';
 import { tv } from '@restate/util-styles';
 import { Cell, Row, type RowDataAttributes } from './Row';
 import { Column, TableHeader, TableBody } from './Table';
 import { getNextSortDescriptor } from './sort';
-import { PanelTableLayout } from './PanelTableLayout';
 import { WindowedTable } from './WindowedTable';
 import {
   columnKey,
@@ -89,7 +87,6 @@ export interface PanelTableProps<
   toolbarWrapperClassName?: string;
   toolbarClassName?: string;
   virtualized?: boolean;
-  windowed?: boolean;
   estimatedRowHeight?: number;
   bodyHeadingHeight?: number;
   bodyContainerClassName?: string;
@@ -133,13 +130,7 @@ const styles = tv({
     virtualized: {
       true: {
         dataTableInner:
-          'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:min-h-[43px] [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=rowgroup]]:relative [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowgroup]]:[background-image:linear-gradient(to_top,var(--border-color-default)_1px,transparent_1px)] [&_[role=rowgroup]]:[background-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:[background-repeat:repeat-y] [&_[role=rowgroup]]:before:pointer-events-none [&_[role=rowgroup]]:before:absolute [&_[role=rowgroup]]:before:inset-0 [&_[role=rowgroup]]:before:bg-emphasis/70 [&_[role=rowgroup]]:before:[mask-image:var(--panel-table-skeleton)] [&_[role=rowgroup]]:before:[mask-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:before:[mask-repeat:repeat-y] [&_[role=rowgroup]]:before:content-[""] [&_[role=rowgroup]>[role=presentation]]:bg-subtle [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:min-h-[43px] [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
-      },
-    },
-    windowed: {
-      true: {
-        dataTableInner:
-          '[&_[role=row]]:flex [&_[role=row]]:[content-visibility:visible]',
+          'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:min-h-[43px] [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:flex [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=row]]:[content-visibility:visible] [&_[role=rowgroup]]:relative [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowgroup]]:[background-image:linear-gradient(to_top,var(--border-color-default)_1px,transparent_1px)] [&_[role=rowgroup]]:[background-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:[background-repeat:repeat-y] [&_[role=rowgroup]]:before:pointer-events-none [&_[role=rowgroup]]:before:absolute [&_[role=rowgroup]]:before:inset-0 [&_[role=rowgroup]]:before:bg-emphasis/70 [&_[role=rowgroup]]:before:[mask-image:var(--panel-table-skeleton)] [&_[role=rowgroup]]:before:[mask-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:before:[mask-repeat:repeat-y] [&_[role=rowgroup]]:before:content-[""] [&_[role=rowgroup]>[role=presentation]]:bg-subtle [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:min-h-[43px] [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
       },
     },
   },
@@ -177,7 +168,6 @@ export function PanelTable<
   toolbarWrapperClassName,
   toolbarClassName,
   virtualized = true,
-  windowed = false,
   estimatedRowHeight = 43,
   bodyHeadingHeight = 36,
   bodyContainerClassName,
@@ -185,9 +175,7 @@ export function PanelTable<
   ...ariaProps
 }: PanelTableProps<T, TColId>) {
   const ariaLabel = ariaProps['aria-label'];
-  const isWindowed =
-    windowed && !renderChildRows && virtualized && items.length > 0;
-  const isVirtualized = !isWindowed && virtualized && items.length > 0;
+  const isVirtualized = virtualized && items.length > 0;
   const {
     stickyHeaderWrapper,
     stickyHeaderBackdrop,
@@ -201,10 +189,7 @@ export function PanelTable<
     dataTableInner,
     dataTableSpacerHeader,
     dataTableCaption,
-  } = styles({
-    virtualized: isVirtualized || isWindowed,
-    windowed: isWindowed,
-  });
+  } = styles({ virtualized: isVirtualized });
 
   const [columnWidths, setColumnWidths] = useState<Map<Key, number>>(
     () => new Map(),
@@ -460,10 +445,6 @@ export function PanelTable<
 
   const dataTableSelectionWidth =
     selectionMode && selectionMode !== 'none' ? SELECTION_WIDTH : undefined;
-  const layoutOptions = useMemo(
-    () => ({ estimatedRowHeight, headingHeight: bodyHeadingHeight }),
-    [bodyHeadingHeight, estimatedRowHeight],
-  );
   const dataTableColumnWidths = useMemo(() => {
     const widths = new Map<Key, number>(columnWidths);
     widths.set(columnKey(LEFT_SPACER_ID), SPACER_WIDTH);
@@ -488,7 +469,7 @@ export function PanelTable<
     return total;
   }, [dataTableColumnWidths]);
   const skeletonStyle = useMemo(() => {
-    if (!isVirtualized && !isWindowed) return undefined;
+    if (!isVirtualized) return undefined;
     const height = estimatedRowHeight;
     const barHeight = 12;
     const barY = Math.round((height - barHeight) / 2);
@@ -518,7 +499,6 @@ export function PanelTable<
     };
   }, [
     isVirtualized,
-    isWindowed,
     estimatedRowHeight,
     dataTableSelectionWidth,
     columns,
@@ -567,10 +547,6 @@ export function PanelTable<
   );
 
   const body = isVirtualized ? (
-    <Virtualizer layout={PanelTableLayout} layoutOptions={layoutOptions}>
-      {dataTable}
-    </Virtualizer>
-  ) : isWindowed ? (
     <WindowedTable
       columnWidths={dataTableColumnWidths}
       totalWidth={dataTableWidth}
@@ -640,7 +616,7 @@ export function PanelTable<
           </AriaToolbar>
         </div>
       )}
-      {isVirtualized || isWindowed ? (
+      {isVirtualized ? (
         <ResizableTableContainer>
           <div
             ref={dataTableScrollRef}

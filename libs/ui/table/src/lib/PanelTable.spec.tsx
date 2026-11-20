@@ -7,6 +7,7 @@ import {
 } from '@testing-library/react';
 import { useContext } from 'react';
 import {
+  Button,
   Collection,
   CollectionRendererContext,
   DefaultCollectionRenderer,
@@ -570,7 +571,7 @@ describe('PanelTable', () => {
     },
   );
 
-  it('moves body columns with the header while a column is resized', () => {
+  it('moves live body columns with the header while a column is resized and static ones once it ends', () => {
     const observerOf = stubResizeObservers();
     render(
       <PanelTable
@@ -579,7 +580,10 @@ describe('PanelTable', () => {
           { id: 'name', name: 'Name', isRowHeader: true },
           { id: 'status', name: 'Status' },
         ]}
-        items={[{ id: 'one', name: 'One' }]}
+        items={Array.from({ length: 30 }, (_, index) => ({
+          id: `row-${index}`,
+          name: `Row ${index}`,
+        }))}
         renderCell={(row) => <Cell>{row.name}</Cell>}
       />,
     );
@@ -604,8 +608,20 @@ describe('PanelTable', () => {
         return { left: 0, width: 0, ...rects.get(this) } as DOMRect;
       },
     );
-    const wrapperOf = (selector: string) =>
-      body.querySelector(selector)?.parentElement?.style;
+    const rowOf = (name: string) => {
+      const row = screen
+        .getAllByText(name)[0]
+        ?.closest<HTMLElement>('[role=row]');
+      if (!row) throw new Error(`Row ${name} was not rendered`);
+      return row;
+    };
+    const wrapperWidth = (name: string, colIndex: number) =>
+      rowOf(name).querySelector(`[aria-colindex="${colIndex}"]`)?.parentElement
+        ?.style.width;
+
+    expect(rowOf('Row 0').closest('[data-static-row]')).toBeNull();
+    expect(rowOf('Row 29').closest('[data-static-row]')).not.toBeNull();
+    const staticWidth = wrapperWidth('Row 29', 3);
 
     act(() => {
       fireEvent.pointerDown(resizer, { pointerId: 1, button: 0, clientX: 0 });
@@ -617,23 +633,17 @@ describe('PanelTable', () => {
       body.querySelector<HTMLElement>('[role=columnheader][aria-colindex="2"]')
         ?.style.width,
     ).toBe('120px');
-    expect(wrapperOf('[role=rowheader]')).toMatchObject({
-      left: '8px',
-      width: '120px',
-    });
-    expect(wrapperOf('[role=gridcell][aria-colindex="3"]')).toMatchObject({
-      left: '128px',
-      width: '180px',
-    });
+    expect(wrapperWidth('Row 0', 2)).toBe('120px');
+    expect(wrapperWidth('Row 0', 3)).toBe('180px');
+    expect(wrapperWidth('Row 29', 3)).toBe(staticWidth);
 
     act(() => {
       fireEvent.pointerUp(document, { pointerId: 1, clientX: 40 });
     });
 
-    expect(wrapperOf('[role=gridcell][aria-colindex="3"]')).toMatchObject({
-      left: '128px',
-      width: '180px',
-    });
+    expect(wrapperWidth('Row 0', 3)).toBe('180px');
+    expect(wrapperWidth('Row 29', 2)).toBe('120px');
+    expect(wrapperWidth('Row 29', 3)).toBe('180px');
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
@@ -658,7 +668,6 @@ describe('PanelTable windowed', () => {
   ) => (
     <PanelTable
       aria-label="Items"
-      windowed
       columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
       items={items}
       selectionMode="multiple"
@@ -686,36 +695,101 @@ describe('PanelTable windowed', () => {
 
   it('shows the selection on rows rendered as static markup', async () => {
     const { rerender } = render(
-      renderWindowed({ selectedKeys: new Set(['item-2']) }),
+      renderWindowed({ selectedKeys: new Set(['item-26']) }),
     );
 
-    expect(isStatic('Item 2')).toBe(true);
-    expect(rowOf('Item 2').getAttribute('aria-selected')).toBe('true');
-    expect(rowOf('Item 3').getAttribute('aria-selected')).toBe('false');
+    expect(isStatic('Item 26')).toBe(true);
+    expect(rowOf('Item 26').getAttribute('aria-selected')).toBe('true');
+    expect(rowOf('Item 27').getAttribute('aria-selected')).toBe('false');
 
-    rerender(renderWindowed({ selectedKeys: new Set(['item-3']) }));
+    rerender(renderWindowed({ selectedKeys: new Set(['item-27']) }));
     await settle();
 
-    expect(rowOf('Item 2').getAttribute('aria-selected')).toBe('false');
-    expect(rowOf('Item 3').getAttribute('aria-selected')).toBe('true');
+    expect(rowOf('Item 26').getAttribute('aria-selected')).toBe('false');
+    expect(rowOf('Item 27').getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('renders the rows of the first viewport as live rows from the start', () => {
+    render(renderWindowed());
+
+    expect(isStatic('Item 0')).toBe(false);
+    expect(isStatic('Item 17')).toBe(false);
+    expect(isStatic('Item 29')).toBe(true);
   });
 
   it('turns rows near the viewport into live rows once scrolling settles', async () => {
     render(renderWindowed());
-
-    expect(isStatic('Item 0')).toBe(true);
-
-    await waitFor(() => expect(isStatic('Item 0')).toBe(false));
     expect(isStatic('Item 29')).toBe(true);
+
+    act(() => {
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(600);
+      window.dispatchEvent(new Event('scroll'));
+    });
+
+    await waitFor(() => expect(isStatic('Item 29')).toBe(false), {
+      timeout: 3000,
+    });
   });
 
-  it('turns a static row into a live row when the pointer moves over it', () => {
+  it('turns a static row into a live row when the mouse moves over it', () => {
     render(renderWindowed());
 
-    expect(isStatic('Item 1')).toBe(true);
-    fireEvent.pointerOver(rowOf('Item 1'), { pointerType: 'touch' });
+    expect(isStatic('Item 25')).toBe(true);
+    fireEvent.pointerOver(rowOf('Item 25'), { pointerType: 'touch' });
+    expect(isStatic('Item 25')).toBe(true);
 
-    expect(isStatic('Item 1')).toBe(false);
+    fireEvent.pointerMove(rowOf('Item 25'), {
+      pointerType: 'mouse',
+      movementX: 2,
+    });
+    expect(isStatic('Item 25')).toBe(false);
+  });
+
+  it('selects a static row when its checkbox is clicked', () => {
+    const onSelectionChange = vi.fn();
+    render(renderWindowed({ selectedKeys: new Set(), onSelectionChange }));
+
+    expect(isStatic('Item 25')).toBe(true);
+    const checkbox = rowOf('Item 25').querySelector<HTMLInputElement>(
+      'input[type="checkbox"]',
+    );
+    if (!checkbox) throw new Error('Row checkbox was not rendered');
+    fireEvent.click(checkbox);
+
+    expect([...(onSelectionChange.mock.lastCall?.[0] ?? [])]).toEqual([
+      'item-25',
+    ]);
+    expect(isStatic('Item 25')).toBe(false);
+  });
+
+  it('runs the action of a static row when the row is clicked', () => {
+    const onRowAction = vi.fn();
+    render(renderWindowed({ onRowAction }));
+
+    expect(isStatic('Item 25')).toBe(true);
+    fireEvent.click(screen.getByText('Item 25'));
+
+    expect(onRowAction).toHaveBeenCalledWith('item-25');
+  });
+
+  it('leaves links in static rows to the browser', () => {
+    const onRowAction = vi.fn();
+    render(
+      renderWindowed({
+        onRowAction,
+        renderCell: (row) => (
+          <Cell>
+            <a href={`#${row.id}`}>{row.name}</a>
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Item 25')).toBe(true);
+    fireEvent.click(screen.getByText('Item 25'));
+
+    expect(onRowAction).not.toHaveBeenCalled();
+    expect(isStatic('Item 25')).toBe(true);
   });
 
   it('renders static cell content with the default collection renderer', () => {
@@ -737,6 +811,132 @@ describe('PanelTable windowed', () => {
     expect(isStatic('Item 29')).toBe(true);
     expect(rowOf('Item 29').textContent).toBe('Item 29default');
   });
+
+  const parents = items.map((item) => ({
+    id: item.id.replace('item', 'parent'),
+    name: item.name.replace('Item', 'Parent'),
+  }));
+  const renderTree = (
+    expandedKeys: Set<string>,
+    props: Partial<PanelTableProps<(typeof parents)[number]>> = {},
+  ) => (
+    <PanelTable
+      aria-label="Items"
+      columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
+      items={parents}
+      treeColumn="name"
+      expandedKeys={expandedKeys}
+      estimatedRowHeight={44}
+      renderCell={(row) => <Cell>{row.name}</Cell>}
+      renderChildRows={(row, columns) => (
+        <Collection
+          items={[{ id: `${row.id}-child`, name: `${row.name} child` }]}
+        >
+          {(child) => (
+            <Row id={child.id} columns={columns} hasLeadingCell>
+              {(col) => (
+                <Cell key={col.id}>
+                  {col.id === 'name' ? child.name : null}
+                </Cell>
+              )}
+            </Row>
+          )}
+        </Collection>
+      )}
+      {...props}
+    />
+  );
+
+  it('marks static tree rows as expanded and renders their child rows after them', () => {
+    const { rerender } = render(renderTree(new Set(['parent-27'])));
+
+    const parent = rowOf('Parent 27');
+    const child = rowOf('Parent 27 child');
+    expect(isStatic('Parent 27')).toBe(true);
+    expect(isStatic('Parent 27 child')).toBe(true);
+    expect(parent.getAttribute('data-expanded')).toBe('true');
+    expect(parent.getAttribute('aria-expanded')).toBe('true');
+    expect(parent.getAttribute('aria-level')).toBe('1');
+    expect(parent.hasAttribute('aria-rowindex')).toBe(false);
+    expect(child.getAttribute('aria-level')).toBe('2');
+    expect(rowOf('Parent 26').getAttribute('aria-expanded')).toBe('false');
+    expect(
+      parent.compareDocumentPosition(child) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    rerender(renderTree(new Set()));
+
+    expect(screen.queryByText('Parent 27 child')).toBeNull();
+    expect(rowOf('Parent 27').hasAttribute('data-expanded')).toBe(false);
+  });
+
+  it('expands a static tree row from its chevron', () => {
+    const onExpandedChange = vi.fn();
+    render(
+      renderTree(new Set(), {
+        onExpandedChange,
+        renderCell: (row) => (
+          <Cell>
+            <Button slot="chevron">Toggle</Button>
+            {row.name}
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Parent 27')).toBe(true);
+    const chevron = rowOf('Parent 27').querySelector('button');
+    if (!chevron) throw new Error('Chevron was not rendered');
+    fireEvent.click(chevron);
+
+    expect(onExpandedChange).toHaveBeenLastCalledWith(new Set(['parent-27']));
+  });
+
+  it('mounts fewer rows ahead of the viewport when rows have many cells', async () => {
+    const rows = Array.from({ length: 160 }, (_, index) => ({
+      id: `row-${index}`,
+      name: `Row ${index}`,
+    }));
+    const columnsOf = (count: number) =>
+      Array.from({ length: count }, (_, index) => ({
+        id: `c${index}`,
+        name: `C${index}`,
+        isRowHeader: index === 0,
+      }));
+    const mountedRows = () =>
+      screen
+        .getByRole('grid', { name: 'Items' })
+        .querySelectorAll('[data-index]').length;
+    const settledMountedRows = async () => {
+      let count = mountedRows();
+      for (let unchanged = 0; unchanged < 3;) {
+        await act(() => new Promise((resolve) => setTimeout(resolve, 60)));
+        const next = mountedRows();
+        unchanged = next === count ? unchanged + 1 : 0;
+        count = next;
+      }
+      return count;
+    };
+    const renderTable = (columnCount: number) =>
+      render(
+        <PanelTable
+          aria-label="Items"
+          columns={columnsOf(columnCount)}
+          items={rows}
+          estimatedRowHeight={44}
+          renderCell={(row) => <Cell>{row.name}</Cell>}
+        />,
+      );
+
+    const narrow = renderTable(1);
+    expect(await settledMountedRows()).toBe(160);
+    narrow.unmount();
+
+    renderTable(30);
+    const wide = await settledMountedRows();
+    expect(wide).toBeGreaterThan(60);
+    expect(wide).toBeLessThan(130);
+  }, 20_000);
 
   it('selects every row from the header checkbox', () => {
     const onSelectionChange = vi.fn();
