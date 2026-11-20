@@ -1122,8 +1122,8 @@ describe('PanelTable windowed', () => {
 
     renderTable(30);
     const wide = await settledMountedRows();
-    expect(wide).toBeGreaterThan(60);
-    expect(wide).toBeLessThan(130);
+    expect(wide).toBeGreaterThan(30);
+    expect(wide).toBeLessThan(60);
   }, 20_000);
 
   it('selects every row from the header checkbox', () => {

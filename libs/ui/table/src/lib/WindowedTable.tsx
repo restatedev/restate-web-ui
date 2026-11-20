@@ -44,7 +44,7 @@ import { afterFastScroll, isScrollingFast } from './scrollSpeed';
 import { internalCellKey } from './keys';
 import { WindowedCellsContext } from './window/WindowedCellsContext';
 
-const IDLE_CELLS_PER_SIDE = 3000;
+const IDLE_CELLS_PER_SIDE = 800;
 const IDLE_CELLS_PER_STEP = 200;
 const MIN_IDLE_ROWS = 10;
 const MAX_IDLE_ROWS = 1000;
