@@ -840,6 +840,7 @@ export function JournalV2({
           isLive={isLive}
           detail={detail}
           isFit={withTimeline}
+          referenceInvocationId={invocationId}
         >
           <SnapshotTimeProvider lastSnapshot={snapshotAt}>
             <Suspense
@@ -1212,6 +1213,7 @@ function TimelineEngineJournalBridge({
   isLive,
   detail,
   isFit,
+  referenceInvocationId,
   children,
 }: {
   invocationIds: string[];
@@ -1226,6 +1228,7 @@ function TimelineEngineJournalBridge({
   isLive: boolean;
   detail: JournalDetail;
   isFit: boolean;
+  referenceInvocationId: string;
   children: React.ReactNode;
 }) {
   return (
@@ -1241,6 +1244,7 @@ function TimelineEngineJournalBridge({
       isLive={!areAllInvocationsCompleted && isLive}
       detail={detail}
       isFit={isFit}
+      referenceInvocationId={referenceInvocationId}
     >
       <ServiceCatalogProvider>{children}</ServiceCatalogProvider>
     </JournalContextProvider>
