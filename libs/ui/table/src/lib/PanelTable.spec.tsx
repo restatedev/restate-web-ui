@@ -865,6 +865,54 @@ describe('PanelTable windowed', () => {
     expect(isStatic('Item 25')).toBe(true);
   });
 
+  it('replays clicks on elements that only take focus from script', () => {
+    const onRowAction = vi.fn();
+    render(
+      renderWindowed({
+        onRowAction,
+        renderCell: (row) => (
+          <Cell>
+            <span tabIndex={-1}>{row.name}</span>
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Item 25')).toBe(true);
+    fireEvent.pointerDown(screen.getByText('Item 25'), {
+      pointerType: 'mouse',
+    });
+    fireEvent.pointerUp(screen.getByText('Item 25'), { pointerType: 'mouse' });
+    fireEvent.click(screen.getByText('Item 25'), { detail: 1 });
+
+    expect(onRowAction).toHaveBeenCalledTimes(1);
+    expect(onRowAction).toHaveBeenCalledWith('item-25');
+  });
+
+  it('moves focus into the clicked cell of a static row without a focus ring', async () => {
+    render(
+      renderWindowed({
+        renderCell: (row) => (
+          <Cell>
+            <span>{row.name}</span>
+            <Button>{`Open ${row.name}`}</Button>
+          </Cell>
+        ),
+      }),
+    );
+
+    expect(isStatic('Item 25')).toBe(true);
+    fireEvent.pointerDown(screen.getByText('Item 25'), {
+      pointerType: 'mouse',
+    });
+    fireEvent.pointerUp(screen.getByText('Item 25'), { pointerType: 'mouse' });
+    fireEvent.click(screen.getByText('Item 25'), { detail: 1 });
+
+    const button = screen.getByRole('button', { name: 'Open Item 25' });
+    await waitFor(() => expect(document.activeElement).toBe(button));
+    expect(button.hasAttribute('data-focus-visible')).toBe(false);
+  });
+
   it('renders static cell content with the default collection renderer', () => {
     function RendererProbe() {
       const renderer = useContext(CollectionRendererContext);

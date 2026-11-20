@@ -24,6 +24,7 @@ import {
   DEFAULT_SLOT,
   DefaultCollectionRenderer,
   Rect,
+  setInteractionModality,
   Size,
   TableStateContext,
   type CollectionRenderer,
@@ -871,9 +872,13 @@ function WindowedRows({
         element && rowElement.contains(element) ? element : null;
       const slot = inRow(target.closest(REPLAYED_SLOTS))?.getAttribute('slot');
       if (!slot && inRow(target.closest(NATIVE_CONTROLS))) return;
-      const columnIndex = target
-        .closest('[aria-colindex]')
-        ?.getAttribute('aria-colindex');
+      const columnIndex = inRow(
+        target.closest('[aria-colindex]'),
+      )?.getAttribute('aria-colindex');
+      const isPointerClick =
+        event.detail > 0 &&
+        event.buttons === 0 &&
+        (event as PointerEvent).pointerType !== '';
       flushSync(() => setLiveKeys(addKeys([row.key])));
       const liveRow = container.querySelector<HTMLElement>(
         `[data-index="${row.index}"]:not([data-static-row]) [role=row]`,
@@ -892,7 +897,7 @@ function WindowedRows({
           )
         : null;
       const focusTarget = slot ? input : (cell ?? liveRow);
-      if (event.detail > 0) focusTarget?.focus({ preventScroll: true });
+      if (isPointerClick) focusTarget?.focus({ preventScroll: true });
       replayTarget.dispatchEvent(
         new MouseEvent('click', {
           bubbles: true,
@@ -904,6 +909,7 @@ function WindowedRows({
           shiftKey: event.shiftKey,
         }),
       );
+      if (isPointerClick) setInteractionModality('pointer');
     };
     container.addEventListener('pointermove', promote);
     container.addEventListener('click', replayClick, true);
