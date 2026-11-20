@@ -37,6 +37,11 @@ describe('getInvocationStatusFromVqueue', () => {
     [{ stage: 'finished', status: 'failed' }, 'failed'],
     [{ stage: 'finished', status: 'cancelled' }, 'cancelled'],
     [{ stage: 'finished', status: 'killed' }, 'killed'],
+    // Restate 1.8.2 shows what the entry is doing now.
+    [{ stage: 'inbox', status: 'ready' }, 'ready'],
+    [{ stage: 'running', status: 'running' }, 'running'],
+    [{ stage: 'suspended', status: 'suspended' }, 'suspended'],
+    [{ stage: 'paused', status: 'paused' }, 'paused'],
   ])('maps %o to %s', (vqueue, status) => {
     expect(getInvocationStatusFromVqueue(vqueue)).toBe(status);
   });
