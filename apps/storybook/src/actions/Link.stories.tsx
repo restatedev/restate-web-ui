@@ -20,6 +20,13 @@ const meta: Meta<typeof Link> = {
     },
     size: { control: 'inline-radio', options: ['xs', 'sm', 'md'] },
   },
+  decorators: [
+    (Story) => (
+      <div className="text-sm">
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export default meta;

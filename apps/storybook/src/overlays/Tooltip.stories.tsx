@@ -32,6 +32,7 @@ export const OnIconButton: Story = {
     </Tooltip>
   ),
   play: async ({ canvasElement }) => {
+    await userEvent.hover(canvasElement);
     await userEvent.hover(within(canvasElement).getByRole('button'));
   },
 };

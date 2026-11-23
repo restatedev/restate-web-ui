@@ -45,7 +45,7 @@ apps/web-ui and Cloud  routes and pages
 - Each `libs/ui/<name>` is a package, `@restate/ui-<name>`, imported by package name.
 - `libs/ui` takes plain props and doesn't import `@restate/features-*` or `@restate/data-access-*`. Two old imports break this (`ui-issue-banner` → `features-system-health`, `ui-dialog` → `features-user-preference`); lint (`restate/ui-layer-imports`) rejects any other.
 - The whole theme lives in `@restate/util-styles/theme.css`: role colors, the `text-3xs`, `text-2xs` and `text-0.5xs` sizes, the fonts, the keyframes, the `3xl` breakpoint and the `@tall:` variant. An app imports it once after `tailwindcss`; its own stylesheet keeps only page-level rules.
-- Storybook shows every shared component with its variants and states, in both themes: `pnpm nx serve storybook`, stories in `apps/storybook/src`. The dev server shows the color tokens at `/ui/design-system`.
+- Storybook shows every shared component with its variants and states, in both themes: `pnpm nx serve storybook`, stories in `apps/storybook/src`. Three libs draw nothing themselves and have no stories: `focus` (the focus ring style), `portal` (moves content into a slot elsewhere on the page) and `timeline-zoom` (the journal timeline's zoom hooks). `query-builder` shows through the filter stories, since `filter-builder` is built on it. The dev server shows the color tokens at `/ui/design-system`.
 
 ## Colors
 
