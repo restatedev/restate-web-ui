@@ -15,6 +15,7 @@ const toHttp = vi.fn(
     `https://tunnel.example:9080/env/${name}/${mode === 'in-process' ? 'http/in-process/9080/' : `http/${url}`}`,
 );
 const register = vi.fn();
+const registerOptions = vi.fn();
 const host: {
   OnboardingGuide?: (props: { stage: string; endpoint?: string }) => ReactNode;
   isTunnelEnabled: boolean;
@@ -40,12 +41,15 @@ vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
     data: { deployments: new Map() },
     refetch: vi.fn(),
   }),
-  useRegisterDeployment: () => ({
-    mutate: register,
-    reset: vi.fn(),
-    isPending: false,
-    error: null,
-  }),
+  useRegisterDeployment: (options: unknown) => {
+    registerOptions(options);
+    return {
+      mutate: register,
+      reset: vi.fn(),
+      isPending: false,
+      error: null,
+    };
+  },
   useUpdateDeployment: () => ({
     mutate: vi.fn(),
     reset: vi.fn(),
@@ -57,6 +61,7 @@ vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
 afterEach(() => {
   cleanup();
   register.mockClear();
+  registerOptions.mockClear();
   toHttp.mockClear();
   host.OnboardingGuide = undefined;
   host.isTunnelEnabled = true;
@@ -222,6 +227,25 @@ describe('RegisterDeploymentDialog', () => {
     expect(endpoint).toHaveValue('connect://greeter');
     expect(screen.getByPlaceholderText('Deployment name')).toHaveValue('');
   });
+
+  it.each([
+    { endpoint: 'http://localhost:9080', retryWithHttp1: true },
+    { endpoint: 'connect://greeter-v1', retryWithHttp1: false },
+  ])(
+    'sets retryWithHttp1 to $retryWithHttp1 for a $endpoint dry run',
+    async ({ endpoint, retryWithHttp1 }) => {
+      const user = open(`?register-deployment=${endpoint}`);
+
+      await user.click(await screen.findByRole('button', { name: /Next/ }));
+
+      expect(register).toHaveBeenCalledWith({
+        body: expect.objectContaining({ dry_run: true }),
+      });
+      expect(registerOptions).toHaveBeenLastCalledWith(
+        expect.objectContaining({ retryWithHttp1 }),
+      );
+    },
+  );
 
   it('opens on Connected service with an empty name for a bare connect:// prefill', async () => {
     open('?register-deployment=connect://');
