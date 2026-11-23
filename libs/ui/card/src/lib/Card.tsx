@@ -26,7 +26,7 @@ const cardStyles = tv({
     intent: {
       success: { box: 'border-success/70 before:from-success-vivid/20' },
       danger: { box: 'border-danger/70 before:from-danger-vivid/20' },
-      warning: { box: 'border-warning/70 before:from-warning-vivid/20' },
+      warning: { box: 'border-warning before:from-warning-vivid/20' },
       pending: { box: 'border-pending/70 before:from-pending-vivid/20' },
       info: { box: 'border-info/70 before:from-info-vivid/20' },
       neutral: { box: 'border-default/70 before:from-(--sheen)' },
@@ -89,7 +89,7 @@ const cardHeaderStyles = tv({
         title: 'text-danger-strong',
       },
       warning: {
-        tab: 'border-warning/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-warning-vivid/20 to-transparent to-50%',
+        tab: 'border-warning bg-radial-[800px_400px_at_-0.625rem_100%] from-warning-vivid/20 to-transparent to-50%',
         icon: 'text-warning',
         title: 'text-warning-strong',
       },
