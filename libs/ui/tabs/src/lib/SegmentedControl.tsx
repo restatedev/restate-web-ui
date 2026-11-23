@@ -1,25 +1,33 @@
 import { useId, type Key } from 'react';
-import { ToggleButton, ToggleButtonGroup } from 'react-aria-components';
+import {
+  SelectionIndicator,
+  ToggleButton,
+  ToggleButtonGroup,
+} from 'react-aria-components';
 import { tv } from '@restate/util-styles';
 
 const groupStyles = tv({
-  base: 'inline-flex shrink-0 items-center gap-0.5 rounded-lg bg-tint-subtle p-0.5',
+  base: 'isolate inline-flex shrink-0 items-center gap-0.5 rounded-lg bg-tint-subtle p-0.5',
   variants: {
     hasDescriptions: { true: 'max-w-full shrink flex-wrap items-stretch' },
   },
 });
 
 const itemStyles = tv({
-  base: 'rounded-md px-2 py-0.5 text-0.5xs font-medium outline-offset-2 outline-focus focus-visible:outline-2',
+  base: 'relative rounded-md px-2 py-0.5 text-0.5xs font-medium outline-offset-2 outline-focus focus-visible:outline-2',
   variants: {
     isSelected: {
-      true: 'bg-raised text-primary shadow-xs ring-1 ring-tint',
+      true: 'text-primary',
       false: 'text-muted hover:text-secondary',
     },
     hasDescription: {
       true: 'flex flex-col items-start px-2.5 py-1 text-left',
     },
   },
+});
+
+const indicatorStyles = tv({
+  base: 'absolute inset-0 z-0 rounded-md bg-raised shadow-xs ring-1 ring-tint motion-safe:transition-[translate,width,height] motion-safe:duration-300 motion-safe:ease-out',
 });
 
 export interface SegmentedControlOption<T extends string> {
@@ -77,11 +85,12 @@ export function SegmentedControl<T extends string>({
               })
             }
           >
-            <span>{option.label}</span>
+            <SelectionIndicator className={indicatorStyles()} />
+            <span className="relative z-1">{option.label}</span>
             {option.description && (
               <span
                 id={descriptionId}
-                className="text-2xs font-normal text-muted"
+                className="relative z-1 text-2xs font-normal text-muted"
               >
                 {option.description}
               </span>

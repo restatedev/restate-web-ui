@@ -83,14 +83,22 @@ export function Snippet({
 interface SnippetCopyProps {
   className?: string;
   copyText: string;
+  size?: 'xs' | 'sm' | 'md';
 }
 
 const snippetCopyStyles = tv({
-  base: 'copy absolute top-1 right-1 items-center gap-1 p-2 text-xs',
+  base: 'copy items-center gap-1',
+  variants: {
+    hasSize: {
+      true: 'ml-auto',
+      false: 'absolute top-1 right-1 p-2 text-xs',
+    },
+  },
 });
 export function SnippetCopy({
   className,
   copyText,
+  size,
   children,
 }: PropsWithChildren<SnippetCopyProps>) {
   const [isCopied, setIsCopied] = useState(false);
@@ -99,7 +107,8 @@ export function SnippetCopy({
     <Button
       variant="icon"
       aria-label={children ? undefined : isCopied ? 'Copied' : 'Copy'}
-      className={snippetCopyStyles({ className })}
+      size={size}
+      className={snippetCopyStyles({ hasSize: Boolean(size), className })}
       onClick={() => {
         navigator.clipboard.writeText(copyText);
         setIsCopied(true);
@@ -110,9 +119,9 @@ export function SnippetCopy({
     >
       {children}
       {isCopied ? (
-        <Icon name={IconName.Check} />
+        <Icon name={IconName.Check} size={size} />
       ) : (
-        <Icon name={IconName.Copy} />
+        <Icon name={IconName.Copy} size={size} />
       )}
     </Button>
   );

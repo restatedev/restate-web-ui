@@ -214,8 +214,22 @@ export function CardRow({
   return (
     <div className={styles.base({ className })}>
       {label && <span className={styles.label()}>{label}</span>}
-      {children}
+      {withValueStyles(children)}
     </div>
+  );
+}
+
+const cardValueStyles = tv({
+  base: 'text-xs text-tertiary tabular-nums',
+});
+
+function withValueStyles(children: ReactNode) {
+  return Children.map(children, (child) =>
+    typeof child === 'string' || typeof child === 'number' ? (
+      <span className={cardValueStyles()}>{child}</span>
+    ) : (
+      child
+    ),
   );
 }
 
@@ -273,7 +287,7 @@ export function CardLinkRow({
   const rowContent = (
     <>
       {label && <span className={styles.label()}>{label}</span>}
-      {children}
+      {withValueStyles(children)}
       {!label && <span className="min-w-2 flex-auto" />}
       {chevron}
     </>

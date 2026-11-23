@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Form } from 'react-aria-components';
 import {
   FormFieldInput,
   FormFieldNumberInput,
@@ -40,10 +41,18 @@ export const ReadOnly: Story = {
 };
 
 export const WithError: Story = {
-  args: {
-    defaultValue: 'localhost',
-    errorMessage: 'Enter a URL that starts with http:// or https://',
-  },
+  decorators: [
+    (Story) => (
+      <Form
+        validationErrors={{
+          uri: 'Enter a URL that starts with http:// or https://',
+        }}
+      >
+        <Story />
+      </Form>
+    ),
+  ],
+  args: { defaultValue: 'localhost' },
 };
 
 export const Number: Story = {
@@ -68,5 +77,11 @@ export const Textarea: Story = {
 };
 
 export const DateTime: Story = {
-  render: () => <FormFieldDateTimeInput name="from" label="From" />,
+  render: () => (
+    <FormFieldDateTimeInput
+      name="from"
+      label="From"
+      placeholderValue="2026-11-23T10:00:00Z"
+    />
+  ),
 };

@@ -9,13 +9,17 @@ import {
   DropdownSeparator,
   DropdownTrigger,
 } from '@restate/ui-dropdown';
+import { ActionText } from '@restate/ui-action-text';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 
 const meta = {
   title: 'Overlays/Dropdown',
   component: Dropdown,
-  parameters: { docs: { story: { inline: false, height: '360px' } } },
+  parameters: {
+    layout: 'padded',
+    docs: { story: { inline: false, height: '400px' } },
+  },
 } satisfies Meta<typeof Dropdown>;
 
 export default meta;
@@ -25,32 +29,47 @@ const openTrigger: Story['play'] = async ({ canvasElement }) => {
   await userEvent.click(within(canvasElement).getByRole('button'));
 };
 
+function Trigger({ children }: { children: string }) {
+  return (
+    <DropdownTrigger>
+      <Button
+        variant="secondary"
+        size="xs"
+        className="flex items-center gap-1.5"
+      >
+        {children}
+        <Icon name={IconName.ChevronsUpDown} size="xs" />
+      </Button>
+    </DropdownTrigger>
+  );
+}
+
 export const Actions: Story = {
   render: () => (
     <Dropdown>
-      <DropdownTrigger>
-        <Button variant="secondary" className="flex items-center gap-1.5">
-          Actions
-          <Icon name={IconName.ChevronsUpDown} size="sm" />
-        </Button>
-      </DropdownTrigger>
-      <DropdownPopover>
+      <Trigger>Actions</Trigger>
+      <DropdownPopover placement="bottom start">
         <DropdownSection title="Invocation">
           <DropdownMenu onSelect={fn()}>
-            <DropdownItem value="pause">Pause…</DropdownItem>
-            <DropdownItem value="restart">Restart as new…</DropdownItem>
+            <DropdownItem value="pause">
+              <Icon name={IconName.Pause} size="sm" className="opacity-80" />
+              <ActionText>Pause</ActionText>
+            </DropdownItem>
+            <DropdownItem value="restart">
+              <Icon name={IconName.Restart} size="sm" className="opacity-80" />
+              <ActionText>Restart as new</ActionText>
+            </DropdownItem>
+            <DropdownSeparator />
             <DropdownItem value="cancel" destructive>
-              Cancel…
+              <Icon name={IconName.Cancel} size="sm" className="opacity-80" />
+              <ActionText>Cancel</ActionText>
             </DropdownItem>
             <DropdownItem value="kill" destructive>
-              Kill…
+              <Icon name={IconName.Kill} size="sm" className="opacity-80" />
+              <ActionText>Kill</ActionText>
             </DropdownItem>
           </DropdownMenu>
         </DropdownSection>
-        <DropdownSeparator />
-        <DropdownMenu onSelect={fn()}>
-          <DropdownItem href="/invocations">View all invocations</DropdownItem>
-        </DropdownMenu>
       </DropdownPopover>
     </Dropdown>
   ),
@@ -60,10 +79,8 @@ export const Actions: Story = {
 export const Selectable: Story = {
   render: () => (
     <Dropdown>
-      <DropdownTrigger>
-        <Button variant="secondary">Sort by</Button>
-      </DropdownTrigger>
-      <DropdownPopover>
+      <Trigger>Sort by</Trigger>
+      <DropdownPopover placement="bottom start">
         <DropdownSection title="Sort by">
           <DropdownMenu
             selectable
@@ -73,6 +90,28 @@ export const Selectable: Story = {
             <DropdownItem value="created_at">Created at</DropdownItem>
             <DropdownItem value="modified_at">Modified at</DropdownItem>
             <DropdownItem value="duration">Duration</DropdownItem>
+          </DropdownMenu>
+        </DropdownSection>
+      </DropdownPopover>
+    </Dropdown>
+  ),
+  play: openTrigger,
+};
+
+export const Sections: Story = {
+  render: () => (
+    <Dropdown>
+      <Trigger>Checkout</Trigger>
+      <DropdownPopover placement="bottom start">
+        <DropdownSection title="Virtual Objects">
+          <DropdownMenu selectable selectedItems={['Checkout']} onSelect={fn()}>
+            <DropdownItem value="Checkout">Checkout</DropdownItem>
+            <DropdownItem value="Cart">Cart</DropdownItem>
+          </DropdownMenu>
+        </DropdownSection>
+        <DropdownSection title="Workflows">
+          <DropdownMenu selectable selectedItems={['Checkout']} onSelect={fn()}>
+            <DropdownItem value="Signup">Signup</DropdownItem>
           </DropdownMenu>
         </DropdownSection>
       </DropdownPopover>

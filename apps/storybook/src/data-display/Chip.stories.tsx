@@ -1,61 +1,85 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Chip, ChipGroup, ChipSegment } from '@restate/ui-chip';
-import { Code } from '@restate/ui-code';
-import { ActionText } from '@restate/ui-action-text';
 import { Icon, IconName } from '@restate/ui-icons';
 
 const meta = {
   title: 'Data display/Chip',
   component: Chip,
-  args: { children: 'Checkout' },
-  argTypes: { size: { control: 'inline-radio', options: ['sm', 'md', 'lg'] } },
+  args: { size: 'lg' },
+  argTypes: {
+    size: { control: 'inline-radio', options: ['sm', 'md', 'lg'] },
+    left: { control: 'inline-radio', options: ['straight', 'angled'] },
+    right: { control: 'inline-radio', options: ['straight', 'angled'] },
+  },
 } satisfies Meta<typeof Chip>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
-
-export const Sizes: Story = {
+export const Default: Story = {
   render: (args) => (
-    <div className="flex items-center gap-2">
-      <Chip {...args} size="sm">
-        sm
-      </Chip>
-      <Chip {...args} size="md">
-        md
-      </Chip>
-      <Chip {...args} size="lg">
-        lg
-      </Chip>
-    </div>
-  ),
-};
-
-export const Group: Story = {
-  render: () => (
-    <ChipGroup aria-label="Target">
+    <Chip {...args}>
       <ChipSegment>
         <Icon name={IconName.Box} size="xs" />
         Checkout
       </ChipSegment>
-      <ChipSegment tone="subtle">process</ChipSegment>
+    </Chip>
+  ),
+};
+
+export const Sizes: Story = {
+  render: () => (
+    <div className="flex items-center gap-2">
+      {(['sm', 'md', 'lg'] as const).map((size) => (
+        <Chip key={size} size={size}>
+          <ChipSegment>{size}</ChipSegment>
+        </Chip>
+      ))}
+    </div>
+  ),
+};
+
+export const Tones: Story = {
+  render: () => (
+    <div className="flex items-center gap-2">
+      {(['raised', 'subtle', 'muted'] as const).map((tone) => (
+        <Chip key={tone} size="lg">
+          <ChipSegment tone={tone}>{tone}</ChipSegment>
+        </Chip>
+      ))}
+    </div>
+  ),
+};
+
+export const Target: Story = {
+  render: () => (
+    <ChipGroup density="compact">
+      <Chip left="straight" right="angled" size="lg">
+        <ChipSegment tone="raised">
+          <Icon name={IconName.Box} size="xs" />
+          Checkout
+        </ChipSegment>
+      </Chip>
+      <Chip left="angled" right="angled" size="lg">
+        <ChipSegment tone="subtle">
+          <Icon name={IconName.VirtualObject} size="xs" />
+          cart-1042
+        </ChipSegment>
+      </Chip>
+      <Chip left="angled" right="straight" size="lg">
+        <ChipSegment tone="muted">process()</ChipSegment>
+      </Chip>
     </ChipGroup>
   ),
 };
 
-export const InlineCode: Story = {
+export const Link: Story = {
   render: () => (
-    <p className="text-sm text-secondary">
-      Run <Code>restate deployments list</Code> to see every deployment.
-    </p>
-  ),
-};
-
-export const Action: Story = {
-  render: () => (
-    <span className="text-sm text-secondary">
-      <ActionText>Restart as new</ActionText>
-    </span>
+    <Chip size="lg" href="/services/Checkout" aria-label="Open Checkout">
+      <ChipSegment tone="raised">
+        <Icon name={IconName.Box} size="xs" />
+        Checkout
+      </ChipSegment>
+    </Chip>
   ),
 };
