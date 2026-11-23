@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "check-licenses": "node scripts/check-licenses.cjs"
+    "check-licenses": "node scripts/check-licenses.cjs",
+    "design-system-report": "node scripts/design-system-report.mjs"
   },
   "dependencies": {
     "@buf/restatedev_service-protocol.bufbuild_es": "2.16.0-20240606160341-127256df3b4d.1",

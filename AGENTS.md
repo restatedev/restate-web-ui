@@ -11,6 +11,7 @@
 - **Typecheck**: `pnpm nx typecheck <project>` (e.g., `pnpm nx typecheck web-ui`); every project runs `tsc --build tsconfig.json`, covering its runtime and spec configs, after the declarations of the projects it depends on are emitted (into each lib's `dist/`)
 - **Sync project references**: `pnpm nx sync` (CI runs `pnpm nx sync:check`)
 - **Storybook**: `pnpm nx serve storybook` serves the component catalog on `localhost:6006` (set `STORYBOOK_PORT` to change it); `pnpm nx build storybook` builds it into `dist/apps/storybook`. Stories live in `apps/storybook/src`, one file per component family
+- **Design system report**: `pnpm run design-system-report` counts the calls that restyle a shared component through `className`; CI adds it to the Static Analyzis job summary
 - **E2E**: `pnpm nx e2e web-ui-e2e`. It reuses a dev server already running on `UI_PORT` (default 4300), so in a worktree set the same `UI_PORT` as that worktree's dev server
 
 ## Library Generation

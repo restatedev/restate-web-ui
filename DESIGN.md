@@ -361,3 +361,5 @@ axe on every story and on the main pages (November 2026) still reports these. Th
 7. This file is updated: the catalog row, and the gaps table if you closed a gap.
 8. Breaking changes keep the old prop as an alias marked `/** @deprecated use … */`, and callers move in the same PR or the next. Other apps that use these libs pick the change up later, so keep the alias until they have moved.
 9. The PR shows before and after screenshots.
+
+CI's Static Analyzis job summary counts the calls that restyle a shared component through `className` (`pnpm run design-system-report`). A change shouldn't raise it.
