@@ -38,7 +38,7 @@ import {
   JournalContextProvider,
   useJournalTimelineContext,
 } from '@restate/features-invocation-ui';
-import { Indicator, Spinner } from '@restate/ui-loading';
+import { Spinner, StatusDot } from '@restate/ui-loading';
 import { Entry } from '@restate/features-invocation-ui';
 import { useFailureRelatedCommandIndex } from '@restate/features-invocation-ui';
 import { Input } from '@restate/features-invocation-ui';
@@ -1291,7 +1291,7 @@ function ReturnToLiveButton({
         <div className="w-[8ch] text-right font-mono tabular-nums">
           {lagLabel}
         </div>
-        <Indicator status="INFO" className="mb-0.5" />
+        <StatusDot intent="info" pulse className="mb-0.5" />
       </Button>
     );
   }
@@ -1303,7 +1303,7 @@ function ReturnToLiveButton({
       onClick={() => setIsLive(false)}
     >
       <div className="">Live</div>
-      <Indicator status="INFO" className="mb-0.5" />
+      <StatusDot intent="info" pulse className="mb-0.5" />
     </Button>
   );
 }

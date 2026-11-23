@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Ellipsis, Spinner } from '@restate/ui-loading';
+import { IconName } from '@restate/ui-icons';
+import { Ellipsis, Spinner, StatusDot } from '@restate/ui-loading';
 
 const meta = {
   title: 'Feedback/Loading',
@@ -41,6 +42,30 @@ export const TypingEllipsis: Story = {
   render: () => (
     <span className="text-sm text-secondary">
       <Ellipsis>Waiting for the result</Ellipsis>
+    </span>
+  ),
+};
+
+export const StatusDots: Story = {
+  render: () => (
+    <div className="flex flex-wrap items-center gap-4 text-sm text-secondary">
+      {(
+        ['neutral', 'info', 'success', 'warning', 'danger', 'pending'] as const
+      ).map((intent) => (
+        <span key={intent} className="flex items-center gap-2">
+          <StatusDot intent={intent} pulse />
+          {intent}
+        </span>
+      ))}
+    </div>
+  ),
+};
+
+export const StatusDotWithIcon: Story = {
+  render: () => (
+    <span className="flex items-center gap-2 text-sm text-secondary">
+      <StatusDot intent="pending" icon={IconName.TriangleAlert} pulse />
+      Degraded
     </span>
   ),
 };

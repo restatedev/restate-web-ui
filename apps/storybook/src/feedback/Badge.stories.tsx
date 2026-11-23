@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Badge } from '@restate/ui-badge';
-import { Indicator } from '@restate/ui-loading';
 
 const meta = {
   title: 'Feedback/Badge',
@@ -54,25 +53,6 @@ export const Sizes: Story = {
       <Badge {...args} size="md">
         md
       </Badge>
-    </div>
-  ),
-};
-
-export const Indicators: Story = {
-  render: () => (
-    <div className="flex items-center gap-4 text-sm text-secondary">
-      <span className="flex items-center gap-2">
-        <Indicator status="SUCCESS" /> Healthy
-      </span>
-      <span className="flex items-center gap-2">
-        <Indicator status="INFO" /> Starting
-      </span>
-      <span className="flex items-center gap-2">
-        <Indicator status="WARNING" /> Degraded
-      </span>
-      <span className="flex items-center gap-2">
-        <Indicator status="DANGER" /> Down
-      </span>
     </div>
   ),
 };
