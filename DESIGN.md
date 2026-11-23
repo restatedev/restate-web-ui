@@ -185,7 +185,7 @@ Find the job, then use the component. Every package is `@restate/ui-<name>`.
 | Sub-pages of a page           | `Nav` with `NavItem` (paths) or `NavSearchItem` (a search param value)                                                                                                               | `nav`           |
 | Tabs in a panel               | `ContentPanel tabs={…}`                                                                                                                                                              | `content-panel` |
 | Tabs with panels elsewhere    | `Tabs` › `TabList` › `Tab`, `TabPanels` › `TabPanel` (`queryParam` keeps the tab in the URL). No page uses it today, so check it fits first                                          | `tabs`          |
-| Switch a view or a value      | No shared segmented control yet; six local ones exist. **Planned:** `SegmentedControl` in `@restate/ui-tabs`. Build that one rather than a seventh copy                              | —               |
+| Switch a view or a value      | `SegmentedControl label options value onChange` from `@restate/ui-tabs`: one Tab stop, arrow keys move the selection. `Tabs` when each choice shows its own panel                    | `tabs`          |
 | Sidebar                       | `SidebarNav`, `SidebarNavItem`                                                                                                                                                       | `layout`        |
 | Trail                         | `Breadcrumbs` inside `BreadcrumbsProvider`                                                                                                                                           | `breadcrumbs`   |
 
@@ -300,11 +300,11 @@ Interactive components handle rest, hover, pressed, focus-visible and disabled, 
 
 ### Gaps
 
-| Need                   | Today                                                           | Planned                                  |
-| ---------------------- | --------------------------------------------------------------- | ---------------------------------------- |
-| Frameless text buttons | Restyled in `className` (`bg-transparent border-0 shadow-none`) | A `ghost` variant                        |
-| Segmented control      | Six local implementations                                       | `SegmentedControl` in `@restate/ui-tabs` |
-| Show more              | Three components plus native `<details>`                        | One `Disclosure`                         |
+| Need                   | Today                                                                                                                                              | Planned                      |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Frameless text buttons | Restyled in `className` (`bg-transparent border-0 shadow-none`)                                                                                    | A `ghost` variant            |
+| Segmented control      | The status chart's stage switch, the playground's two hand-built tab strips, and `Nav` used to pick a value (`SnippetTabs`, journal payload views) | `SegmentedControl` or `Tabs` |
+| Show more              | Three components plus native `<details>`                                                                                                           | One `Disclosure`             |
 
 ## Accessibility
 

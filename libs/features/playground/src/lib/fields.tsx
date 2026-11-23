@@ -14,7 +14,7 @@ import type {
 } from '@restate/util-openapi';
 import { tv } from '@restate/util-styles';
 import { BodyEditor } from './BodyEditor';
-import { SegmentedControl } from './SegmentedControl';
+import { SegmentedControl } from '@restate/ui-tabs';
 import { bodyModelUri, isTextContentType, randomId } from './request';
 import { InfoPeek, Peek } from './floating';
 import type { BaseMode, HandlerRun, OperationRun } from './useHandlerRun';

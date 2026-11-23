@@ -12,7 +12,7 @@ import type {
   ServiceContract,
 } from '@restate/util-openapi';
 import { toolDraftName, toolId, type InvocationLookup } from './names';
-import { SegmentedControl } from './SegmentedControl';
+import { SegmentedControl } from '@restate/ui-tabs';
 import {
   CodeView,
   handlerClient,

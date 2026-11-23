@@ -29,7 +29,7 @@ import { toolId } from './names';
 import { API_KEY_PLACEHOLDER } from './useRunner';
 import { JsonSchemaTree, MarkdownDescription } from '@restate/ui-json-schema';
 import { statusText } from './status';
-import { SegmentedControl } from './SegmentedControl';
+import { SegmentedControl } from '@restate/ui-tabs';
 import { useServiceContract } from './useServiceContract';
 import type { HandlerRun, OperationRun } from './useHandlerRun';
 

@@ -1,4 +1,5 @@
-import { useId } from 'react';
+import { useId, type Key } from 'react';
+import { ToggleButton, ToggleButtonGroup } from 'react-aria-components';
 import { tv } from '@restate/util-styles';
 
 const groupStyles = tv({
@@ -21,41 +22,60 @@ const itemStyles = tv({
   },
 });
 
+export interface SegmentedControlOption<T extends string> {
+  value: T;
+  label: string;
+  description?: string;
+}
+
+export interface SegmentedControlProps<T extends string> {
+  label: string;
+  options: SegmentedControlOption<T>[];
+  value: T;
+  onChange: (value: T) => void;
+  className?: string;
+}
+
 export function SegmentedControl<T extends string>({
   label,
   options,
   value,
   onChange,
   className,
-}: {
-  label: string;
-  options: { value: T; label: string; description?: string }[];
-  value: T;
-  onChange: (value: T) => void;
-  className?: string;
-}) {
+}: SegmentedControlProps<T>) {
   const id = useId();
   const hasDescriptions = options.some((option) => option.description);
+  const onSelectionChange = (keys: Set<Key>) => {
+    const [key] = keys;
+    const option = options.find((option) => option.value === key);
+    if (option && option.value !== value) {
+      onChange(option.value);
+    }
+  };
+
   return (
-    <div
-      role="group"
+    <ToggleButtonGroup
       aria-label={label}
+      selectionMode="single"
+      disallowEmptySelection
+      selectedKeys={[value]}
+      onSelectionChange={onSelectionChange}
       className={groupStyles({ hasDescriptions, className })}
     >
       {options.map((option) => {
         const descriptionId = `${id}-${option.value}`;
         return (
-          <button
+          <ToggleButton
             key={option.value}
-            type="button"
-            aria-pressed={option.value === value}
+            id={option.value}
             aria-label={option.description ? option.label : undefined}
             aria-describedby={option.description ? descriptionId : undefined}
-            className={itemStyles({
-              isSelected: option.value === value,
-              hasDescription: Boolean(option.description),
-            })}
-            onClick={() => onChange(option.value)}
+            className={({ isSelected }) =>
+              itemStyles({
+                isSelected,
+                hasDescription: Boolean(option.description),
+              })
+            }
           >
             <span>{option.label}</span>
             {option.description && (
@@ -66,9 +86,9 @@ export function SegmentedControl<T extends string>({
                 {option.description}
               </span>
             )}
-          </button>
+          </ToggleButton>
         );
       })}
-    </div>
+    </ToggleButtonGroup>
   );
 }
