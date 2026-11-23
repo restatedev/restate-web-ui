@@ -6,6 +6,7 @@ import {
   PropsWithChildren,
   ReactNode,
   forwardRef,
+  useId,
 } from 'react';
 import {
   Checkbox as AriaCheckbox,
@@ -82,6 +83,7 @@ export const FormFieldCheckbox = forwardRef<
   ) => {
     const { input, container, label, error } = styles({ direction });
     const inputRef = useObjectRef(ref);
+    const labelId = useId();
 
     return (
       <CheckboxGroup
@@ -105,8 +107,11 @@ export const FormFieldCheckbox = forwardRef<
           value={value}
           className={input()}
           slot={slot}
+          aria-labelledby={children ? labelId : undefined}
         />
-        <Label className={label()}>{children}</Label>
+        <Label id={labelId} className={label()}>
+          {children}
+        </Label>
         <FormFieldError children={errorMessage} className={error()} />
       </CheckboxGroup>
     );

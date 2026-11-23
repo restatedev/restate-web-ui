@@ -309,13 +309,26 @@ Interactive components handle rest, hover, pressed, focus-visible and disabled, 
 ## Accessibility
 
 - **Use our components or React Aria, not raw elements.** Never put `onClick` on a `div` or `span`; use `Button` or `Link`.
-- **Icon-only controls have an `aria-label`.** `Icon` is always `aria-hidden`, and tooltip text doesn't name a button. Lint (`restate/icon-button-label`) rejects a `Button variant="icon"` whose content is only icons and that has no `aria-label`, `aria-labelledby` or React Aria `slot`.
+- **Icon-only controls have an `aria-label`.** `Icon` is always `aria-hidden`, and tooltip text doesn't name a button. Lint (`restate/icon-button-label`) rejects a `Button` or `Link` with `variant="icon"` whose content is only icons and that has no `aria-label` or `aria-labelledby`. React Aria names the buttons in its `chevron`, `increment`, `decrement`, `remove`, `previous` and `next` slots; a `trigger` or `close` slot still needs a name.
+- **Form controls have a label.** Put a checkbox's label in `FormFieldCheckbox`'s children, which also names the checkbox.
 - **Tooltips add, they don't carry.** `HoverTooltip` opens on mouse hover only. Anything a keyboard user needs goes in the label, on the page, or in a `Tooltip` or `InlineTooltip`, which also open on focus.
 - **Focus stays visible.** Use `focusRing`, and never remove an outline without a replacement.
 - **Color is never the only signal.** Pair it with text or an icon, as `Badge` and the status icons do.
 - **Motion respects `prefers-reduced-motion`** (see [Motion](#motion--micro-interaction)).
 - **Dialogs** have a `DialogTitle`, close on Escape and close on a backdrop click (`DialogContent` is dismissable by default). Turn that off only while a request is pending, or on a step that shows a one-time secret.
 - **Targets:** icon buttons are at least 24 × 24 px, or spaced so their targets don't overlap (WCAG 2.5.8).
+- **Check with axe.** Storybook's Accessibility panel runs axe on every story.
+
+### Open findings
+
+axe on every story and on the main pages (November 2026) still reports these. They need design or structural changes, so they stay listed here until fixed.
+
+| Finding                                                   | Where                                                                                                                                                                                        | Fix                                           |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Text below 4.5:1 contrast                                 | `text-subtle` on light surfaces (2.4–2.6:1); success and warning callout text (3.1–3.4:1); `text-muted` on tinted surfaces (4.1–4.4:1); `text-accent` on `bg-accent-subtle` in dark (4.35:1) | Darker role tokens, decided with design       |
+| Tabs point `aria-controls` at panels that aren't rendered | Overview, invocation, service and state tabs                                                                                                                                                 | Render the content in `TabPanel`s             |
+| Scrollable code isn't focusable                           | Error and result code blocks                                                                                                                                                                 | Make the scroll container focusable           |
+| The confirmation checkbox is labelled from outside        | "Skip this confirmation in the future"                                                                                                                                                       | Pass the text as `FormFieldCheckbox` children |
 
 ## Do's and Don'ts
 

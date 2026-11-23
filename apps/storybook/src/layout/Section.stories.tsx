@@ -49,7 +49,7 @@ export const Collapsible: Story = {
 
 export const Headers: Story = {
   render: () => (
-    <div className="flex max-w-lg flex-col gap-3">
+    <main className="flex max-w-lg flex-col gap-3">
       <Header icon={IconName.Invocation} iconLabel="Invocation">
         Default header
       </Header>
@@ -65,6 +65,6 @@ export const Headers: Story = {
       <Header intent="pending" icon={IconName.Timer} iconLabel="Pending">
         Waiting to run
       </Header>
-    </div>
+    </main>
   ),
 };

@@ -98,6 +98,7 @@ export function Handler({
               {showLink && (
                 <Link
                   variant="icon"
+                  aria-label={`Open handler ${handler.name}`}
                   href={serviceHref(baseUrl, {
                     service,
                     handler: handler.name,

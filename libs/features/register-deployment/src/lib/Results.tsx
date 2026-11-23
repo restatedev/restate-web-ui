@@ -80,6 +80,7 @@ function Service({
           <Button
             variant="icon"
             slot="trigger"
+            aria-label={service.name}
             className="absolute inset-0 justify-end rounded-[calc(0.75rem-0.175rem)] p-2 text-sm text-subtle hover:bg-tint-subtle pressed:bg-tint"
           >
             <Icon name={IconName.ChevronDown} className="disclosure-icon" />

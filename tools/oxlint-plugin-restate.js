@@ -48,6 +48,15 @@ function attributeOf(node, name) {
 }
 
 const ICON_ELEMENTS = new Set(['Icon', 'Spinner', 'StatusDot', 'svg']);
+const ICON_CONTROLS = new Set(['Button', 'Link']);
+const NAMED_SLOTS = new Set([
+  'chevron',
+  'increment',
+  'decrement',
+  'remove',
+  'previous',
+  'next',
+]);
 
 function isIconOnly(children) {
   let icons = 0;
@@ -143,7 +152,7 @@ export default {
         type: 'problem',
         messages: {
           label:
-            'An icon button needs a name: add aria-label (or aria-labelledby) that says what it does.',
+            'An icon button or link needs a name: add aria-label (or aria-labelledby) that says what it does.',
         },
       },
       create(context) {
@@ -151,13 +160,16 @@ export default {
           JSXElement(node) {
             const opening = node.openingElement;
             if (opening.name.type !== 'JSXIdentifier') return;
-            if (opening.name.name !== 'Button') return;
+            if (!ICON_CONTROLS.has(opening.name.name)) return;
             const variant = attributeOf(opening, 'variant');
             if (variant?.value?.value !== 'icon') return;
+            const slot = attributeOf(opening, 'slot');
             if (
               attributeOf(opening, 'aria-label') ||
               attributeOf(opening, 'aria-labelledby') ||
-              attributeOf(opening, 'slot') ||
+              (slot &&
+                (slot.value?.type !== 'Literal' ||
+                  NAMED_SLOTS.has(slot.value.value))) ||
               opening.attributes.some(
                 (attribute) => attribute.type === 'JSXSpreadAttribute',
               )

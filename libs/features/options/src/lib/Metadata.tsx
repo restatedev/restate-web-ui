@@ -98,6 +98,7 @@ export function GithubMetadata({
         {commitUrl && (
           <HoverTooltip content="View commit">
             <Link
+              aria-label="View commit"
               href={commitUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -111,6 +112,7 @@ export function GithubMetadata({
         {actionUrl && (
           <HoverTooltip content="View GitHub Action run">
             <Link
+              aria-label="View GitHub Action run"
               href={actionUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -165,6 +167,7 @@ export function MiniGithubMetadata({
       {commitUrl && (
         <HoverTooltip content="View commit">
           <Link
+            aria-label="View commit"
             href={commitUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -178,6 +181,7 @@ export function MiniGithubMetadata({
       {actionUrl && (
         <HoverTooltip content="View GitHub Action run">
           <Link
+            aria-label="View GitHub Action run"
             href={actionUrl}
             target="_blank"
             rel="noopener noreferrer"

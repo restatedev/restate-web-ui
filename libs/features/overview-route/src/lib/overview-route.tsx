@@ -595,6 +595,7 @@ function OverviewContent() {
           status={ferrofluidStatus}
           isEmpty
           onPress={onRefresh}
+          aria-label="Refresh"
         >
           {isError && !isDeploymentsFetching && (
             <div className="relative mt-6 flex w-full flex-col items-center gap-2 text-center">
@@ -621,6 +622,7 @@ function OverviewContent() {
           appearance="solid"
           isEmpty
           onPress={onRefresh}
+          aria-label="Refresh"
         >
           <NoDeploymentPlaceholder
             error={isError ? error : null}
@@ -693,6 +695,7 @@ function OverviewContent() {
           serverRef={serverRef}
           status={ferrofluidStatus}
           onPress={onRefresh}
+          aria-label="Refresh"
           belowServer={
             showsBreakdownMode || summaryErrorIndicator ? (
               <div className="flex items-center gap-2">

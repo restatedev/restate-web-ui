@@ -1,4 +1,4 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren, ReactNode, useId } from 'react';
 import { tv } from '@restate/util-styles';
 import { Disclosure, DisclosurePanel, Heading } from 'react-aria-components';
 import { Button } from '@restate/ui-button';
@@ -41,11 +41,13 @@ export function CollapsibleSectionTitle({
   children,
   className,
 }: PropsWithChildren<SectionTitleProps>) {
+  const titleId = useId();
   return (
-    <Heading className={stylesSectionTitle({ className })}>
+    <Heading id={titleId} className={stylesSectionTitle({ className })}>
       <Button
         variant="icon"
         slot="trigger"
+        aria-labelledby={titleId}
         className="absolute inset-0 justify-end rounded-[calc(0.75rem-0.175rem)] p-2 text-sm text-subtle hover:bg-tint-subtle pressed:bg-tint"
       >
         <Icon

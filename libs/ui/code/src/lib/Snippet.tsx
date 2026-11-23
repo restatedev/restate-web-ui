@@ -98,6 +98,7 @@ export function SnippetCopy({
   return (
     <Button
       variant="icon"
+      aria-label={children ? undefined : isCopied ? 'Copied' : 'Copy'}
       className={snippetCopyStyles({ className })}
       onClick={() => {
         navigator.clipboard.writeText(copyText);

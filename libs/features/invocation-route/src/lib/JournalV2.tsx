@@ -900,6 +900,7 @@ export function JournalV2({
                       <HoverTooltip content="Introspect">
                         <Link
                           variant="icon"
+                          aria-label="Introspect"
                           href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.id}'`}
                           target="_blank"
                         >
