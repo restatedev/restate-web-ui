@@ -396,7 +396,10 @@ export function DeploymentRegistrationState({
   );
 
   const retryWithHttp1 =
-    state.stage !== 'confirm' && !state.useHttp11 && !state.isTunnel;
+    state.stage !== 'confirm' &&
+    !state.useHttp11 &&
+    !state.isTunnel &&
+    !tunnel?.fromHttp(state.endpoint);
   const register = useRegisterDeployment({
     retryWithHttp1,
     onSuccess(data) {
