@@ -4,11 +4,11 @@ Every color in Restate UI comes from a role token in [`src/theme.css`](src/theme
 
 Don't use Tailwind's palette (`bg-gray-100`, `text-blue-600`, `border-black/10`, `var(--color-zinc-200)`). The `restate/no-palette-colors` lint rule rejects it.
 
-The dev server renders every token and the shared components at `/ui/design-system`.
+The dev server renders every token and some of the shared components at `/ui/design-system`.
 
 ## Before you style anything
 
-1. **Use a component.** `@restate/ui-*` already covers buttons (`Button`, `Link` variants), badges, cards, chips, form fields, dropdowns, popovers, dialogs, tooltips, tabs, sections, tables and notifications. Reuse them and pass `className` for layout only.
+1. **Use a component.** `@restate/ui-*` already covers buttons (`Button`, `Link` variants), badges, cards, chips, form fields, dropdowns, popovers, dialogs, tooltips, tabs, sections, tables and notifications; the catalog in the root [`DESIGN.md`](../../../DESIGN.md) says which one does which job. Reuse them and pass `className` for layout only.
 2. **Copy a recipe.** If you need something new, start from the [recipes](#recipes) below.
 3. **Pick a tier, not an opacity.** To make a color lighter or darker, choose another tier (`text-muted` instead of `text-secondary/60`). Use opacity modifiers only when something must show through: frosted surfaces with `backdrop-blur`, glows that fade to transparent, overlapping layers.
 4. **Don't invent colors.** If no token fits, add a token to `theme.css` named by role or tier, never by hue (`blue`) or component (`button`), and give it a dark value (see [themes](#themes)). It shows up on the design-system page automatically.

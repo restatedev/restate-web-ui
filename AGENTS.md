@@ -51,8 +51,8 @@ Example: `pnpm nx g @nx/react:lib libs/ui/badge --importPath=@restate/ui-badge` 
 - **Formatting**: oxfmt (`.oxfmtrc.json`) with single quotes, trailing commas, Tailwind class sorting; run `pnpm nx format`
 - **Linting**: oxlint (`.oxlintrc.json`); `tools/oxlint-plugin-restate.js` enforces the `tv()` className rule and bans Tailwind palette colors (`restate/no-palette-colors`)
 - **Styling**: Tailwind CSS, use `tv()` from `@restate/util-styles` for component variants. Never use string interpolation for dynamic Tailwind classes (e.g., `${isVoid ? 'text-subtle' : 'text-muted'}`). Always use `tv()` with variants instead.
-- **Colors**: only role tokens from `@restate/util-styles/theme.css` (`bg-surface`, `text-muted`, `border-default`, `bg-danger-subtle`, …), never palette classes (`bg-gray-100`) or `var(--color-*)`. Before styling UI, read `libs/util/styles/DESIGN.md` for which token to use when and the common recipes. The dev server renders every token and shared component at `/ui/design-system`
-- **Components**: React 19, React Aria Components for UI primitives, use `forwardRef` for refs
+- **Colors**: only role tokens from `@restate/util-styles/theme.css` (`bg-surface`, `text-muted`, `border-default`, `bg-danger-subtle`, …), never palette classes (`bg-gray-100`) or `var(--color-*)`. Before styling UI, read `libs/util/styles/DESIGN.md` for which token to use when and the common recipes. The dev server renders every token and some shared components at `/ui/design-system`
+- **Components**: React 19, React Aria Components for UI primitives. Before building or changing UI, read the root `DESIGN.md`: which `@restate/ui-*` component does which job, the prop naming rules, and the rule that `className` only places a component. New components take `ref` as a plain prop; existing `forwardRef` components stay until you touch them
 - **Types**: Define props interfaces explicitly, use `PropsWithChildren` when needed
 - **Testing**: Vitest + Testing Library, test files use `.spec.tsx` suffix (`.spec.ts` in JS libs)
 - **Comments**: NEVER add comments unless explicitly requested by the user
