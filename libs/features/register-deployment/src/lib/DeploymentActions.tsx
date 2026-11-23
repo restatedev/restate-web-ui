@@ -52,19 +52,13 @@ export function DeploymentActions({
         <>
           <DropdownItem href={updateHref}>
             {isHeader && (
-              <Icon
-                name={IconName.Pencil}
-                className="h-3.5 w-3.5 shrink-0 opacity-80"
-              />
+              <Icon name={IconName.Pencil} size="sm" className="opacity-80" />
             )}
             Update
           </DropdownItem>
           <DropdownItem href={deleteHref} destructive>
             {isHeader && (
-              <Icon
-                name={IconName.Trash}
-                className="h-3.5 w-3.5 shrink-0 opacity-80"
-              />
+              <Icon name={IconName.Trash} size="sm" className="opacity-80" />
             )}
             Delete
           </DropdownItem>

@@ -16,7 +16,7 @@ export function flowControlTabs(
         id: 'rules',
         label: (
           <>
-            <Icon name={IconName.Filters} className="h-3.5 w-3.5" />
+            <Icon name={IconName.Filters} size="sm" />
             Rules
           </>
         ),
@@ -26,7 +26,7 @@ export function flowControlTabs(
         id: 'counters',
         label: (
           <>
-            <Icon name={IconName.Gauge} className="h-3.5 w-3.5 !fill-none" />
+            <Icon name={IconName.Gauge} size="sm" className="!fill-none" />
             Limit counters
           </>
         ),
@@ -36,7 +36,7 @@ export function flowControlTabs(
         id: 'vqueues',
         label: (
           <>
-            <Icon name={IconName.Layers} className="h-3.5 w-3.5 rotate-90" />
+            <Icon name={IconName.Layers} size="sm" className="rotate-90" />
             VQueues
           </>
         ),

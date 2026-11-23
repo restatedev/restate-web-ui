@@ -380,17 +380,11 @@ function QueryActions({
       }}
       menus={[
         <DropdownItem key="standard" value="standard" isDisabled={isDisabled}>
-          <Icon
-            name={IconName.ScanSearch}
-            className="h-3.5 w-3.5 shrink-0 opacity-80"
-          />
+          <Icon name={IconName.ScanSearch} size="sm" className="opacity-80" />
           Explain analyze
         </DropdownItem>,
         <DropdownItem key="verbose" value="verbose" isDisabled={isDisabled}>
-          <Icon
-            name={IconName.Code}
-            className="h-3.5 w-3.5 shrink-0 opacity-80"
-          />
+          <Icon name={IconName.Code} size="sm" className="opacity-80" />
           Explain analyze verbose
         </DropdownItem>,
       ]}
@@ -572,7 +566,8 @@ function renderStatsCell(
             {stat.max?.timedOut && (
               <Icon
                 name={IconName.TriangleAlert}
-                className="h-3 w-3 shrink-0 text-pending-subtle"
+                size="xs"
+                className="text-pending-subtle"
               />
             )}
           </span>
@@ -715,7 +710,8 @@ function Component() {
                 inputPrefix={
                   <Icon
                     name={IconName.Search}
-                    className="h-4 w-4 shrink-0 text-subtle"
+                    size="md"
+                    className="text-subtle"
                   />
                 }
                 tagsPlacement="outside"
@@ -751,7 +747,7 @@ function Component() {
                 onClick={exportStats}
                 disabled={stats.length === 0}
               >
-                <Icon name={IconName.Download} className="h-3.5 w-3.5" />
+                <Icon name={IconName.Download} size="sm" />
               </Button>
             </TooltipTrigger>
             <TooltipContent size="sm">Download as JSON</TooltipContent>
@@ -766,7 +762,7 @@ function Component() {
                 onClick={() => clearQueryStats(baseUrl)}
                 disabled={stats.length === 0}
               >
-                <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
+                <Icon name={IconName.Trash} size="sm" />
               </Button>
             </TooltipTrigger>
             <TooltipContent size="sm">Clear recorded stats</TooltipContent>

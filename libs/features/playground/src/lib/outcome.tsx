@@ -362,7 +362,7 @@ function OpenInvocation({
       className={openStyles({ isPulsing, className })}
     >
       {children}
-      <Icon name={IconName.ExternalLink} className="h-3.5 w-3.5" />
+      <Icon name={IconName.ExternalLink} size="sm" />
     </Link>
   );
 }
@@ -378,7 +378,7 @@ function InvocationIdLink({ invocationId }: { invocationId: string }) {
       className="inline-flex max-w-full min-w-0 items-center gap-1 font-mono text-2xs text-muted hover:text-secondary"
     >
       <span className="min-w-0 truncate">{invocationId}</span>
-      <Icon name={IconName.ExternalLink} className="h-3 w-3 shrink-0" />
+      <Icon name={IconName.ExternalLink} size="xs" />
     </Link>
   );
 }

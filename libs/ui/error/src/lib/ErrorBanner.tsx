@@ -51,7 +51,8 @@ function SingleError({
       <div className="flex items-start gap-2">
         <div className="shrink-0">
           <Icon
-            className="h-5 w-5 fill-danger text-danger"
+            size="lg"
+            className="fill-danger text-danger"
             name={IconName.CircleX}
           />
         </div>
@@ -103,7 +104,8 @@ export function ErrorBanner({
       <div className="flex">
         <div className="shrink-0">
           <Icon
-            className="h-5 w-5 fill-danger text-danger"
+            size="lg"
+            className="fill-danger text-danger"
             name={IconName.CircleX}
           />
         </div>

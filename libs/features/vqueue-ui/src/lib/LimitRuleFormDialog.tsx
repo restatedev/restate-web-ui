@@ -200,7 +200,7 @@ function RuleFormContent({
       >
         <div className="flex items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-default bg-surface shadow-xs">
-            <Icon name={IconName.Filters} className="h-5 w-5 text-accent" />
+            <Icon name={IconName.Filters} size="lg" className="text-accent" />
           </span>
           <div className="min-w-0 flex-1">
             <Heading

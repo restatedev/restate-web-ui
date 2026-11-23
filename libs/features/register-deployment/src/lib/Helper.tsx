@@ -42,7 +42,7 @@ function Container({
           className="absolute bottom-1 left-1/2 -mb-0.5 -translate-x-1/2 px-4 text-0.5xs text-info"
           onClick={() => setIsOpen(true)}
         >
-          <Icon name={IconName.ChevronDown} className="mr-1 h-4 w-4" />
+          <Icon name={IconName.ChevronDown} size="md" className="mr-1" />
           Expand{' '}
         </Button>
       )}
@@ -170,7 +170,7 @@ export function Helper({
         preview="tall"
         title={
           <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
-            <Icon name={IconName.Connect} className="h-4 w-4" />
+            <Icon name={IconName.Connect} size="md" />
             Connect your service.{' '}
             <Link
               target="_blank"
@@ -199,7 +199,7 @@ export function Helper({
         <Container
           title={
             <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
-              <Icon name={IconName.ShieldCheck} className="h-4 w-4" />
+              <Icon name={IconName.ShieldCheck} size="md" />
               Secure your services.{' '}
               {gcpServiceAccount.url && (
                 <Link
@@ -293,7 +293,7 @@ export function Helper({
         <Container
           title={
             <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
-              <Icon name={IconName.ShieldCheck} className="h-4 w-4" />
+              <Icon name={IconName.ShieldCheck} size="md" />
               Secure your services.{' '}
               {identityKey.url && (
                 <Link
@@ -332,7 +332,7 @@ export function Helper({
         <Container
           title={
             <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
-              <Icon name={IconName.ShieldCheck} className="h-4 w-4" />
+              <Icon name={IconName.ShieldCheck} size="md" />
               Secure your services.{' '}
               {awsRolePolicy.url && (
                 <Link

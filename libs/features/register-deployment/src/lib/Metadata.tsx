@@ -90,7 +90,7 @@ export function Metadata() {
               disabled={!showDelete}
               className={deleteStyles({ showDelete })}
             >
-              <Icon name={IconName.Trash} className="m-1 h-5 w-5" />
+              <Icon name={IconName.Trash} size="lg" className="m-1" />
             </Button>
           </div>
         );

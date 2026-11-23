@@ -329,10 +329,7 @@ function ServicePlaygroundComplementaryContent() {
               }}
               className="flex h-7 w-7 items-center justify-center rounded-full p-0"
             >
-              <Icon
-                name={IconName.Maximize}
-                className="h-3.5 w-3.5 text-muted"
-              />
+              <Icon name={IconName.Maximize} size="sm" className="text-muted" />
             </Button>
           </TooltipTrigger>
           <TooltipContent size="sm">Open as sheet</TooltipContent>
@@ -345,7 +342,7 @@ function ServicePlaygroundComplementaryContent() {
               disabled={isFetching}
               className="flex h-7 w-7 items-center justify-center rounded-full p-0"
             >
-              <Icon name={IconName.Retry} className="h-3.5 w-3.5" />
+              <Icon name={IconName.Retry} size="sm" />
             </Button>
           </TooltipTrigger>
           <TooltipContent size="sm">Refresh</TooltipContent>
@@ -360,7 +357,7 @@ function ServicePlaygroundComplementaryContent() {
                 }}
                 className="flex h-7 w-7 items-center justify-center rounded-full p-0"
               >
-                <Icon name={IconName.X} className="h-3.5 w-3.5" />
+                <Icon name={IconName.X} size="sm" />
               </Button>
             </ComplementaryClose>
           </TooltipTrigger>
@@ -392,7 +389,8 @@ function ServicePlaygroundComplementaryContent() {
                     </span>
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="h-4 w-4 text-muted"
+                      size="md"
+                      className="text-muted"
                     />
                   </Button>
                 </DropdownTrigger>
@@ -507,12 +505,12 @@ function ServicePlaygroundSheetContent({ service }: { service: string }) {
                 );
               }}
             >
-              <Icon name={IconName.Minimize} className="h-5 w-5" />
+              <Icon name={IconName.Minimize} size="lg" />
             </Button>
           )}
           <DialogClose>
             <Button variant="icon">
-              <Icon name={IconName.X} className="h-5 w-5" />
+              <Icon name={IconName.X} size="lg" />
             </Button>
           </DialogClose>
         </div>

@@ -193,7 +193,8 @@ function InboxBatchActions({
             )}
             <Icon
               name={IconName.ChevronsUpDown}
-              className="h-3.5 w-3.5 opacity-80"
+              size="sm"
+              className="opacity-80"
             />
           </Button>
         </DropdownTrigger>
@@ -210,17 +211,11 @@ function InboxBatchActions({
               }}
             >
               <DropdownItem value="cancel" destructive>
-                <Icon
-                  name={IconName.Cancel}
-                  className="h-3.5 w-3.5 shrink-0 opacity-80"
-                />
+                <Icon name={IconName.Cancel} size="sm" className="opacity-80" />
                 Cancel…
               </DropdownItem>
               <DropdownItem value="kill" destructive>
-                <Icon
-                  name={IconName.Kill}
-                  className="h-3.5 w-3.5 shrink-0 opacity-80"
-                />
+                <Icon name={IconName.Kill} size="sm" className="opacity-80" />
                 Kill…
               </DropdownItem>
             </DropdownMenu>

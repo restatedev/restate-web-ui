@@ -84,7 +84,8 @@ function BatchOperationContent({
         <Filters showScope={showScope} state={state} className="mt-0" />
         <div className="mt-2 flex gap-2 rounded-xl border border-info bg-info-subtle p-3 text-0.5xs text-info">
           <Icon
-            className="h-5 w-5 shrink-0 fill-info text-on-info"
+            size="lg"
+            className="fill-info text-on-info"
             name={IconName.Info}
           />
           <div className="flex flex-col gap-1">
@@ -374,7 +375,8 @@ export function BatchOperationDialog({
                             ? IconName.CirclePlay
                             : IconName.CircleStop
                         }
-                        className="h-3.5 w-3.5 opacity-70"
+                        size="sm"
+                        className="opacity-70"
                       />
                       {mutation.isPaused(state.id) ? 'Continue' : 'Stop'}
                     </Button>

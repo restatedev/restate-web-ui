@@ -20,7 +20,8 @@ export function Warning({
   return (
     <p className={warningStyles({ className })}>
       <Icon
-        className="h-5 w-5 shrink-0 fill-warning text-on-warning"
+        size="lg"
+        className="fill-warning text-on-warning"
         name={IconName.TriangleAlert}
       />
       <span className="inline-block">

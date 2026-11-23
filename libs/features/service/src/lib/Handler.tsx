@@ -106,7 +106,8 @@ export function Handler({
                 >
                   <Icon
                     name={IconName.ChevronRight}
-                    className="h-4 w-4 text-subtle"
+                    size="md"
+                    className="text-subtle"
                   />
                 </Link>
               )}

@@ -216,7 +216,8 @@ function LockHolderCell({
             ? IconName.Database
             : IconName.Security
         }
-        className="h-4 w-4 shrink-0 text-subtle"
+        size="md"
+        className="text-subtle"
       />
       <span className="shrink-0 text-sm text-tertiary">
         {lockHolder.kind === 'state-mutation' ? 'State mutation' : 'Other'}
@@ -436,7 +437,8 @@ export function VirtualObjectInstances({
               inputPrefix={
                 <Icon
                   name={IconName.Search}
-                  className="h-4 w-4 shrink-0 text-subtle"
+                  size="md"
+                  className="text-subtle"
                 />
               }
               tagsPlacement="outside"

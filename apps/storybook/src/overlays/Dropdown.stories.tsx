@@ -31,7 +31,7 @@ export const Actions: Story = {
       <DropdownTrigger>
         <Button variant="secondary" className="flex items-center gap-1.5">
           Actions
-          <Icon name={IconName.ChevronsUpDown} className="h-3.5 w-3.5" />
+          <Icon name={IconName.ChevronsUpDown} size="sm" />
         </Button>
       </DropdownTrigger>
       <DropdownPopover>

@@ -165,7 +165,8 @@ export function InvocationStatusRow({
             More
             <Icon
               name={IconName.ChevronsUpDown}
-              className="aspect-square h-3 w-3 opacity-60"
+              size="xs"
+              className="opacity-60"
             />
           </Button>
         </DropdownTrigger>

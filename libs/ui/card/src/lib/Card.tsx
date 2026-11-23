@@ -177,7 +177,8 @@ export function CardHeaderLink({
       {children}
       <Icon
         name={IconName.ChevronRight}
-        className="h-3 w-3 transition-transform duration-150 group-hover:translate-x-0.5"
+        size="xs"
+        className="transition-transform duration-150 group-hover:translate-x-0.5"
       />
     </Link>
   );
@@ -272,7 +273,8 @@ export function CardLinkRow({
   const chevron = showChevron ? (
     <Icon
       name={IconName.ChevronRight}
-      className="h-4 w-4 shrink-0 text-subtle transition-transform duration-150 group-hover:translate-x-0.5"
+      size="md"
+      className="text-subtle transition-transform duration-150 group-hover:translate-x-0.5"
     />
   ) : null;
   const rowContent = (

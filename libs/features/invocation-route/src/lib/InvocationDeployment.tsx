@@ -46,7 +46,7 @@ function MissingDeployment({
       <CardRow variant="hero" className="flex-wrap gap-y-2">
         <div className="flex min-w-0 items-center gap-2.5">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-pending-subtle text-pending">
-            <Icon name={IconName.TriangleAlert} className="h-3.5 w-3.5" />
+            <Icon name={IconName.TriangleAlert} size="sm" />
           </span>
           <div className="min-w-0">
             <div className="text-xs font-medium text-tertiary">

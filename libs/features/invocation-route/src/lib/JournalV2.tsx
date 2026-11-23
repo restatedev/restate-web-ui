@@ -888,7 +888,7 @@ export function JournalV2({
                     {areAllInvocationsCompleted && (
                       <HoverTooltip content="Refresh">
                         <Button variant="icon" onClick={refetch}>
-                          <Icon name={IconName.Retry} className="h-4 w-4" />
+                          <Icon name={IconName.Retry} size="md" />
                         </Button>
                       </HoverTooltip>
                     )}
@@ -899,10 +899,7 @@ export function JournalV2({
                           href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.id}'`}
                           target="_blank"
                         >
-                          <Icon
-                            name={IconName.ScanSearch}
-                            className="h-4 w-4"
-                          />
+                          <Icon name={IconName.ScanSearch} size="md" />
                         </Link>
                       </HoverTooltip>
                     )}
@@ -1150,7 +1147,7 @@ export function JournalV2({
                       className="flex items-center justify-center gap-1 py-3 text-xs text-accent hover:text-accent-strong"
                     >
                       View all entries
-                      <Icon name={IconName.ChevronRight} className="h-3 w-3" />
+                      <Icon name={IconName.ChevronRight} size="xs" />
                     </Link>
                   )}
                   <div data-last-failure-fallback aria-hidden className="h-0" />
@@ -1679,7 +1676,7 @@ const TimelineRow = memo(function TimelineRow({
 function JournalPurgedMessage() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-12 text-center">
-      <Icon name={IconName.Trash} className="h-5 w-5 text-subtle" />
+      <Icon name={IconName.Trash} size="lg" className="text-subtle" />
       <div className="text-sm font-medium text-secondary">
         Journal was purged
       </div>
@@ -1740,7 +1737,7 @@ function HiddenEntriesChip({
       }
     >
       <span className={hiddenEntriesChipStyles()}>
-        <Icon name={IconName.EyeOff} className="h-3 w-3 text-subtle" />
+        <Icon name={IconName.EyeOff} size="xs" className="text-subtle" />
         {count}
       </span>
     </HoverTooltip>

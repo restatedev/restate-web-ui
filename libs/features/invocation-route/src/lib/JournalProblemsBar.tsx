@@ -129,7 +129,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
             className={clear()}
             onClick={() => onFindChange('')}
           >
-            <Icon name={IconName.X} className="h-3.5 w-3.5" />
+            <Icon name={IconName.X} size="sm" />
           </Button>
         </>
       ) : (
@@ -374,7 +374,7 @@ function ProblemStepButtons({
           disabled={isDisabled}
           aria-label="Previous problem"
         >
-          <Icon name={IconName.ChevronUp} className="h-3.5 w-3.5" />
+          <Icon name={IconName.ChevronUp} size="sm" />
         </Button>
       </HoverTooltip>
       <HoverTooltip content="Next problem">
@@ -385,7 +385,7 @@ function ProblemStepButtons({
           disabled={isDisabled}
           aria-label="Next problem"
         >
-          <Icon name={IconName.ChevronDown} className="h-3.5 w-3.5" />
+          <Icon name={IconName.ChevronDown} size="sm" />
         </Button>
       </HoverTooltip>
     </>

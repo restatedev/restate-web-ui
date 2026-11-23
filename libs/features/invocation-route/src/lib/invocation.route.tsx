@@ -305,7 +305,8 @@ function Component() {
                     Go to the related line (#{relatedCommandIndex})
                     <Icon
                       name={IconName.ChevronDown}
-                      className="ml-1 h-4 w-4"
+                      size="md"
+                      className="ml-1"
                     />
                   </Link>
                 </div>
@@ -372,7 +373,8 @@ function InvocationUnavailable({
         <div className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-default bg-surface py-1 pr-1 pl-2.5 font-mono text-xs text-tertiary shadow-xs">
           <Icon
             name={IconName.Invocation}
-            className="h-3.5 w-3.5 shrink-0 fill-accent-muted text-accent"
+            size="sm"
+            className="fill-accent-muted text-accent"
           />
           <span className="min-w-0 truncate">{id}</span>
           <Copy
@@ -389,7 +391,7 @@ function InvocationUnavailable({
         variant="button"
         className="inline-flex items-center gap-1.5"
       >
-        <Icon name={IconName.ArrowLeft} className="h-4 w-4" />
+        <Icon name={IconName.ArrowLeft} size="md" />
         Back to invocations
       </Link>
     </EmptyState>

@@ -384,10 +384,7 @@ function PayloadPopover({
             <PopoverTrigger>
               <Button className={trigger()} variant="secondary">
                 {!isVoid && (
-                  <Icon
-                    name={IconName.Eye}
-                    className="mx-1.5 h-3 w-3 shrink-0"
-                  />
+                  <Icon name={IconName.Eye} size="xs" className="mx-1.5" />
                 )}
                 <span className={triggerLabelStyle()}>
                   {triggerLabel}

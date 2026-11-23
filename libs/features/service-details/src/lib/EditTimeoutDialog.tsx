@@ -133,7 +133,8 @@ export function EditTimeoutDialog() {
           <div className="flex flex-col gap-2 text-sm text-muted">
             <p className="mt-2 flex gap-2 rounded-xl bg-warning-subtle p-3 text-sm text-0.5xs text-warning">
               <Icon
-                className="h-5 w-5 shrink-0 fill-warning text-on-warning"
+                size="lg"
+                className="fill-warning text-on-warning"
                 name={IconName.TriangleAlert}
               />
               <span className="inline-block">

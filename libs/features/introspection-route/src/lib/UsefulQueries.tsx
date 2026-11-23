@@ -10,7 +10,7 @@ export function UsefulQueries({
   return (
     <div className="flex w-full max-w-3xl flex-col gap-3">
       <div className="flex items-center gap-1.5 pl-1 text-xs font-medium text-muted">
-        <Icon name={IconName.HatGlasses} className="h-3.5 w-3.5" />
+        <Icon name={IconName.HatGlasses} size="sm" />
         Useful queries
       </div>
       <div className="flex w-full flex-col gap-2.5">

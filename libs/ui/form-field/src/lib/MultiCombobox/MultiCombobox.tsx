@@ -55,7 +55,7 @@ function DefaultTag<
     <div className={tagStyles()}>
       {item.textValue}
       <Button onClick={onRemove} variant="icon">
-        <Icon name={IconName.X} className="h-3 w-3" />
+        <Icon name={IconName.X} size="xs" />
       </Button>
     </div>
   );
@@ -545,7 +545,7 @@ export function FormFieldMultiCombobox<
               {tagOverflowStrategy === 'partial' ? '+' : ''}
               {selectedList.items.length} {overflowItemLabel}
               {selectedList.items.length === 1 ? '' : 's'}
-              <Icon name={IconName.ChevronDown} className="h-3.5 w-3.5" />
+              <Icon name={IconName.ChevronDown} size="sm" />
             </span>
           )}
           {hiddenItems.length > 0 && (
@@ -567,7 +567,7 @@ export function FormFieldMultiCombobox<
                   {areAllTagsCollapsed ? '' : '+'}
                   {hiddenItems.length} {overflowItemLabel}
                   {hiddenItems.length === 1 ? '' : 's'}
-                  <Icon name={IconName.ChevronDown} className="h-3.5 w-3.5" />
+                  <Icon name={IconName.ChevronDown} size="sm" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent

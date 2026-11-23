@@ -57,7 +57,7 @@ export function ServicePlaygroundSidebarAction({
             aria-label="Open in Playground"
             disabled={disabled}
           >
-            <Icon name={IconName.Play} className="h-3.5 w-3.5" />
+            <Icon name={IconName.Play} size="sm" />
           </Button>
         </HoverTooltip>
       </DropdownTrigger>

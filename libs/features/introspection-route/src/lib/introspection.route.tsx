@@ -338,7 +338,7 @@ function Download({
           variant="secondary-button"
           className={className}
         >
-          <Icon name={IconName.Download} className="h-4 w-4" />
+          <Icon name={IconName.Download} size="md" />
         </Link>
       </HoverTooltip>
     </RouterProvider>

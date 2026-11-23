@@ -44,7 +44,7 @@ export const Variants: Story = {
         Destructive
       </Button>
       <Button {...args} variant="icon" aria-label="Refresh">
-        <Icon name={IconName.Retry} className="h-4 w-4" />
+        <Icon name={IconName.Retry} size="md" />
       </Button>
       <Button {...args} variant="primary" disabled>
         Disabled

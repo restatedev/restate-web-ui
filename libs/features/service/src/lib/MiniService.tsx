@@ -48,7 +48,11 @@ export function MiniService({
           href={serviceHref(baseUrl, { service: service.name })}
           className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-tint-subtle pressed:before:bg-tint"
         >
-          <Icon name={IconName.ChevronRight} className="h-4 w-4 text-subtle" />
+          <Icon
+            name={IconName.ChevronRight}
+            size="md"
+            className="text-subtle"
+          />
         </Link>
       )}
     </div>

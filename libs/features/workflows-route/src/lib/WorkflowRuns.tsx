@@ -271,7 +271,8 @@ export function WorkflowRuns({
               inputPrefix={
                 <Icon
                   name={IconName.Search}
-                  className="h-4 w-4 shrink-0 text-subtle"
+                  size="md"
+                  className="text-subtle"
                 />
               }
               tagsPlacement="outside"

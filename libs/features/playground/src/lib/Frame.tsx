@@ -163,7 +163,8 @@ export function HandlerSwitcher({
             {handler && (
               <Icon
                 name={IconName.Function}
-                className="-mr-1 h-5 w-5 shrink-0 text-subtle"
+                size="lg"
+                className="-mr-1 text-subtle"
               />
             )}
             <span
@@ -173,7 +174,8 @@ export function HandlerSwitcher({
             </span>
             <Icon
               name={IconName.ChevronsUpDown}
-              className="h-3.5 w-3.5 shrink-0 text-subtle"
+              size="sm"
+              className="text-subtle"
             />
           </Button>
         </DropdownTrigger>
@@ -319,7 +321,7 @@ export function CodeView({
         className="flex items-center gap-1 self-end rounded-lg px-2 py-1 text-xs text-muted outline-offset-2 outline-focus hover:bg-tint hover:text-secondary focus-visible:outline-2"
         onClick={() => downloadSpec(contract)}
       >
-        <Icon name={IconName.Download} className="h-3.5 w-3.5" />
+        <Icon name={IconName.Download} size="sm" />
         Download OpenAPI
       </button>
       <CodeSamples samples={{ request: runner.sampleRequest, client }} />

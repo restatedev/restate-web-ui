@@ -51,7 +51,7 @@ export function PrivatePlayButton({ className }: { className?: string }) {
         aria-label={PRIVATE_PLAY_NOTE}
         className={markStyles({ className })}
       >
-        <Icon name={IconName.PlayOff} className="ml-px h-3 w-3" />
+        <Icon name={IconName.PlayOff} size="xs" className="ml-px" />
       </Button>
     </HoverTooltip>
   );

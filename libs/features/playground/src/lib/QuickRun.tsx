@@ -122,10 +122,7 @@ function QuickRunBody({
               className="flex h-7 w-7 items-center justify-center rounded-lg"
               onClick={onOpenFull}
             >
-              <Icon
-                name={IconName.Maximize}
-                className="h-3.5 w-3.5 text-muted"
-              />
+              <Icon name={IconName.Maximize} size="sm" className="text-muted" />
             </Button>
           </HoverTooltip>
         </div>
@@ -241,7 +238,8 @@ function ResultPanel({
             <>
               <Icon
                 name={IconName.ArrowLeft}
-                className="h-3.5 w-3.5 text-subtle"
+                size="sm"
+                className="text-subtle"
               />
               Back
             </>

@@ -90,9 +90,9 @@ function Help() {
         className="fixed bottom-2 left-2 z-50 hidden h-11 w-11 items-center justify-center rounded-full bg-surface/80 p-0 text-secondary shadow-lg shadow-default/5 backdrop-blur-xl backdrop-saturate-200 sm:right-4 sm:bottom-4 md:flex 3xl:bottom-6 3xl:left-[calc(50vw-min(50rem,calc(50vw-400px-2rem))-2rem)] pressed:scale-95 pressed:shadow-xs"
       >
         {isOpen ? (
-          <Icon name={IconName.X} className="h-5 w-5" />
+          <Icon name={IconName.X} size="lg" />
         ) : (
-          <Icon name={IconName.Help} className="h-5 w-5" />
+          <Icon name={IconName.Help} size="lg" />
         )}
       </Button>
     </PopoverTrigger>

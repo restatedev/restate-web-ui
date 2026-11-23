@@ -84,7 +84,7 @@ function Component() {
               contentClassName="max-w-64 break-normal"
             >
               <Badge variant="warning" size="sm" className="gap-1">
-                <Icon name={IconName.EyeOff} className="h-3 w-3" />
+                <Icon name={IconName.EyeOff} size="xs" />
                 Private
               </Badge>
             </HoverTooltip>

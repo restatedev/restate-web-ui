@@ -276,10 +276,7 @@ function LastJournalEntry({
 
   return (
     <div className="flex max-w-full items-center gap-1 p-3 text-xs text-subtle">
-      <Icon
-        name={IconName.CornerDownRight}
-        className="h-3 w-3 shrink-0 text-subtle"
-      />
+      <Icon name={IconName.CornerDownRight} size="xs" className="text-subtle" />
       <span className="truncate font-mono font-medium text-muted italic">
         {name}
         <span className="opacity-70">()</span>
@@ -370,7 +367,8 @@ function LastJournalEntryPopover({ invocation }: { invocation: Invocation }) {
           </span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="ml-1 h-3 w-3 shrink-0 text-subtle"
+            size="xs"
+            className="ml-1 text-subtle"
           />
         </Button>
       </PopoverTrigger>
@@ -427,7 +425,8 @@ function JournalCell({ invocation }: CellProps) {
             })}
             <Icon
               name={IconName.ChevronsUpDown}
-              className="h-3 w-3 shrink-0 text-muted"
+              size="xs"
+              className="text-muted"
             />
           </Button>
         </PopoverTrigger>
@@ -454,7 +453,7 @@ function JournalCell({ invocation }: CellProps) {
                   className="ml-auto flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal"
                 >
                   Timeline
-                  <Icon name={IconName.ExternalLink} className="h-3 w-3" />
+                  <Icon name={IconName.ExternalLink} size="xs" />
                 </Link>
               </div>
             }

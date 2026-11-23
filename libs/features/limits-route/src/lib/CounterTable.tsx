@@ -351,7 +351,7 @@ function renderCounterCell(
               variant="secondary"
               className="inline-flex items-center gap-1 text-0.5xs text-muted no-underline hover:text-secondary"
             >
-              <Icon name={IconName.Plus} className="h-3 w-3" />
+              <Icon name={IconName.Plus} size="xs" />
               Create rule
             </Link>
           ) : (

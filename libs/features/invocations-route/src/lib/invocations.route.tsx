@@ -347,7 +347,8 @@ function SlowQueryOverlay({
                 Open the dashboard
                 <Icon
                   name={IconName.ExternalLink}
-                  className="h-3 w-3 opacity-70"
+                  size="xs"
+                  className="opacity-70"
                 />
               </a>
             )}
@@ -740,7 +741,8 @@ function Component() {
                 >
                   <Icon
                     name={IconName.TableProperties}
-                    className="aspect-square h-3.5 w-3.5 opacity-70"
+                    size="sm"
+                    className="aspect-square opacity-70"
                   />
                   <span className="max-sm:sr-only">Columns</span>
                 </Button>

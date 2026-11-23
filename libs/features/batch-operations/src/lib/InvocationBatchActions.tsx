@@ -104,7 +104,8 @@ export function InvocationBatchActions({
           )}
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 opacity-80"
+            size="sm"
+            className="opacity-80"
           />
         </Button>
       </DropdownTrigger>
@@ -141,10 +142,7 @@ export function InvocationBatchActions({
                   value={action.id}
                   destructive={action.destructive}
                 >
-                  <Icon
-                    name={action.icon}
-                    className="h-3.5 w-3.5 shrink-0 opacity-80"
-                  />
+                  <Icon name={action.icon} size="sm" className="opacity-80" />
                   {action.label}…
                 </DropdownItem>
               );

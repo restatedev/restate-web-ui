@@ -123,7 +123,8 @@ function AttemptGroupHeader({
           >
             <Icon
               name={IconName.ChevronDown}
-              className="h-3 w-3 shrink-0 text-muted transition-transform group-expanded:rotate-180"
+              size="xs"
+              className="text-muted transition-transform group-expanded:rotate-180"
             />
           </Button>
         </Heading>

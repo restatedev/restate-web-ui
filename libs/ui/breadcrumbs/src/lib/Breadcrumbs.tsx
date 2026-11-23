@@ -153,7 +153,7 @@ function CollapsedCrumbs({
               aria-label={`Show ${crumbs.length} more pages`}
               className={flatEllipsisButton()}
             >
-              <Icon name={IconName.Ellipsis} className="h-3 w-3" />
+              <Icon name={IconName.Ellipsis} size="xs" />
             </Button>
           </DropdownTrigger>
           {menu}
@@ -176,7 +176,7 @@ function CollapsedCrumbs({
               aria-label={`Show ${crumbs.length} more pages`}
               className={ellipsisButton()}
             >
-              <Icon name={IconName.Ellipsis} className="h-3.5 w-3.5" />
+              <Icon name={IconName.Ellipsis} size="sm" />
             </Button>
           </ChipSegment>
         </Chip>

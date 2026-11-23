@@ -340,7 +340,8 @@ export function StatusLegend({
               >
                 <Icon
                   name={IconName.ChevronsUpDown}
-                  className="h-3.5 w-3.5 shrink-0 text-subtle"
+                  size="sm"
+                  className="text-subtle"
                 />
               </Button>
             </PopoverTrigger>
@@ -390,7 +391,8 @@ export function StatusLegend({
             )}
             <Icon
               name={IconName.ChevronRight}
-              className="h-3.5 w-3.5 shrink-0 text-subtle"
+              size="sm"
+              className="text-subtle"
             />
           </AriaGridListItem>
         )}
@@ -444,7 +446,8 @@ export function StatusLegend({
                 )}
                 <Icon
                   name={IconName.ChevronRight}
-                  className="h-3.5 w-3.5 shrink-0 text-subtle"
+                  size="sm"
+                  className="text-subtle"
                 />
               </AriaGridListItem>
             );
@@ -495,7 +498,8 @@ export function StatusLegend({
               {!isErrorState && (
                 <Icon
                   name={IconName.ChevronRight}
-                  className="h-3.5 w-3.5 shrink-0 text-subtle"
+                  size="sm"
+                  className="text-subtle"
                 />
               )}
             </AriaGridListItem>

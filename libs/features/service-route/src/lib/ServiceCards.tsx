@@ -121,7 +121,7 @@ export function CardEditAction({
         )
       }
     >
-      <Icon name={IconName.Pencil} className="h-3 w-3" />
+      <Icon name={IconName.Pencil} size="xs" />
       {label}
     </Button>
   );
@@ -394,7 +394,7 @@ function RowLabel({ icon, children }: { icon: IconName; children: ReactNode }) {
   return (
     <span className="flex items-center gap-1.5">
       <span className="flex h-5 w-5 shrink-0 items-center justify-center">
-        <Icon name={icon} className="h-3.5 w-3.5" />
+        <Icon name={icon} size="sm" />
       </span>
       {children}
     </span>
@@ -469,7 +469,7 @@ function ConfigPopover({
               );
             }}
           >
-            <Icon name={IconName.Pencil} className="h-3 w-3" />
+            <Icon name={IconName.Pencil} size="xs" />
             Edit
           </Button>
         )}
@@ -481,7 +481,8 @@ function ConfigPopover({
         >
           <Icon
             name={IconName.TriangleAlert}
-            className="mt-px h-3.5 w-3.5 shrink-0 text-warning-subtle"
+            size="sm"
+            className="mt-px text-warning-subtle"
           />
           <span>{warning}</span>
         </div>

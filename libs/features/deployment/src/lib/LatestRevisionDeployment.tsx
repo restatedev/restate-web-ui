@@ -59,7 +59,8 @@ export function AllRevisions({ serviceName }: { serviceName: string }) {
           <Revision revision={latest.revision} />
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 text-subtle"
+            size="sm"
+            className="text-subtle"
           />
         </Button>
       </DropdownTrigger>

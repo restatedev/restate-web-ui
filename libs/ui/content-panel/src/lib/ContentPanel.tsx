@@ -565,7 +565,7 @@ function Tabs({
             className="group absolute bottom-0 left-0 z-20 flex h-9 w-12 items-end justify-start bg-linear-to-r from-canvas from-40% to-transparent pb-0.5 pl-1 text-muted"
           >
             <span className="flex h-6 w-6 items-center justify-center rounded-full transition group-hover:bg-emphasis/70 group-hover:text-primary group-active:scale-90 group-active:bg-strong/70 group-active:text-primary">
-              <Icon name={IconName.ChevronLeft} className="h-3.5 w-3.5" />
+              <Icon name={IconName.ChevronLeft} size="sm" />
             </span>
           </button>
         )}
@@ -577,7 +577,7 @@ function Tabs({
             className="group absolute right-0 bottom-0 z-20 flex h-9 w-12 items-end justify-end bg-linear-to-l from-canvas from-40% to-transparent pr-1 pb-0.5 text-muted"
           >
             <span className="flex h-6 w-6 items-center justify-center rounded-full transition group-hover:bg-emphasis/70 group-hover:text-primary group-active:scale-90 group-active:bg-strong/70 group-active:text-primary">
-              <Icon name={IconName.ChevronRight} className="h-3.5 w-3.5" />
+              <Icon name={IconName.ChevronRight} size="sm" />
             </span>
           </button>
         )}
@@ -596,7 +596,8 @@ function Tabs({
               More
               <Icon
                 name={IconName.ChevronsUpDown}
-                className="aspect-square h-3.5 w-3.5 opacity-60"
+                size="sm"
+                className="aspect-square opacity-60"
               />
             </Button>
           </DropdownTrigger>
@@ -687,7 +688,8 @@ function MobileTabsDropdown({
               {label}
               <Icon
                 name={IconName.ChevronsUpDown}
-                className="aspect-square h-3.5 w-3.5 shrink-0 opacity-60"
+                size="sm"
+                className="aspect-square opacity-60"
               />
             </Button>
           </DropdownTrigger>

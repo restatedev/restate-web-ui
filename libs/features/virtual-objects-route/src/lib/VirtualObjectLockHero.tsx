@@ -109,7 +109,8 @@ export function VirtualObjectLockHero({
                   ? IconName.Database
                   : IconName.Security
               }
-              className="h-4 w-4 shrink-0 text-subtle"
+              size="md"
+              className="text-subtle"
             />
             {lockHolder.kind === 'state-mutation' && (
               <span className="shrink-0 text-xs text-tertiary">

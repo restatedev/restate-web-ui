@@ -19,7 +19,7 @@ export const All: Story = {
           key={name}
           className="flex flex-col items-center gap-2 rounded-xl border border-default bg-surface px-2 py-3 text-primary"
         >
-          <Icon name={name} className="h-5 w-5" />
+          <Icon name={name} size="lg" />
           <span className="font-mono text-2xs text-tertiary">{name}</span>
         </div>
       ))}
@@ -36,6 +36,19 @@ export const FollowsFontSize: Story = {
             <Icon {...args} />
             {size}
           </span>
+        </span>
+      ))}
+    </div>
+  ),
+};
+
+export const Sizes: Story = {
+  render: (args) => (
+    <div className="flex items-end gap-6 text-primary">
+      {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
+        <span key={size} className="flex flex-col items-center gap-2">
+          <Icon {...args} size={size} />
+          <code className="font-mono text-2xs text-tertiary">{size}</code>
         </span>
       ))}
     </div>

@@ -144,7 +144,8 @@ export function JourneyInboxPosition({
             </span>
             <Icon
               name={IconName.ChevronsUpDown}
-              className="h-3 w-3 shrink-0 text-subtle"
+              size="xs"
+              className="text-subtle"
             />
           </Button>
         </PopoverTrigger>

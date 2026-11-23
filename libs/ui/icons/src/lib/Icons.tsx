@@ -280,11 +280,16 @@ export const enum IconName {
   Moon = 'Moon',
   Monitor = 'Monitor',
 }
+export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
+
 export interface IconsProps {
   name: IconName;
+  size?: IconSize;
   ['aria-hidden']?: boolean;
   className?: string;
 }
+
+export type IconProps = IconsProps;
 
 const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Settings]: Settings,
@@ -432,14 +437,22 @@ export const ICON_NAMES = Object.keys(ICONS) as IconName[];
 
 const styles = tv({
   base: 'h-[1.5em] w-[1.5em] text-current',
+  variants: {
+    size: {
+      xs: 'h-3 w-3 shrink-0',
+      sm: 'h-3.5 w-3.5 shrink-0',
+      md: 'h-4 w-4 shrink-0',
+      lg: 'h-5 w-5 shrink-0',
+    },
+  },
 });
 
-export function Icon({ name, className, ...props }: IconsProps) {
+export function Icon({ name, size, className, ...props }: IconsProps) {
   const IconComponent = ICONS[name];
   return (
     <IconComponent
       {...props}
-      className={styles({ className })}
+      className={styles({ size, className })}
       aria-hidden="true"
     />
   );

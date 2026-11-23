@@ -188,7 +188,7 @@ export function RetryPolicyIllustration({
     />
   ) : (
     <>
-      <Icon name={IconName.Retry} className="h-3 w-3 text-subtle" />
+      <Icon name={IconName.Retry} size="xs" className="text-subtle" />
       until it succeeds
     </>
   );

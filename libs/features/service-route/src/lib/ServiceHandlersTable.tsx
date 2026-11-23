@@ -145,7 +145,7 @@ export function ServiceHandlersTable({
                 className={invocationsLinkStyles()}
               >
                 View invocations
-                <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                <Icon name={IconName.ChevronRight} size="md" />
               </Link>
             </Cell>
           );

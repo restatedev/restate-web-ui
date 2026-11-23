@@ -495,7 +495,7 @@ function StateFormRows({
         }}
         className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border-dashed bg-transparent px-3 py-1.5 text-sm text-muted shadow-none hover:bg-subtle"
       >
-        <Icon name={IconName.Plus} className="h-3.5 w-3.5" /> Add key
+        <Icon name={IconName.Plus} size="sm" /> Add key
       </Button>
     </>
   );
@@ -576,7 +576,8 @@ function StateFormRow({
         >
           <Icon
             name={IconName.ChevronDown}
-            className="h-4 w-4 transition-transform group-expanded:rotate-180"
+            size="md"
+            className="transition-transform group-expanded:rotate-180"
           />
         </span>
         <Button
@@ -586,7 +587,7 @@ function StateFormRow({
           aria-label={name ? `Remove ${name}` : 'Remove key'}
           className="relative z-10 shrink-0 rounded-md p-1.5 text-subtle hover:bg-danger-subtle hover:text-danger"
         >
-          <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
+          <Icon name={IconName.Trash} size="sm" />
         </Button>
       </div>
       <DisclosurePanel className="border-t border-default/70 bg-subtle">

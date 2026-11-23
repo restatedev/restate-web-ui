@@ -542,7 +542,8 @@ function OverviewContent() {
         >
           <Icon
             name={IconName.TriangleAlert}
-            className="h-4 w-4 fill-danger-emphasis text-danger"
+            size="md"
+            className="fill-danger-emphasis text-danger"
           />
         </Button>
       </PopoverTrigger>
@@ -783,7 +784,7 @@ function OverviewContent() {
               id: 'services',
               label: (
                 <div className="flex items-center gap-2">
-                  <Icon name={IconName.Box} className="h-3.5 w-3.5" />
+                  <Icon name={IconName.Box} size="sm" />
                   Services
                   <TabCount
                     count={servicesCount}
@@ -796,7 +797,7 @@ function OverviewContent() {
               id: 'deployments',
               label: (
                 <div className="flex items-center gap-2">
-                  <Icon name={IconName.Http} className="h-3.5 w-3.5" />
+                  <Icon name={IconName.Http} size="sm" />
                   Deployments
                   <TabCount
                     count={deploymentsCount}
@@ -823,7 +824,8 @@ function OverviewContent() {
             <Label className="sr-only">{searchPlaceholder}</Label>
             <Icon
               name={IconName.Search}
-              className="ml-1.5 h-4 w-4 shrink-0 text-subtle"
+              size="md"
+              className="ml-1.5 text-subtle"
             />
             <AriaInput
               ref={filterRef}
@@ -838,7 +840,7 @@ function OverviewContent() {
                 className="mr-0.5 flex h-5 w-5 shrink-0 rounded-md p-0 text-subtle shadow-none hover:bg-muted hover:text-tertiary pressed:bg-emphasis"
                 onClick={() => setFilter('')}
               >
-                <Icon name={IconName.X} className="h-3.5 w-3.5" />
+                <Icon name={IconName.X} size="sm" />
               </Button>
             ) : (
               <FocusShortcutKey variant="light" className="mr-1 shrink-0" />

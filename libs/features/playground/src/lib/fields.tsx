@@ -121,7 +121,7 @@ function ParamField({
             className="flex shrink-0 items-center gap-1.5 self-stretch rounded-lg px-2.5 py-1 text-xs"
             onClick={() => runner.setParameter(parameter, randomId())}
           >
-            <Icon name={IconName.Wand} className="h-3.5 w-3.5" />
+            <Icon name={IconName.Wand} size="sm" />
             Generate
           </Button>
         )}
@@ -302,7 +302,7 @@ function ResetInput({ run }: { run: OperationRun }) {
         }))
       }
     >
-      <Icon name={IconName.RetryNow} className="h-3 w-3" />
+      <Icon name={IconName.RetryNow} size="xs" />
       Reset
     </Button>
   );
@@ -405,7 +405,7 @@ function FileInput({ run }: { run: OperationRun }) {
             runner.setDraft((previous) => ({ ...previous, file: undefined }))
           }
         >
-          <Icon name={IconName.X} className="h-3.5 w-3.5" />
+          <Icon name={IconName.X} size="sm" />
         </Button>
       )}
     </div>
@@ -457,7 +457,7 @@ export function RunButton({
       {runner.isSending ? (
         <Spinner className="h-3.5 w-3.5" />
       ) : (
-        <Icon name={IconName.Play} className="h-3.5 w-3.5 fill-current" />
+        <Icon name={IconName.Play} size="sm" className="fill-current" />
       )}
       {label}
     </Button>
@@ -522,9 +522,7 @@ export function SendButton({
       menus={availableModes.map((mode) => (
         <DropdownItem key={mode} value={mode}>
           <span className="flex w-4 shrink-0 justify-center">
-            {mode === base && (
-              <Icon name={IconName.Check} className="h-3.5 w-3.5" />
-            )}
+            {mode === base && <Icon name={IconName.Check} size="sm" />}
           </span>
           <span className="flex flex-col">
             <span className="font-medium">{MODE_COPY[mode].label}</span>
@@ -632,7 +630,8 @@ export function AdvancedToggle({
       )}
       <Icon
         name={isOpen ? IconName.ChevronUp : IconName.ChevronDown}
-        className="h-3.5 w-3.5 text-subtle"
+        size="sm"
+        className="text-subtle"
       />
     </Button>
   );

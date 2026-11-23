@@ -75,10 +75,7 @@ function ServerInfoRows({ info }: { info?: DetailedDeployment['info'] }) {
               className: 'items-start',
             })}
           >
-            <Icon
-              name={IconName.TriangleAlert}
-              className="mt-px h-3 w-3 shrink-0"
-            />
+            <Icon name={IconName.TriangleAlert} size="xs" className="mt-px" />
             <span className="min-w-0 font-normal">
               {item.code && <MonoLabel>{item.code}: </MonoLabel>}
               {item.message}

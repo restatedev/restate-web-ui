@@ -181,7 +181,7 @@ function DeploymentServices({
           variant="secondary"
           className="relative inline-flex items-center gap-1 rounded-lg py-1 pr-1 pl-2 text-xs font-medium tabular-nums"
         >
-          <Icon name={IconName.Box} className="h-3.5 w-3.5 text-subtle" />
+          <Icon name={IconName.Box} size="sm" className="text-subtle" />
           {formatNumber(services.length, true)}{' '}
           <span className="opacity-80">
             {formatPlurals(services.length, {
@@ -191,7 +191,8 @@ function DeploymentServices({
           </span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 text-subtle"
+            size="sm"
+            className="text-subtle"
           />
         </Button>
       </DropdownTrigger>
@@ -401,7 +402,7 @@ export function DeploymentsTable() {
                 className="ml-auto flex items-center gap-1.5 rounded-lg border-danger bg-surface/90 px-2.5 py-1 text-xs text-danger-strong shadow-none hover:border-danger-strong/40 hover:bg-danger-muted pressed:bg-danger-emphasis"
                 onClick={openDeleteSelectedDeployments}
               >
-                <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
+                <Icon name={IconName.Trash} size="sm" />
                 Delete…
               </Button>
             </>

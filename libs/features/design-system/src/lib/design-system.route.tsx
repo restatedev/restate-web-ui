@@ -576,7 +576,7 @@ function Surfaces() {
               <span className={styles.label()}>{recipe}</span>
               <AriaButton className={styles.target()}>
                 {on === 'icon' ? (
-                  <Icon name={IconName.Copy} className="h-4 w-4" />
+                  <Icon name={IconName.Copy} size="md" />
                 ) : (
                   title
                 )}
@@ -774,7 +774,7 @@ function Components() {
           <Button variant="secondary">Secondary</Button>
           <Button variant="destructive">Destructive</Button>
           <Button variant="icon" aria-label="Copy">
-            <Icon name={IconName.Copy} className="h-4 w-4" />
+            <Icon name={IconName.Copy} size="md" />
           </Button>
           <Button variant="secondary" disabled>
             Disabled

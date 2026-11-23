@@ -161,13 +161,15 @@ export function InvocationHandler({
           <ChipSegment className="max-w-[18rem] px-1.5">
             <Icon
               name={IconName.Function}
-              className="-mr-0.5 h-4 w-4 shrink-0 text-subtle"
+              size="md"
+              className="-mr-0.5 text-subtle"
             />
             <TruncateTooltipTrigger>{handler}</TruncateTooltipTrigger>
             {service && (
               <Icon
                 name={IconName.ChevronRight}
-                className="h-3.5 w-3.5 shrink-0 text-subtle"
+                size="sm"
+                className="text-subtle"
               />
             )}
           </ChipSegment>

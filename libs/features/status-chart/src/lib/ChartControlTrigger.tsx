@@ -49,7 +49,8 @@ export function ChartControlTrigger({
       {children}
       <Icon
         name={IconName.ChevronsUpDown}
-        className="h-3 w-3 self-center text-subtle transition-colors group-hover/chart-control:text-muted"
+        size="xs"
+        className="self-center text-subtle transition-colors group-hover/chart-control:text-muted"
       />
       {suffix && <span className="text-subtle">{suffix}</span>}
     </Button>

@@ -67,7 +67,7 @@ function EndpointChip({
             size="sm"
             className="max-w-40 cursor-default gap-0.5 font-mono"
           >
-            <Icon name={IconName.AtSign} className="h-3.5 w-3.5 shrink-0" />
+            <Icon name={IconName.AtSign} size="sm" />
             <span className="truncate">{tunnelName}</span>
           </Badge>
         </HoverTooltip>

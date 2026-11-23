@@ -42,7 +42,7 @@ export function CompleteActionDialog({
     <Dialog>
       <DialogTrigger>
         <Button variant="secondary" className={triggerStyles()}>
-          <Icon name={IconName.Return} className="h-3 w-3 shrink-0" />
+          <Icon name={IconName.Return} size="xs" />
           Complete…
         </Button>
       </DialogTrigger>

@@ -117,14 +117,16 @@ export function BatchProgressBar({
                             <div className="flex flex-row items-center gap-1 font-mono">
                               <Icon
                                 name={IconName.Invocation}
-                                className="h-4 w-4 rounded-sm border-none bg-transparent [&>svg]:p-px"
+                                size="md"
+                                className="rounded-sm border-none bg-transparent [&>svg]:p-px"
                               />
                               <span className="text-muted group-highlighted:text-inverse-secondary">
                                 {invocationId}
                               </span>
                               <Icon
                                 name={IconName.ChevronRight}
-                                className="ml-auto h-3.5 w-3.5"
+                                size="sm"
+                                className="ml-auto"
                               />
                             </div>
                             <HoverTooltip content={error} className="max-w-lg">

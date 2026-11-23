@@ -507,7 +507,7 @@ function EndpointForm() {
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
                     aria-label="Http endpoint"
                   >
-                    <Icon name={IconName.Http} className="h-4 w-4" />
+                    <Icon name={IconName.Http} size="md" />
                   </CustomRadio>
                 </RadioTooltipTrigger>
                 <TooltipContent size="sm" offset={20}>
@@ -521,7 +521,7 @@ function EndpointForm() {
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
                     aria-label="Google Cloud Run"
                   >
-                    <Icon name={IconName.CloudRun} className="h-4 w-4" />
+                    <Icon name={IconName.CloudRun} size="md" />
                   </CustomRadio>
                 </RadioTooltipTrigger>
                 <TooltipContent size="sm" offset={20}>
@@ -535,7 +535,7 @@ function EndpointForm() {
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
                     aria-label="AWS lambda"
                   >
-                    <Icon name={IconName.Lambda} className="h-4 w-4" />
+                    <Icon name={IconName.Lambda} size="md" />
                   </CustomRadio>
                 </RadioTooltipTrigger>
                 <TooltipContent size="sm" offset={20}>
@@ -551,7 +551,7 @@ function EndpointForm() {
                         className="aspect-square items-center rounded-[0.4rem] p-1.5"
                         aria-label="Connected service"
                       >
-                        <Icon name={IconName.Connect} className="h-4 w-4" />
+                        <Icon name={IconName.Connect} size="md" />
                       </CustomRadio>
                     </RadioTooltipTrigger>
                     <TooltipContent size="sm" offset={20}>
@@ -565,7 +565,7 @@ function EndpointForm() {
                         className="aspect-square items-center rounded-[0.4rem] p-1.5"
                         aria-label="Tunnel"
                       >
-                        <Icon name={IconName.Tunnel} className="h-4 w-4" />
+                        <Icon name={IconName.Tunnel} size="md" />
                       </CustomRadio>
                     </RadioTooltipTrigger>
                     <TooltipContent size="sm" offset={20}>

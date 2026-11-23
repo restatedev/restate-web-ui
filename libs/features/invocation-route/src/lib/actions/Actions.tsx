@@ -177,10 +177,7 @@ export function Actions({
         key={config.key}
       >
         <DropdownItem key={config.key} destructive={config.destructive}>
-          <Icon
-            name={config.icon}
-            className="h-3.5 w-3.5 shrink-0 opacity-80"
-          />
+          <Icon name={config.icon} size="sm" className="opacity-80" />
           <ActionText hasFollowup={config.component.hasFollowup()}>
             {config.label}
           </ActionText>

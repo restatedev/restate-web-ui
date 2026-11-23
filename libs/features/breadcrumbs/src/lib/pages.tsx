@@ -55,10 +55,7 @@ function InvocationCrumbPopover({ crumb }: BreadcrumbComponentProps) {
 function VQueueCrumbContent({ crumb }: BreadcrumbComponentProps) {
   return (
     <>
-      <Icon
-        name={crumb.icon}
-        className="h-3 w-3 shrink-0 rotate-90 text-subtle"
-      />
+      <Icon name={crumb.icon} size="xs" className="rotate-90 text-subtle" />
       <span data-crumb-label className="min-w-0 truncate">
         {crumb.label}
       </span>
@@ -132,10 +129,7 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
             showLabel={false}
           />
         )}
-        <Icon
-          name={IconName.Workflow}
-          className="h-3 w-3 shrink-0 text-subtle"
-        />
+        <Icon name={IconName.Workflow} size="xs" className="text-subtle" />
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
         </span>

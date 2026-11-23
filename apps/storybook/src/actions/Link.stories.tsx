@@ -47,7 +47,7 @@ export const Variants: Story = {
         Destructive button
       </Link>
       <Link {...args} variant="icon" aria-label="Open in a new tab">
-        <Icon name={IconName.ExternalLink} className="h-4 w-4" />
+        <Icon name={IconName.ExternalLink} size="md" />
       </Link>
     </div>
   ),

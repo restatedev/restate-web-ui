@@ -1096,7 +1096,7 @@ function StateValuePreview({
                 className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
               >
                 Edit
-                <Icon name={IconName.ExternalLink} className="h-3 w-3" />
+                <Icon name={IconName.ExternalLink} size="xs" />
               </EditStateTrigger>
             </div>
           }

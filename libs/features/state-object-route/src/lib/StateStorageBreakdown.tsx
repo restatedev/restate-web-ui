@@ -145,7 +145,8 @@ function StorageTooltipContent({
           <span className={tooltipMeta()}>· {percentage}</span>
           <Icon
             name={IconName.ChevronRight}
-            className="ml-auto h-3.5 w-3.5 shrink-0 text-inverse-subtle!"
+            size="sm"
+            className="ml-auto text-inverse-subtle!"
           />
         </Link>
       </div>
@@ -189,7 +190,8 @@ function StorageTooltipContent({
             </span>
             <Icon
               name={IconName.ChevronRight}
-              className="h-3 w-3 shrink-0 text-inverse-subtle!"
+              size="xs"
+              className="text-inverse-subtle!"
             />
           </Link>
         ))}
@@ -358,7 +360,8 @@ export function StateStorageBreakdown() {
                 {content}
                 <Icon
                   name={IconName.ChevronRight}
-                  className="h-3.5 w-3.5 shrink-0 text-subtle"
+                  size="sm"
+                  className="text-subtle"
                 />
               </Link>
             );
@@ -379,7 +382,8 @@ export function StateStorageBreakdown() {
                     {content}
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="h-3.5 w-3.5 shrink-0 text-subtle"
+                      size="sm"
+                      className="text-subtle"
                     />
                   </Button>
                 </PopoverTrigger>

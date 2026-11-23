@@ -301,7 +301,7 @@ export function GoneSlot({ title, sub }: { title: string; sub?: string }) {
   const s = styles();
   return (
     <div className={s.cardGone()}>
-      <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
+      <Icon name={IconName.Trash} size="sm" />
       <span className={s.goneTitle()}>{title}</span>
       {sub && <span className={s.goneSub()}>{sub}</span>}
     </div>

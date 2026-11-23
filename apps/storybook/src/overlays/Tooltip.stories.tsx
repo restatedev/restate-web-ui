@@ -25,7 +25,7 @@ export const OnIconButton: Story = {
     <Tooltip>
       <TooltipTrigger>
         <Button variant="icon" aria-label="Refresh">
-          <Icon name={IconName.Retry} className="h-4 w-4" />
+          <Icon name={IconName.Retry} size="md" />
         </Button>
       </TooltipTrigger>
       <TooltipContent>Refresh</TooltipContent>

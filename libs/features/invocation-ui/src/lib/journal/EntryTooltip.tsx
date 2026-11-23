@@ -170,7 +170,7 @@ function EntryContent({
                               ? IconName.Pause
                               : IconName.ClockAlert
                           }
-                          className="h-3.5 w-3.5"
+                          size="sm"
                         />
                         {mode === 'paused'
                           ? 'Paused!'

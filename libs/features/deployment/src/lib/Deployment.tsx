@@ -149,7 +149,8 @@ export function Deployment({
             >
               <Icon
                 name={IconName.ChevronRight}
-                className="h-4 w-4 text-subtle"
+                size="md"
+                className="text-subtle"
               />
             </Link>
           )}
@@ -180,7 +181,8 @@ export function Deployment({
             >
               <Icon
                 name={IconName.TriangleAlert}
-                className="h-3.5 w-3.5 text-warning-subtle"
+                size="sm"
+                className="text-warning-subtle"
               />
             </Button>
           </PopoverTrigger>
@@ -218,7 +220,7 @@ export function Deployment({
                 size="xs"
                 className="relative z-[2] max-w-fit shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono text-[0.9em] leading-3 text-current"
               >
-                <Icon name={IconName.AtSign} className="mr-0.5 h-3 w-3" />
+                <Icon name={IconName.AtSign} size="xs" className="mr-0.5" />
                 <div className="max-w-[20ch] truncate">{tunnelName}</div>
               </Badge>
             </HoverTooltip>
@@ -260,7 +262,11 @@ export function Deployment({
           href={deploymentHref(baseUrl, { deployment: deployment.id })}
           className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-tint-subtle pressed:before:bg-tint"
         >
-          <Icon name={IconName.ChevronRight} className="h-4 w-4 text-subtle" />
+          <Icon
+            name={IconName.ChevronRight}
+            size="md"
+            className="text-subtle"
+          />
         </Link>
       )}
     </div>

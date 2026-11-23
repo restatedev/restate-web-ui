@@ -158,10 +158,7 @@ function VQueuesComponent() {
             onItemRemove={scheduleSubmit}
             renderOption={renderFilterOption}
             inputPrefix={
-              <Icon
-                name={IconName.Search}
-                className="h-4 w-4 shrink-0 text-subtle"
-              />
+              <Icon name={IconName.Search} size="md" className="text-subtle" />
             }
             tagsPlacement="outside"
             maxVisibleChips="auto"

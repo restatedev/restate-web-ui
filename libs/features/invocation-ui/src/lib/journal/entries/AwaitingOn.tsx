@@ -368,7 +368,8 @@ export function AwaitingOn({
           {label}
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3 w-3 shrink-0 text-muted"
+            size="xs"
+            className="text-muted"
           />
         </Button>
       </PopoverTrigger>

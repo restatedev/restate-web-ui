@@ -126,7 +126,8 @@ function TargetLinkChevron({ isMarked = false }: { isMarked?: boolean }) {
   return (
     <Icon
       name={IconName.ChevronRight}
-      className="-mr-1 h-3.5 w-3.5 shrink-0 text-subtle"
+      size="sm"
+      className="-mr-1 text-subtle"
       {...(isMarked && { 'data-target-link-chevron': true })}
     />
   );

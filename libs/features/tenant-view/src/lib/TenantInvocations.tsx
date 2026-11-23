@@ -257,7 +257,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
                   void summary.refetch();
                 }}
               >
-                <Icon name={IconName.Retry} className="h-4 w-4" />
+                <Icon name={IconName.Retry} size="md" />
               </Button>
             </HoverTooltip>
           </ContentPanelToolbar>

@@ -36,7 +36,7 @@ export const Group: Story = {
   render: () => (
     <ChipGroup aria-label="Target">
       <ChipSegment>
-        <Icon name={IconName.Box} className="h-3 w-3" />
+        <Icon name={IconName.Box} size="xs" />
         Checkout
       </ChipSegment>
       <ChipSegment tone="subtle">process</ChipSegment>

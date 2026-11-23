@@ -110,7 +110,7 @@ function NodeDetails({ node }: { node: SchemaNode }) {
       ))}
       {node.error && (
         <div className="flex items-center gap-1 text-danger">
-          <Icon name={IconName.TriangleAlert} className="h-3 w-3" />
+          <Icon name={IconName.TriangleAlert} size="xs" />
           {node.error}
         </div>
       )}
