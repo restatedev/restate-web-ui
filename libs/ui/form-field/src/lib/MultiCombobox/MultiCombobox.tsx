@@ -54,7 +54,11 @@ function DefaultTag<
   return (
     <div className={tagStyles()}>
       {item.textValue}
-      <Button onClick={onRemove} variant="icon">
+      <Button
+        aria-label={`Remove ${item.textValue}`}
+        onClick={onRemove}
+        variant="icon"
+      >
         <Icon name={IconName.X} size="xs" />
       </Button>
     </div>

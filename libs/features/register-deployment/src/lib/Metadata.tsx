@@ -75,6 +75,7 @@ export function Metadata() {
               }
             />
             <Button
+              aria-label="Remove metadata"
               onClick={() => {
                 if (list.items.length === 1) {
                   list.update(item.index, {

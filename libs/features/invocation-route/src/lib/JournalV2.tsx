@@ -887,7 +887,11 @@ export function JournalV2({
                     />
                     {areAllInvocationsCompleted && (
                       <HoverTooltip content="Refresh">
-                        <Button variant="icon" onClick={refetch}>
+                        <Button
+                          aria-label="Refresh"
+                          variant="icon"
+                          onClick={refetch}
+                        >
                           <Icon name={IconName.Retry} size="md" />
                         </Button>
                       </HoverTooltip>

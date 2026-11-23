@@ -21,7 +21,11 @@ export function CallInvokedLoadingError({
   return (
     <Popover>
       <PopoverTrigger>
-        <Button variant="icon" className={styles({ className })}>
+        <Button
+          aria-label="Show error"
+          variant="icon"
+          className={styles({ className })}
+        >
           <Icon name={IconName.CircleX} size="md" className="text-danger" />
         </Button>
       </PopoverTrigger>

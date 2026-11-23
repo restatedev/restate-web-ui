@@ -6,7 +6,11 @@ export function CircularRefWarning() {
   return (
     <Popover>
       <PopoverTrigger>
-        <Button variant="icon" className="z-[2] text-pending-subtle">
+        <Button
+          aria-label="Circular reference"
+          variant="icon"
+          className="z-[2] text-pending-subtle"
+        >
           <Icon
             name={IconName.TriangleAlert}
             size="lg"

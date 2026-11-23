@@ -52,6 +52,11 @@ export function NotificationProgressTracker({
           })}
       <div className="ml-auto">
         <Button
+          aria-label={
+            progress?.isFinished && progress.failed === 0
+              ? 'Close'
+              : 'Show details'
+          }
           variant="icon"
           onClick={() => {
             onClose();

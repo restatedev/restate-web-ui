@@ -25,6 +25,7 @@ export function PredefinedQueriesDropdown({
       <DropdownTrigger>
         <HoverTooltip content="Useful queries">
           <Button
+            aria-label="Useful queries"
             variant="icon"
             className="h-full rounded-lg bg-inverse-tint-subtle px-2 text-inverse-secondary hover:bg-inverse-tint pressed:bg-inverse-tint-strong"
           >

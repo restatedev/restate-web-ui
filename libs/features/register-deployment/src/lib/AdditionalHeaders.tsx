@@ -66,6 +66,7 @@ export function AdditionalHeaders() {
               }
             />
             <Button
+              aria-label="Remove header"
               onClick={() => {
                 if (list.items.length === 1) {
                   list.update(item.index, {

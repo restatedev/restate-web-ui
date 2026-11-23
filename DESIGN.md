@@ -43,7 +43,7 @@ apps/web-ui and Cloud  routes and pages
 ```
 
 - Each `libs/ui/<name>` is a package, `@restate/ui-<name>`, imported by package name.
-- `libs/ui` takes plain props and doesn't import `@restate/features-*` or `@restate/data-access-*`. Two old imports break this (`ui-issue-banner` → `features-system-health`, `ui-dialog` → `features-user-preference`); don't add more.
+- `libs/ui` takes plain props and doesn't import `@restate/features-*` or `@restate/data-access-*`. Two old imports break this (`ui-issue-banner` → `features-system-health`, `ui-dialog` → `features-user-preference`); lint (`restate/ui-layer-imports`) rejects any other.
 - The whole theme lives in `@restate/util-styles/theme.css`: role colors, the `text-3xs`, `text-2xs` and `text-0.5xs` sizes, the fonts, the keyframes, the `3xl` breakpoint and the `@tall:` variant. An app imports it once after `tailwindcss`; its own stylesheet keeps only page-level rules.
 - Storybook shows every shared component with its variants and states, in both themes: `pnpm nx serve storybook`, stories in `apps/storybook/src`. The dev server shows the color tokens at `/ui/design-system`.
 
@@ -309,12 +309,12 @@ Interactive components handle rest, hover, pressed, focus-visible and disabled, 
 ## Accessibility
 
 - **Use our components or React Aria, not raw elements.** Never put `onClick` on a `div` or `span`; use `Button` or `Link`.
-- **Icon-only controls have an `aria-label`.** `Icon` is always `aria-hidden`, and tooltip text doesn't name a button.
+- **Icon-only controls have an `aria-label`.** `Icon` is always `aria-hidden`, and tooltip text doesn't name a button. Lint (`restate/icon-button-label`) rejects a `Button variant="icon"` whose content is only icons and that has no `aria-label`, `aria-labelledby` or React Aria `slot`.
 - **Tooltips add, they don't carry.** `HoverTooltip` opens on mouse hover only. Anything a keyboard user needs goes in the label, on the page, or in a `Tooltip` or `InlineTooltip`, which also open on focus.
 - **Focus stays visible.** Use `focusRing`, and never remove an outline without a replacement.
 - **Color is never the only signal.** Pair it with text or an icon, as `Badge` and the status icons do.
 - **Motion respects `prefers-reduced-motion`** (see [Motion](#motion--micro-interaction)).
-- **Dialogs** have a heading with `slot="title"`, close on Escape and close on a backdrop click (`DialogContent` is dismissable by default). Turn that off only while a request is pending, or on a step that shows a one-time secret.
+- **Dialogs** have a `DialogTitle`, close on Escape and close on a backdrop click (`DialogContent` is dismissable by default). Turn that off only while a request is pending, or on a step that shows a one-time secret.
 - **Targets:** icon buttons are at least 24 × 24 px, or spaced so their targets don't overlap (WCAG 2.5.8).
 
 ## Do's and Don'ts

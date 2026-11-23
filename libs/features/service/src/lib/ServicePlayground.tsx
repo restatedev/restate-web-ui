@@ -484,6 +484,7 @@ function ServicePlaygroundSheetContent({ service }: { service: string }) {
         <div className="absolute top-3 right-3 flex items-center gap-2">
           {handlers.size > 0 && (
             <Button
+              aria-label="Minimize"
               variant="icon"
               onClick={() => {
                 const handlerFromUrl = window.location.hash
@@ -509,7 +510,7 @@ function ServicePlaygroundSheetContent({ service }: { service: string }) {
             </Button>
           )}
           <DialogClose>
-            <Button variant="icon">
+            <Button aria-label="Close" variant="icon">
               <Icon name={IconName.X} size="lg" />
             </Button>
           </DialogClose>

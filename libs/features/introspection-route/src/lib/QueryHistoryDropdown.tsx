@@ -28,6 +28,7 @@ export function QueryHistoryDropdown({
       <DropdownTrigger>
         <HoverTooltip content="Query history">
           <Button
+            aria-label="Query history"
             variant="icon"
             disabled={isEmpty}
             className="h-full rounded-lg bg-inverse-tint-subtle px-2 text-inverse-secondary hover:bg-inverse-tint disabled:text-inverse-muted pressed:bg-inverse-tint-strong"
