@@ -18,6 +18,7 @@ const meta: Meta<typeof Link> = {
         'icon',
       ],
     },
+    size: { control: 'inline-radio', options: ['xs', 'sm', 'md'] },
   },
 };
 
@@ -49,6 +50,21 @@ export const Variants: Story = {
       <Link {...args} variant="icon" aria-label="Open in a new tab">
         <Icon name={IconName.ExternalLink} size="md" />
       </Link>
+    </div>
+  ),
+};
+
+export const ButtonSizes: Story = {
+  render: (args) => (
+    <div className="flex items-end gap-4">
+      {(['xs', 'sm', 'md'] as const).map((size) => (
+        <span key={size} className="flex flex-col items-center gap-2">
+          <Link {...args} variant="secondary-button" size={size}>
+            View invocations
+          </Link>
+          <code className="font-mono text-2xs text-tertiary">{size}</code>
+        </span>
+      ))}
     </div>
   ),
 };

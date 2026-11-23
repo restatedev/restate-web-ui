@@ -29,7 +29,7 @@ export type ButtonSize = 'xs' | 'sm' | 'md';
 
 export const buttonStyles = tv({
   extend: focusRing,
-  base: 'cursor-default rounded-xl border border-tint px-5 py-2 text-center text-sm shadow-xs',
+  base: 'rounded-xl border border-tint px-5 py-2 text-center text-sm shadow-xs',
   variants: {
     variant: {
       primary:
@@ -81,6 +81,11 @@ export const buttonStyles = tv({
   },
 });
 
+const styles = tv({
+  extend: buttonStyles,
+  base: 'cursor-default',
+});
+
 export const Button = forwardRef<
   HTMLButtonElement,
   PropsWithChildren<ButtonProps>
@@ -92,7 +97,7 @@ export const Button = forwardRef<
       isDisabled={disabled}
       onPress={onClick as PressEvents['onPress']}
       className={composeRenderProps(props.className, (className, renderProps) =>
-        buttonStyles({ ...renderProps, variant, size, className }),
+        styles({ ...renderProps, variant, size, className }),
       )}
     />
   );

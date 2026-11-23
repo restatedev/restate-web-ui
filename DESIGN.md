@@ -178,16 +178,16 @@ Find the job, then use the component. Every package is `@restate/ui-<name>`.
 
 **Navigation**
 
-| Job                           | Use                                                                                                                                                            | Lib             |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
-| Link in text                  | `Link`. A `?…` href merges into the current search params (`preserveQueryParams`, on by default); pass an array of names to carry those params to another path | `link`          |
-| Link that looks like a button | `Link variant="button" \| "secondary-button" \| "destructive-button" \| "icon"`                                                                                | `link`          |
-| Sub-pages of a page           | `Nav` with `NavItem` (paths) or `NavSearchItem` (a search param value)                                                                                         | `nav`           |
-| Tabs in a panel               | `ContentPanel tabs={…}`                                                                                                                                        | `content-panel` |
-| Tabs with panels elsewhere    | `Tabs` › `TabList` › `Tab`, `TabPanels` › `TabPanel` (`queryParam` keeps the tab in the URL). No page uses it today, so check it fits first                    | `tabs`          |
-| Switch a view or a value      | No shared segmented control yet; six local ones exist. **Planned:** `SegmentedControl` in `@restate/ui-tabs`. Build that one rather than a seventh copy        | —               |
-| Sidebar                       | `SidebarNav`, `SidebarNavItem`                                                                                                                                 | `layout`        |
-| Trail                         | `Breadcrumbs` inside `BreadcrumbsProvider`                                                                                                                     | `breadcrumbs`   |
+| Job                           | Use                                                                                                                                                                                  | Lib             |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------- |
+| Link in text                  | `Link`. A `?…` href merges into the current search params (`preserveQueryParams`, on by default); pass an array of names to carry those params to another path                       | `link`          |
+| Link that looks like a button | `Link variant="button" \| "secondary-button" \| "destructive-button"`: the `Button` look and `size`, with a link's pointer. `variant="icon"` is a quiet link with a hover background | `link`          |
+| Sub-pages of a page           | `Nav` with `NavItem` (paths) or `NavSearchItem` (a search param value)                                                                                                               | `nav`           |
+| Tabs in a panel               | `ContentPanel tabs={…}`                                                                                                                                                              | `content-panel` |
+| Tabs with panels elsewhere    | `Tabs` › `TabList` › `Tab`, `TabPanels` › `TabPanel` (`queryParam` keeps the tab in the URL). No page uses it today, so check it fits first                                          | `tabs`          |
+| Switch a view or a value      | No shared segmented control yet; six local ones exist. **Planned:** `SegmentedControl` in `@restate/ui-tabs`. Build that one rather than a seventh copy                              | —               |
+| Sidebar                       | `SidebarNav`, `SidebarNavItem`                                                                                                                                                       | `layout`        |
+| Trail                         | `Breadcrumbs` inside `BreadcrumbsProvider`                                                                                                                                           | `breadcrumbs`   |
 
 **Forms**
 
@@ -291,7 +291,7 @@ Types: export the props as `<Name>Props`, and type closed sets as string unions 
 
 - **One `tv()` per component,** imported from `@restate/util-styles`. Parts are `slots`, options are `variants` with `defaultVariants`, combinations are `compoundVariants`. Never build class names with template literals; `restate/no-classname-template-literal` rejects them.
 - **React Aria state** comes through render props: `className={composeRenderProps(className, (className, state) => styles({ ...state, variant, className }))}`. Style states with the React Aria variants (`pressed:`, `selected:`, `disabled:`, `invalid:`, `highlighted:`, `entering:`, `exiting:`) and focus with `extend: focusRing` from `@restate/ui-focus`.
-- **Share looks by extending, not copying.** When two components must look alike, export the style function and `extend` it. `Link`'s button variants are copies of `Button`'s today, and the copies have already drifted. **Planned:** `buttonStyles` exported from `@restate/ui-button`.
+- **Share looks by extending, not copying.** When two components must look alike, export the style function and `extend` it: `Link`'s button variants extend `buttonStyles` from `@restate/ui-button`.
 - **Why the layout-only rule matters:** `tv()` merges the caller's `className` last, and tailwind-merge lets it win every conflict. An override is one prop away, so the component's API has to cover real needs.
 
 ### States
