@@ -62,7 +62,7 @@ export const KillInvocation = withConfirmation({
   icon: IconName.Kill,
   iconClassName: 'text-danger-subtle',
   description: <p>Are you sure you want to kill this invocation?</p>,
-  alertType: 'warning',
+  alertIntent: 'warning',
   alertContent: (
     <>
       Killing immediately stops all calls in the invocation tree{' '}

@@ -8,6 +8,7 @@ import type {
 } from '@restate/data-access-admin-api-spec';
 import { ConfirmationDialog } from '@restate/ui-dialog';
 import { Icon, IconName } from '@restate/ui-icons';
+import { Callout } from '@restate/ui-callout';
 import { FormFieldSelect, Option } from '@restate/ui-form-field';
 import {
   useDurationSinceLastSnapshot,
@@ -82,16 +83,9 @@ function BatchOperationContent({
       <div className="flex flex-col gap-2">
         <p>No invocations match your criteria.</p>
         <Filters showScope={showScope} state={state} className="mt-0" />
-        <div className="mt-2 flex gap-2 rounded-xl border border-info bg-info-subtle p-3 text-0.5xs text-info">
-          <Icon
-            size="lg"
-            className="fill-info text-on-info"
-            name={IconName.Info}
-          />
-          <div className="flex flex-col gap-1">
-            <span className="block">{config.emptyMessage}</span>
-          </div>
-        </div>
+        <Callout intent="info" className="mt-2">
+          {config.emptyMessage}
+        </Callout>
       </div>
     );
   }
@@ -309,7 +303,7 @@ export function BatchOperationDialog({
             ? 'Continue in background'
             : 'Close'
         }
-        alertType={showOperationDetails ? config.alertType : undefined}
+        alertIntent={showOperationDetails ? config.alertIntent : undefined}
         alertContent={showOperationDetails ? config.alertContent : undefined}
         submitText={config.submitText}
         submitVariant={config.submitVariant}

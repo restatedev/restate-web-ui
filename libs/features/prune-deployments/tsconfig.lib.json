@@ -80,6 +80,9 @@
       "path": "../../ui/button/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/callout/tsconfig.lib.json"
+    },
+    {
       "path": "../deployment/tsconfig.lib.json"
     },
     {

@@ -1,36 +1,12 @@
 import * as adminApi from '@restate/data-access-admin-api-spec';
 import { Icon, IconName } from '@restate/ui-icons';
+import { Callout } from '@restate/ui-callout';
 import { useRegisterDeploymentContext } from './Context';
 import { Disclosure, DisclosurePanel } from 'react-aria-components';
 import { Button } from '@restate/ui-button';
 import { ServiceType, Handler } from '@restate/features-service';
 import { Link } from '@restate/ui-link';
 import { MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION } from '@restate/features-deployment';
-import { PropsWithChildren } from 'react';
-import { tv } from '@restate/util-styles';
-
-const warningStyles = tv({
-  base: 'mt-2 flex gap-2 rounded-xl border border-warning bg-warning-subtle p-3 text-0.5xs text-warning',
-});
-export function Warning({
-  title,
-  className,
-  children,
-}: PropsWithChildren<{ title?: string; className?: string }>) {
-  return (
-    <p className={warningStyles({ className })}>
-      <Icon
-        size="lg"
-        className="fill-warning text-on-warning"
-        name={IconName.TriangleAlert}
-      />
-      <span className="inline-block">
-        {title && <span className="font-semibold">{title}: </span>}
-        {children}
-      </span>
-    </p>
-  );
-}
 
 export function DeploymentProtocolCheck() {
   const { max_protocol_version } = useRegisterDeploymentContext();
@@ -40,7 +16,7 @@ export function DeploymentProtocolCheck() {
     max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION
   ) {
     return (
-      <Warning title="Outdated SDK Version">
+      <Callout intent="warning" title="Outdated SDK Version" className="mt-2">
         This deployment uses an older SDK version (Service Protocol{' '}
         {max_protocol_version}) which will be unsupported in upcoming releases.
         To avoid service interruption, please upgrade your Restate SDK to the
@@ -53,7 +29,7 @@ export function DeploymentProtocolCheck() {
         >
           documentation.
         </Link>
-      </Warning>
+      </Callout>
     );
   }
 
@@ -130,9 +106,14 @@ function Service({
         </div>
         <DisclosurePanel>
           {service.info?.map((info) => (
-            <Warning key={info.code} title={'Warning'} className="mx-2">
+            <Callout
+              key={info.code}
+              intent="warning"
+              title="Warning"
+              className="mx-2 mt-2"
+            >
               {info.message}
-            </Warning>
+            </Callout>
           ))}
           {(service.handlers ?? []).length > 0 && (
             <div className="mx-1.5 mt-2 mb-1.5 flex flex-col">

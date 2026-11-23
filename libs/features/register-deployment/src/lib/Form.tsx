@@ -8,11 +8,8 @@ import {
 } from 'react';
 import { Radio, Heading } from 'react-aria-components';
 import { RadioGroup } from '@restate/ui-radio-group';
-import {
-  DeploymentProtocolCheck,
-  RegisterDeploymentResults,
-  Warning,
-} from './Results';
+import { DeploymentProtocolCheck, RegisterDeploymentResults } from './Results';
+import { Callout } from '@restate/ui-callout';
 import { AdditionalHeaders } from './AdditionalHeaders';
 import { UseHTTP11 } from './UseHTTP11';
 import { AssumeARNRole } from './AssumeARNRole';
@@ -186,7 +183,11 @@ export function UpdateForm() {
           }
           description={'Modify the configuration for this deployment. '}
         >
-          <Warning title="Service definitions are not updated">
+          <Callout
+            intent="warning"
+            title="Service definitions are not updated"
+            className="mt-2"
+          >
             This only updates the configuration. To apply code changes or add
             new handlers, you must re-register the deployment.{' '}
             <Link
@@ -197,7 +198,7 @@ export function UpdateForm() {
             >
               Learn more.
             </Link>
-          </Warning>
+          </Callout>
           {/* <EndpointForm /> */}
           <div className="mt-2" />
           <AdditionalHeaders />

@@ -285,9 +285,6 @@ const recipes = tv({
     panel: 'rounded-2xl border bg-surface p-4 text-sm text-tertiary shadow-xs',
     field:
       'w-full rounded-lg border border-inset bg-inset px-2 py-1.5 text-sm text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] placeholder:text-placeholder focus:outline-2 focus:outline-focus',
-    banner:
-      'flex gap-2 rounded-xl border border-warning bg-warning-subtle p-3 text-0.5xs text-warning',
-    bannerIcon: 'h-5 w-5 shrink-0 fill-warning text-on-warning',
     badge:
       'w-fit rounded-md border border-danger-strong/10 bg-danger-subtle px-1.5 py-0.5 text-xs font-medium text-danger-strong',
     chip: 'w-fit rounded bg-muted px-1 py-px text-2xs font-medium text-tertiary',
@@ -891,12 +888,6 @@ function Recipes() {
         </Recipe>
         <Recipe title="Text field" classes={[r.field()]}>
           <input className={r.field()} placeholder="Search services…" />
-        </Recipe>
-        <Recipe title="Banner" classes={[r.banner(), r.bannerIcon()]}>
-          <div className={r.banner()}>
-            <Icon name={IconName.TriangleAlert} className={r.bannerIcon()} />
-            This deployment has breaking changes.
-          </div>
         </Recipe>
         <Recipe title="Status badge" classes={[r.badge()]}>
           <span className={r.badge()}>Failed</span>

@@ -20,6 +20,7 @@ import { Link } from '@restate/ui-link';
 import { ErrorBanner } from '@restate/ui-error';
 import { Button, SubmitButton } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
+import { Callout } from '@restate/ui-callout';
 import {
   AbortTimeoutIllustration,
   InactivityTimeoutIllustration,
@@ -131,19 +132,12 @@ export function EditTimeoutDialog() {
             </Link>
           </p>
           <div className="flex flex-col gap-2 text-sm text-muted">
-            <p className="mt-2 flex gap-2 rounded-xl bg-warning-subtle p-3 text-sm text-0.5xs text-warning">
-              <Icon
-                size="lg"
-                className="fill-warning text-on-warning"
-                name={IconName.TriangleAlert}
-              />
-              <span className="inline-block">
-                Any changes made here are{' '}
-                <span className="font-semibold">temporary</span> and remain in
-                effect only until the service is next discovered and registered.
-                Use the SDK to configure timeout periods permanently.
-              </span>
-            </p>
+            <Callout intent="warning" className="mt-2">
+              Any changes made here are{' '}
+              <span className="font-semibold">temporary</span> and remain in
+              effect only until the service is next discovered and registered.
+              Use the SDK to configure timeout periods permanently.
+            </Callout>
           </div>
           <Form
             id={formId}

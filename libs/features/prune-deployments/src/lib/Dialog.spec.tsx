@@ -28,11 +28,6 @@ vi.mock('@restate/features-deployment', () => ({
   Deployment: ({ deploymentId }: { deploymentId: string }) => (
     <div>{deploymentId}</div>
   ),
-  Warning: ({ title, children }: { title?: string; children: ReactNode }) => (
-    <div role="alert">
-      {title} {children}
-    </div>
-  ),
 }));
 
 vi.mock('@tanstack/react-query', () => ({
@@ -102,8 +97,8 @@ describe('PruneDrainedDeploymentsDialog', () => {
 
     render(<RouterProvider router={router} />);
 
-    expect(screen.getByRole('alert').textContent).toContain(
-      '1 selected deployment is active',
-    );
+    expect(
+      screen.getByText(/1 selected deployment is active/).textContent,
+    ).toContain('Active deployments selected: 1 selected deployment is active');
   });
 });

@@ -334,6 +334,9 @@
     },
     {
       "path": "./apps/storybook"
+    },
+    {
+      "path": "./libs/ui/callout"
     }
   ]
 }

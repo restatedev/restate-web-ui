@@ -34,32 +34,12 @@ import {
 } from '@restate/data-access-admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui-notification';
 import { Icon, IconName } from '@restate/ui-icons';
+import { Callout } from '@restate/ui-callout';
 import { tv } from '@restate/util-styles';
 import { useQueryClient } from '@tanstack/react-query';
-import { Spinner } from '@restate/ui-loading';
 import { TruncateWithTooltip } from '@restate/ui-tooltip';
 import { Badge } from '@restate/ui-badge';
 import { useEditState, type EditStateValue } from './useEditState';
-
-const styles = tv({
-  base: '',
-  slots: {
-    banner: 'mt-2 flex gap-2 rounded-xl p-3 text-0.5xs',
-    bannerIcon: 'h-5 w-5 shrink-0',
-  },
-  variants: {
-    isWarning: {
-      true: {
-        banner: 'border border-warning bg-warning-subtle text-warning',
-        bannerIcon: 'fill-warning text-on-warning',
-      },
-      false: {
-        banner: 'border border-info bg-info-subtle text-info',
-        bannerIcon: 'fill-info text-on-info',
-      },
-    },
-  },
-});
 
 const valueFormatStyles = tv({
   base: 'shrink-0 [&_button]:gap-1 [&_button]:border-none [&_button]:bg-transparent [&_button]:px-1.5 [&_button]:py-1 [&_button]:text-xs [&_button]:font-normal [&_button]:text-muted [&_button]:shadow-none [&_button_[data-description]]:hidden [&_button:hover]:bg-tint-subtle [&_button:hover]:text-secondary [&>div]:rounded-lg [&>div]:border-none [&>div]:bg-transparent [&>div]:p-0 [&>div]:shadow-none',
@@ -698,9 +678,7 @@ function StateDialogContent({
   error?: Error | null;
 }>) {
   const isPartial = typeof key === 'string';
-  const { banner, bannerIcon } = styles({
-    isWarning: (hasActiveInvocations && isPartial) || !isPartial,
-  });
+  const isWarning = (hasActiveInvocations && isPartial) || !isPartial;
 
   const formId = useId();
 
@@ -721,49 +699,37 @@ function StateDialogContent({
             </div>
           )}
         </div>
-        <div className={banner()}>
-          {isFetching ? (
-            <div className="h-5 w-5 shrink-0 px-0.5">
-              <Spinner className="h-full w-full text-warning-subtle" />
-            </div>
-          ) : (
-            <Icon
-              className={bannerIcon()}
-              name={
-                (hasActiveInvocations && isPartial) || !isPartial
-                  ? IconName.TriangleAlert
-                  : IconName.Info
-              }
-            />
+        <Callout
+          intent={isWarning ? 'warning' : 'info'}
+          isPending={isFetching}
+          className="mt-2"
+        >
+          {hasActiveInvocations
+            ? 'Currently, there are active invocations associated with this key. This mutation will be queued for processing once those invocations are complete.'
+            : 'This mutation will be enqueued to be processed after any active invocations on this key.'}
+          {hasActiveInvocations && isPartial && (
+            <>
+              <br />
+              If the state of this key changes before this mutation is
+              processed, the mutation will be discarded.
+            </>
           )}
-          <span className="block">
-            {hasActiveInvocations
-              ? 'Currently, there are active invocations associated with this key. This mutation will be queued for processing once those invocations are complete.'
-              : 'This mutation will be enqueued to be processed after any active invocations on this key.'}
-            {hasActiveInvocations && isPartial && (
-              <>
-                <br />
-                If the state of this key changes before this mutation is
-                processed, the mutation will be discarded.
-              </>
-            )}
-            {!isPartial && (
-              <>
-                <br />
-                {isDeleting ? (
-                  <>
-                    All state for this key will be <strong>deleted</strong>.
-                  </>
-                ) : (
-                  <>
-                    The new state will <strong>replace</strong> the previous
-                    state.
-                  </>
-                )}
-              </>
-            )}
-          </span>
-        </div>
+          {!isPartial && (
+            <>
+              <br />
+              {isDeleting ? (
+                <>
+                  All state for this key will be <strong>deleted</strong>.
+                </>
+              ) : (
+                <>
+                  The new state will <strong>replace</strong> the previous
+                  state.
+                </>
+              )}
+            </>
+          )}
+        </Callout>
         <Form
           id={formId}
           method="POST"

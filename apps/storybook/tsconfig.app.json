@@ -52,6 +52,9 @@
       "path": "../../libs/ui/empty-state/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/ui/callout/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/ui/loading/tsconfig.lib.json"
     },
     {

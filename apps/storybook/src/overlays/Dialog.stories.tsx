@@ -79,7 +79,7 @@ function ConfirmationExample() {
         title="Cancel invocation"
         icon={IconName.Cancel}
         description="Are you sure you want to cancel this invocation?"
-        alertType="info"
+        alertIntent="info"
         alertContent="Cancellation frees held resources and lets your handler roll back its changes."
         submitText="Cancel invocation"
         submitVariant="destructive"

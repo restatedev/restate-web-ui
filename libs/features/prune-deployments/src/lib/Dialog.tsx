@@ -3,7 +3,8 @@ import {
   useListDeployments,
   useListDrainedDeployments,
 } from '@restate/data-access-admin-api-hooks';
-import { Deployment, Warning } from '@restate/features-deployment';
+import { Deployment } from '@restate/features-deployment';
+import { Callout } from '@restate/ui-callout';
 import { Button, SubmitButton } from '@restate/ui-button';
 import {
   DialogClose,
@@ -292,7 +293,7 @@ function DeleteDeploymentsDialogContent({
                   )}
                 </p>
                 {activeDeploymentIds.length > 0 && (
-                  <Warning title="Active deployments selected">
+                  <Callout intent="warning" title="Active deployments selected">
                     {formatNumber(activeDeploymentIds.length)} selected{' '}
                     {formatPlurals(activeDeploymentIds.length, {
                       one: 'deployment is',
@@ -309,7 +310,7 @@ function DeleteDeploymentsDialogContent({
                     >
                       Learn more…
                     </Link>
-                  </Warning>
+                  </Callout>
                 )}
                 <DeploymentList
                   deploymentIds={availableDeploymentIds}

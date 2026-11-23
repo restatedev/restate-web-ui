@@ -64,7 +64,7 @@ export const PurgeInvocation = withConfirmation({
   description: <p>Are you sure you want to purge this invocation?</p>,
   iconClassName: 'text-danger-subtle',
   icon: IconName.Trash,
-  alertType: 'info',
+  alertIntent: 'info',
   alertContent: (
     <>
       After an invocation completes, it will be retained by Restate for some

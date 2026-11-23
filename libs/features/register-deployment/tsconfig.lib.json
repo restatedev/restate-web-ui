@@ -47,6 +47,9 @@
       "path": "../explainers/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/callout/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/radio-group/tsconfig.lib.json"
     },
     {

@@ -409,7 +409,7 @@ export const RestartInvocation = withConfirmation({
   description: (
     <p>Are you sure you want to restart this invocation as a new one?</p>
   ),
-  alertType: 'info',
+  alertIntent: 'info',
   alertContent: <RestartAlert />,
   submitText: 'Restart',
   formMethod: 'PATCH',

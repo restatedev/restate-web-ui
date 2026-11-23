@@ -1,8 +1,8 @@
 import { Button } from '@restate/ui-button';
+import { Callout } from '@restate/ui-callout';
 import { ErrorBanner } from '@restate/ui-error';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Disclosure, DisclosurePanel } from 'react-aria-components';
-import { Warning } from './Results';
 
 export function ServiceNotConnected({
   tunnelName,
@@ -15,7 +15,7 @@ export function ServiceNotConnected({
 }) {
   return (
     <Disclosure className="group/details flex flex-col gap-2">
-      <Warning className="mt-0">
+      <Callout intent="warning">
         No service is connected as {tunnelName} yet. Start it, wait for{' '}
         <code>Connected as "{tunnelName}"</code> in its logs, then click{' '}
         {submitLabel} again.{' '}
@@ -30,7 +30,7 @@ export function ServiceNotConnected({
             className="h-3.5 w-3.5 group-expanded/details:rotate-180"
           />
         </Button>
-      </Warning>
+      </Callout>
       <DisclosurePanel>
         <ErrorBanner error={error} />
       </DisclosurePanel>

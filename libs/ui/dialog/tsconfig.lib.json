@@ -50,6 +50,9 @@
       "path": "../../util/panel/tsconfig.lib.json"
     },
     {
+      "path": "../callout/tsconfig.lib.json"
+    },
+    {
       "path": "../../util/styles/tsconfig.lib.json"
     },
     {
