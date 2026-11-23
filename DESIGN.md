@@ -73,20 +73,20 @@ Inter Variable is the default font (`font-sans`); JetBrains Mono Variable (`font
 
 Text roles in use today. Use the component where there is one; copy the classes where there isn't.
 
-| Role            | Today                                                                                         |
-| --------------- | --------------------------------------------------------------------------------------------- |
-| List page title | `ListPageHeader`: `text-sm font-semibold` in an accent pill, description `text-sm text-muted` |
-| Dialog title    | `text-lg leading-6 font-medium text-primary` on the `slot="title"` heading                    |
-| Field label     | `FormFieldLabel` (or a field's `label` prop): `text-sm font-medium text-secondary`            |
-| Section title   | `SectionTitle`: `text-xs font-semibold uppercase text-subtle`                                 |
-| Card title      | `CardHeader title`: `text-xs font-semibold`                                                   |
-| Empty state     | `EmptyState`: title `text-base font-semibold`, description `text-sm text-muted`               |
-| Caption         | `text-xs text-muted`                                                                          |
-| Code and IDs    | `font-mono` at the size of its context                                                        |
-| Numbers         | add `tabular-nums` in columns, counters and durations                                         |
+| Role            | Today                                                                                                               |
+| --------------- | ------------------------------------------------------------------------------------------------------------------- |
+| List page title | `ListPageHeader`: `text-sm font-semibold` in an accent pill, description `text-sm text-muted`                       |
+| Dialog title    | `DialogTitle` from `@restate/ui-dialog` (`text-lg leading-6 font-medium text-primary`, wired to the dialog's label) |
+| Field label     | `FormFieldLabel` (or a field's `label` prop): `text-sm font-medium text-secondary`                                  |
+| Section title   | `SectionTitle`: `text-xs font-semibold uppercase text-subtle`                                                       |
+| Card title      | `CardHeader title`: `text-xs font-semibold`                                                                         |
+| Empty state     | `EmptyState`: title `text-base font-semibold`, description `text-sm text-muted`                                     |
+| Caption         | `text-xs text-muted`                                                                                                |
+| Code and IDs    | `font-mono` at the size of its context                                                                              |
+| Numbers         | add `tabular-nums` in columns, counters and durations                                                               |
 
 - Don't add font sizes. `text-[…]` is for illustrations only: `text-[0.8125rem]` is `text-0.5xs`, and `text-[0.6875rem]` is `text-2xs`.
-- **Planned:** named text roles in util-styles (title, label, caption) and a dialog title part, so the role classes stop being copied.
+- **Planned:** named text roles in util-styles (title, label, caption), so the role classes stop being copied.
 
 ## Layout
 
@@ -203,16 +203,16 @@ Find the job, then use the component. Every package is `@restate/ui-<name>`.
 
 **Overlays**
 
-| Job                     | Use                                                                                                                                                                                                                                                                                 | Lib       |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| Dialog                  | `Dialog` (or `QueryDialog query="…"` when a search param opens it) › `DialogTrigger` + `DialogContent` › content, `DialogFooter`, `DialogClose`. Width is layout, set with `className`: 24rem by default (confirmations), `max-w-lg` for forms, `max-w-3xl` for wide forms and code | `dialog`  |
-| Confirm a risky action  | `ConfirmationDialog` or `ConfirmationQueryDialog` with `submitVariant="destructive"`; `alertIntent` and `alertContent` add a `Callout`                                                                                                                                              | `dialog`  |
-| Confirmed mutation      | `withConfirmation({…})` returns a `Trigger` and a `Dialog`. When the user has turned confirmations off, the trigger runs the mutation after a countdown toast they can cancel                                                                                                       | `dialog`  |
-| Interactive popover     | `Popover` › `PopoverTrigger` + `PopoverContent`; `PopoverHoverTrigger` opens it on hover                                                                                                                                                                                            | `popover` |
-| Short hint              | `Tooltip` › `TooltipTrigger` + `TooltipContent`: opens on hover and on keyboard focus                                                                                                                                                                                               | `tooltip` |
-| Extra detail on hover   | `HoverTooltip content={…}`: mouse only, so never the only place for something a keyboard user needs                                                                                                                                                                                 | `tooltip` |
-| Explain a term or field | `InlineTooltip title description learnMoreHref`                                                                                                                                                                                                                                     | `tooltip` |
-| Side panel              | `ComplementaryWithSearchParam paramName="…"`                                                                                                                                                                                                                                        | `layout`  |
+| Job                     | Use                                                                                                                                                                                                                                                                                                | Lib       |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| Dialog                  | `Dialog` (or `QueryDialog query="…"` when a search param opens it) › `DialogTrigger` + `DialogContent` › `DialogTitle`, content, `DialogFooter`, `DialogClose`. Width is layout, set with `className`: 24rem by default (confirmations), `max-w-lg` for forms, `max-w-3xl` for wide forms and code | `dialog`  |
+| Confirm a risky action  | `ConfirmationDialog` or `ConfirmationQueryDialog` with `submitVariant="destructive"`; `alertIntent` and `alertContent` add a `Callout`                                                                                                                                                             | `dialog`  |
+| Confirmed mutation      | `withConfirmation({…})` returns a `Trigger` and a `Dialog`. When the user has turned confirmations off, the trigger runs the mutation after a countdown toast they can cancel                                                                                                                      | `dialog`  |
+| Interactive popover     | `Popover` › `PopoverTrigger` + `PopoverContent`; `PopoverHoverTrigger` opens it on hover                                                                                                                                                                                                           | `popover` |
+| Short hint              | `Tooltip` › `TooltipTrigger` + `TooltipContent`: opens on hover and on keyboard focus                                                                                                                                                                                                              | `tooltip` |
+| Extra detail on hover   | `HoverTooltip content={…}`: mouse only, so never the only place for something a keyboard user needs                                                                                                                                                                                                | `tooltip` |
+| Explain a term or field | `InlineTooltip title description learnMoreHref`                                                                                                                                                                                                                                                    | `tooltip` |
+| Side panel              | `ComplementaryWithSearchParam paramName="…"`                                                                                                                                                                                                                                                       | `layout`  |
 
 **Feedback and status**
 
@@ -305,7 +305,6 @@ Interactive components handle rest, hover, pressed, focus-visible and disabled, 
 | Frameless text buttons | Restyled in `className` (`bg-transparent border-0 shadow-none`) | A `ghost` variant                        |
 | Segmented control      | Six local implementations                                       | `SegmentedControl` in `@restate/ui-tabs` |
 | Show more              | Three components plus native `<details>`                        | One `Disclosure`                         |
-| Dialog title           | The title classes copied into each dialog                       | A dialog title part                      |
 
 ## Accessibility
 

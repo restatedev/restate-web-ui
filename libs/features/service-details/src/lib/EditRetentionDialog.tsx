@@ -1,9 +1,9 @@
-import { Heading } from 'react-aria-components';
 import {
   DialogClose,
   DialogContent,
   DialogFooter,
   QueryDialog,
+  DialogTitle,
 } from '@restate/ui-dialog';
 import { SERVICE_RETENTION_EDIT } from './constants';
 import { RetentionIllustration } from './illustrations';
@@ -112,16 +112,12 @@ export function EditRetentionDialog() {
     <QueryDialog query={SERVICE_RETENTION_EDIT}>
       <DialogContent className={isWorkflow ? 'max-w-3xl' : 'max-w-xl'}>
         <div className="flex flex-col gap-2">
-          <Heading
-            slot="title"
-            level={3}
-            className="text-lg leading-6 font-medium text-primary"
-          >
+          <DialogTitle>
             Retention configuration for{' '}
             <span className="rounded-sm bg-muted px-[0.5ch] font-mono">
               {service}
             </span>
-          </Heading>
+          </DialogTitle>
           <p className="text-sm text-muted">
             Adjust how long metadata and journals from completed invocations are
             kept.

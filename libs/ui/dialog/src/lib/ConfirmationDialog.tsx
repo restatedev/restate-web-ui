@@ -1,4 +1,3 @@
-import { Heading } from 'react-aria-components';
 import { Form } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui-button';
 import { ErrorBanner } from '@restate/ui-error';
@@ -8,6 +7,7 @@ import { DialogFooter } from './DialogFooter';
 import { DialogClose } from './DialogClose';
 import { DialogContent } from './DialogContent';
 import { Dialog, QueryDialog } from './Dialog';
+import { DialogTitle } from './DialogTitle';
 import { tv } from '@restate/util-styles';
 import { Callout, type CalloutIntent } from '@restate/ui-callout';
 
@@ -109,11 +109,7 @@ export function ConfirmationDialogBody({
 
   return (
     <div className="flex flex-col gap-2">
-      <Heading
-        slot="title"
-        level={3}
-        className="flex items-center gap-1 text-lg leading-6 font-medium text-primary"
-      >
+      <DialogTitle className="flex items-center gap-1">
         {icon && (
           <Icon
             name={icon}
@@ -121,7 +117,7 @@ export function ConfirmationDialogBody({
           />
         )}
         {title}
-      </Heading>
+      </DialogTitle>
       <div className="flex flex-col gap-2 text-sm text-muted">
         {description}
         {alertIntent && alertContent && (

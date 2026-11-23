@@ -3,9 +3,10 @@ import {
   DialogClose,
   DialogContent,
   DialogFooter,
+  DialogTitle,
 } from '@restate/ui-dialog';
 import { Form } from 'react-router';
-import { Disclosure, DisclosurePanel, Heading } from 'react-aria-components';
+import { Disclosure, DisclosurePanel } from 'react-aria-components';
 import { Button, SubmitButton } from '@restate/ui-button';
 import { ErrorBanner } from '@restate/ui-error';
 import {
@@ -686,13 +687,7 @@ function StateDialogContent({
     <DialogContent className="max-w-2xl" surface="edit-state">
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
-          <Heading
-            slot="title"
-            level={3}
-            className="text-lg leading-6 font-medium text-primary"
-          >
-            {title}
-          </Heading>
+          <DialogTitle>{title}</DialogTitle>
           {subtitle && (
             <div className="flex flex-wrap items-center gap-1.5 text-0.5xs text-tertiary">
               {subtitle}

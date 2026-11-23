@@ -43,6 +43,7 @@ vi.mock('@restate/ui-dialog', () => ({
   DialogClose: ({ children }: { children: ReactNode }) => children,
   DialogContent: ({ children }: { children: ReactNode }) => children,
   DialogFooter: ({ children }: { children: ReactNode }) => children,
+  DialogTitle: ({ children }: { children: ReactNode }) => <h3>{children}</h3>,
   QueryDialog: ({ children }: { children: ReactNode }) => children,
 }));
 

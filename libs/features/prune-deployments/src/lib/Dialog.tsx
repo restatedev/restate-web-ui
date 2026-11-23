@@ -1,4 +1,3 @@
-import { Heading } from 'react-aria-components';
 import {
   useListDeployments,
   useListDrainedDeployments,
@@ -11,6 +10,7 @@ import {
   DialogContent,
   DialogFooter,
   QueryDialog,
+  DialogTitle,
 } from '@restate/ui-dialog';
 import { ErrorBanner } from '@restate/ui-error';
 import { Link } from '@restate/ui-link';
@@ -247,15 +247,11 @@ function DeleteDeploymentsDialogContent({
     <DialogContent className="max-w-2xl" isDismissable={!isRunning}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <Heading
-            slot="title"
-            level={3}
-            className="text-lg leading-6 font-medium text-primary"
-          >
+          <DialogTitle>
             {isSelectedMode
               ? 'Delete selected deployments'
               : 'Prune drained deployments'}
-          </Heading>
+          </DialogTitle>
           {isLoading ? (
             <DeploymentListSkeleton />
           ) : loadError ? (

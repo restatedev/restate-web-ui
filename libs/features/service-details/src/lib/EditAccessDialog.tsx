@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogFooter,
   QueryDialog,
+  DialogTitle,
 } from '@restate/ui-dialog';
 import { SERVICE_ACCESS_EDIT } from './constants';
 import { FormEvent, useId } from 'react';
@@ -16,7 +17,6 @@ import { showSuccessNotification } from '@restate/ui-notification';
 import { ErrorBanner } from '@restate/ui-error';
 import { Button, SubmitButton } from '@restate/ui-button';
 import { Callout } from '@restate/ui-callout';
-import { Heading } from 'react-aria-components';
 import { RadioCard, RadioCards, RadioGroup } from '@restate/ui-radio-group';
 import { FormFieldLabel } from '@restate/ui-form-field';
 
@@ -86,16 +86,12 @@ export function EditAccessDialog() {
     <QueryDialog query={SERVICE_ACCESS_EDIT}>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
-          <Heading
-            slot="title"
-            level={3}
-            className="text-lg leading-6 font-medium text-primary"
-          >
+          <DialogTitle>
             Ingress access for{' '}
             <span className="rounded-sm bg-muted px-[0.5ch] font-mono">
               {service}
             </span>
-          </Heading>
+          </DialogTitle>
           <div className="flex flex-col gap-2 text-sm text-muted">
             <Callout intent="warning" className="mt-2">
               Any changes made here are{' '}

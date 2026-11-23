@@ -14,6 +14,7 @@ import {
   DialogFooter,
   QueryDialog,
   useDialog,
+  DialogTitle,
 } from '@restate/ui-dialog';
 import { ErrorBanner } from '@restate/ui-error';
 import { FormFieldCheckbox } from '@restate/ui-form-field';
@@ -21,13 +22,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { Link } from '@restate/ui-link';
 import { showSuccessNotification } from '@restate/ui-notification';
 import { type FormEvent, useId, useState } from 'react';
-import {
-  FieldError,
-  Heading,
-  Input,
-  Label,
-  TextField,
-} from 'react-aria-components';
+import { FieldError, Input, Label, TextField } from 'react-aria-components';
 import { Form, useSearchParams } from 'react-router';
 import { limitRulesForPatternHref } from './limitCounterNavigation';
 import {
@@ -203,13 +198,7 @@ function RuleFormContent({
             <Icon name={IconName.Filters} size="lg" className="text-accent" />
           </span>
           <div className="min-w-0 flex-1">
-            <Heading
-              slot="title"
-              level={2}
-              className="text-lg font-semibold text-primary"
-            >
-              {isEditing ? 'Edit rule' : 'Create rule'}
-            </Heading>
+            <DialogTitle>{isEditing ? 'Edit rule' : 'Create rule'}</DialogTitle>
             <p className="text-sm leading-5 text-muted">
               {isEditing
                 ? 'Update this rule’s capacity and settings. Its limit counter level cannot be changed.'

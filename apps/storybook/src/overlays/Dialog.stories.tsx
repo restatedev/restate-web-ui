@@ -7,6 +7,7 @@ import {
   DialogClose,
   DialogContent,
   DialogFooter,
+  DialogTitle,
   DialogTrigger,
 } from '@restate/ui-dialog';
 import { Button } from '@restate/ui-button';
@@ -34,12 +35,7 @@ export const Form: Story = {
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
-          <h3
-            slot="title"
-            className="text-lg leading-6 font-medium text-primary"
-          >
-            Register deployment
-          </h3>
+          <DialogTitle>Register deployment</DialogTitle>
           <p className="text-sm text-muted">
             Point Restate at the endpoint that serves your handlers.
           </p>

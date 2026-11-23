@@ -1,9 +1,9 @@
-import { Heading } from 'react-aria-components';
 import {
   DialogClose,
   DialogContent,
   DialogFooter,
   QueryDialog,
+  DialogTitle,
 } from '@restate/ui-dialog';
 import { SERVICE_TIMEOUT_EDIT } from './constants';
 import { FormEvent, useId } from 'react';
@@ -107,16 +107,12 @@ export function EditTimeoutDialog() {
     <QueryDialog query={SERVICE_TIMEOUT_EDIT}>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
-          <Heading
-            slot="title"
-            level={3}
-            className="text-lg leading-6 font-medium text-primary"
-          >
+          <DialogTitle>
             Timeout configuration for{' '}
             <span className="rounded-sm bg-muted px-[0.5ch] font-mono">
               {service}
             </span>
-          </Heading>
+          </DialogTitle>
           <p className="text-sm text-muted">
             Configure timeouts that control how Restate communicates with your
             service deployment.

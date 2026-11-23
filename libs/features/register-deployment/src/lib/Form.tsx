@@ -6,7 +6,7 @@ import {
   PropsWithChildren,
   ReactNode,
 } from 'react';
-import { Radio, Heading } from 'react-aria-components';
+import { Radio } from 'react-aria-components';
 import { RadioGroup } from '@restate/ui-radio-group';
 import { DeploymentProtocolCheck, RegisterDeploymentResults } from './Results';
 import { Callout } from '@restate/ui-callout';
@@ -31,6 +31,7 @@ import { OverrideWarning } from './OverrideWarnning';
 import { OverrideBreaking } from './OverrideBreaking';
 import { Metadata } from './Metadata';
 import { Link } from '@restate/ui-link';
+import { DialogTitle } from '@restate/ui-dialog';
 
 const customRadioStyles = tv({
   base: 'group relative flex cursor-default justify-center rounded-lg border bg-clip-padding shadow-none outline-hidden',
@@ -95,13 +96,7 @@ function Container({
 }>) {
   return (
     <div className="flex flex-col gap-2">
-      <Heading
-        slot="title"
-        level={3}
-        className="text-lg leading-6 font-medium text-primary"
-      >
-        {title}
-      </Heading>
+      <DialogTitle>{title}</DialogTitle>
       {description ? (
         <p className="text-sm text-muted">{description}</p>
       ) : (

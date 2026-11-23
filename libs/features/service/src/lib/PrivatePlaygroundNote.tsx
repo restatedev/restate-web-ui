@@ -1,4 +1,3 @@
-import { Heading } from 'react-aria-components';
 import {
   useServiceCatalog,
   useServiceDetails,
@@ -10,6 +9,7 @@ import {
   DialogContent,
   DialogFooter,
   QueryDialog,
+  DialogTitle,
 } from '@restate/ui-dialog';
 import { EmptyState } from '@restate/ui-empty-state';
 import { Icon, IconName } from '@restate/ui-icons';
@@ -94,13 +94,7 @@ export function PrivatePlaygroundSheet({ service }: { service: string }) {
     >
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
-          <Heading
-            slot="title"
-            level={3}
-            className="text-lg leading-6 font-medium text-primary"
-          >
-            No playground
-          </Heading>
+          <DialogTitle>No playground</DialogTitle>
           <p className="text-sm text-muted">{privateServiceMessage(service)}</p>
           <DialogFooter>
             <DialogClose>

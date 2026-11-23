@@ -1,9 +1,9 @@
-import { Heading } from 'react-aria-components';
 import {
   DialogClose,
   DialogContent,
   DialogFooter,
   QueryDialog,
+  DialogTitle,
 } from '@restate/ui-dialog';
 import { DELETE_DEPLOYMENT_QUERY_PARAM } from './constants';
 import { Form, useLocation, useNavigate, useSearchParams } from 'react-router';
@@ -91,13 +91,7 @@ export function DeleteDeployment() {
     <QueryDialog query={DELETE_DEPLOYMENT_QUERY_PARAM}>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
-          <Heading
-            slot="title"
-            level={3}
-            className="text-lg leading-6 font-medium text-primary"
-          >
-            Confirm Deployment deletion
-          </Heading>
+          <DialogTitle>Confirm Deployment deletion</DialogTitle>
           <p className="text-sm text-muted">
             Are you sure you want to delete this deployment?
             <code className="my-1 block max-w-fit rounded-md bg-danger-subtle p-0.5 text-danger-strong ring-danger/10">
