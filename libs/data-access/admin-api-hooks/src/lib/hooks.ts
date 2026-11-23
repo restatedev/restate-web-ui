@@ -712,7 +712,8 @@ export function useRegisterDeployment(
           retryWithHttp1 &&
           args.body &&
           args.body.dry_run &&
-          'uri' in args.body
+          'use_http_11' in args.body &&
+          !args.body.use_http_11
         ) {
           const worksWithHttp1 = await _mutationFn(
             {
@@ -801,7 +802,8 @@ export function useUpdateDeployment(
           retryWithHttp1 &&
           args.body &&
           args.body.dry_run &&
-          'uri' in args.body
+          'use_http_11' in args.body &&
+          !args.body.use_http_11
         ) {
           const worksWithHttp1 = await _mutationFn(
             {

@@ -20,25 +20,31 @@ vi.mock('@restate/data-access-admin-api', () => ({
   }),
 }));
 
-const DRY_RUN = {
-  uri: 'http://localhost:9080',
-  use_http_11: false,
-  force: false,
-  dry_run: true,
-};
-
 describe.each([
   {
     hook: 'useRegisterDeployment',
-    useDeploymentMutation: (retryWithHttp1: boolean) =>
-      useRegisterDeployment({ retryWithHttp1 }),
+    useDryRun: (retryWithHttp1: boolean) => {
+      const { mutateAsync } = useRegisterDeployment({ retryWithHttp1 });
+      return (use_http_11: boolean) =>
+        mutateAsync({
+          body: {
+            uri: 'http://localhost:9080',
+            use_http_11,
+            force: false,
+            dry_run: true,
+          },
+        });
+    },
   },
   {
     hook: 'useUpdateDeployment',
-    useDeploymentMutation: (retryWithHttp1: boolean) =>
-      useUpdateDeployment('dp_1', { retryWithHttp1 }),
+    useDryRun: (retryWithHttp1: boolean) => {
+      const { mutateAsync } = useUpdateDeployment('dp_1', { retryWithHttp1 });
+      return (use_http_11: boolean) =>
+        mutateAsync({ body: { use_http_11, dry_run: true } });
+    },
   },
-])('$hook dry run', ({ useDeploymentMutation }) => {
+])('$hook dry run', ({ useDryRun }) => {
   let client: QueryClient;
   const unreachable = new RestateError(
     'Cannot reach the service endpoint to execute discovery',
@@ -61,14 +67,12 @@ describe.each([
     );
   }
 
-  async function dryRun(retryWithHttp1 = true) {
-    const { result } = renderHook(() => useDeploymentMutation(retryWithHttp1), {
+  async function dryRun({ retryWithHttp1 = true, useHttp11 = false } = {}) {
+    const { result } = renderHook(() => useDryRun(retryWithHttp1), {
       wrapper,
     });
     return act(() =>
-      result.current
-        .mutateAsync({ body: DRY_RUN })
-        .catch((error: unknown) => error),
+      result.current(useHttp11).catch((error: unknown) => error),
     );
   }
 
@@ -82,8 +86,9 @@ describe.each([
     expect(error).toBeInstanceOf(RestateError);
     expect(error).toMatchObject({ restateCode: 'META0014' });
     expect(mutationFn).toHaveBeenCalledTimes(2);
-    expect(mutationFn.mock.calls[1]?.[0]).toMatchObject({
-      body: { ...DRY_RUN, use_http_11: true },
+    expect(mutationFn.mock.calls[1]?.[0].body).toEqual({
+      ...mutationFn.mock.calls[0]?.[0].body,
+      use_http_11: true,
     });
   });
 
@@ -98,10 +103,17 @@ describe.each([
     expect(mutationFn).toHaveBeenCalledTimes(2);
   });
 
-  it('sends one request when the retry is off', async () => {
+  it.each([
+    { when: 'the retry is off', retryWithHttp1: false, useHttp11: false },
+    {
+      when: 'the dry run already uses HTTP/1.1',
+      retryWithHttp1: true,
+      useHttp11: true,
+    },
+  ])('sends one request when $when', async (options) => {
     mutationFn.mockRejectedValueOnce(unreachable);
 
-    expect(await dryRun(false)).toBe(unreachable);
+    expect(await dryRun(options)).toBe(unreachable);
     expect(mutationFn).toHaveBeenCalledTimes(1);
   });
 });
