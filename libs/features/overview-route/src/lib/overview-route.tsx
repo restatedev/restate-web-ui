@@ -837,7 +837,8 @@ function OverviewContent() {
                 type="button"
                 variant="icon"
                 aria-label="Clear search"
-                className="mr-0.5 flex h-5 w-5 shrink-0 rounded-md p-0 text-subtle shadow-none hover:bg-muted hover:text-tertiary pressed:bg-emphasis"
+                size="xs"
+                className="mr-0.5 text-subtle shadow-none hover:bg-muted hover:text-tertiary pressed:bg-emphasis"
                 onClick={() => setFilter('')}
               >
                 <Icon name={IconName.X} size="sm" />
@@ -857,7 +858,7 @@ function OverviewContent() {
                     ? 'Refreshing overview'
                     : 'Refresh overview'
                 }
-                className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+                size="sm"
                 onClick={triggerManualRefresh}
                 disabled={isOverviewRefreshing}
               >

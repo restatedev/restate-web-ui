@@ -493,7 +493,8 @@ function StateFormRows({
           ]);
           scrollRowsToBottom();
         }}
-        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border-dashed bg-transparent px-3 py-1.5 text-sm text-muted shadow-none hover:bg-subtle"
+        size="sm"
+        className="mt-2 flex w-full items-center justify-center gap-1.5 border-dashed bg-transparent text-muted shadow-none hover:bg-subtle"
       >
         <Icon name={IconName.Plus} size="sm" /> Add key
       </Button>

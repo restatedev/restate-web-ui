@@ -190,7 +190,7 @@ function VQueuesComponent() {
             aria-label={
               vqueues.isFetching ? 'Refreshing VQueues' : 'Refresh VQueues'
             }
-            className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+            size="sm"
             onClick={() => void vqueues.refetch()}
             disabled={vqueues.isFetching}
           >

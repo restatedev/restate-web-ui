@@ -98,16 +98,18 @@ The app shell comes from `@restate/ui-layout`:
 
 Spacing uses Tailwind's 4 px scale; don't write arbitrary spacing values. A heading sits at least as far from its first section as the sections sit from each other.
 
-Control heights today:
+Control heights:
 
-| Control                                    | Height | Classes                               |
-| ------------------------------------------ | ------ | ------------------------------------- |
-| Text field, select                         | 34 px  | `py-1.5 text-sm`                      |
-| `Button` (primary, secondary, destructive) | 38 px  | `px-5 py-2 text-sm`                   |
-| Tab in `@restate/ui-tabs`                  | 28 px  | `px-3 py-1 text-sm`                   |
-| Toolbar icon button                        | 26 px  | `h-6.5 w-6.5 rounded-lg p-0`, by hand |
+| Control                                           | Height        | Use                              |
+| ------------------------------------------------- | ------------- | -------------------------------- |
+| Text field, select                                | 34 px         | Forms                            |
+| `Button` (primary, secondary, destructive)        | 38 px         | Dialog and page actions          |
+| `Button size="sm"`                                | 34 px         | Next to a text field             |
+| `Button size="xs"`                                | 26 px         | Toolbars, card and panel actions |
+| Tab in `@restate/ui-tabs`                         | 28 px         | Tabs                             |
+| `Button variant="icon" size="xs" \| "sm" \| "md"` | 20, 26, 28 px | Inline, toolbar, panel header    |
 
-A button next to a field is 4 px taller, and small buttons are restyled by hand. **Planned:** one control size scale (`size="sm" | "md"`) for buttons, icon buttons and fields, so a row of controls lines up without overrides.
+A toolbar lines up when its text buttons are `size="xs"` and its icon buttons `size="sm"`: both are 26 px. **Planned:** the same scale for fields, so a field and its button share one `size`.
 
 **Breakpoints:** Tailwind's (`sm` 40rem to `2xl` 96rem), plus `3xl` at 140rem. The `@tall:` variant applies from a 47rem viewport height.
 
@@ -163,16 +165,16 @@ Find the job, then use the component. Every package is `@restate/ui-<name>`.
 
 **Actions**
 
-| Job                                   | Use                                                                                                                                          | Lib                       |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| Main, secondary or destructive action | `Button variant="primary" \| "secondary" \| "destructive"`                                                                                   | `button`                  |
-| Submit a form                         | `SubmitButton`: shows a spinner and disables itself while the form's fetcher or mutation runs                                                | `button`                  |
-| Icon-only action                      | `Button variant="icon" aria-label="…"`. Toolbar size today: `className="h-6.5 w-6.5 rounded-lg p-0"`. **Planned:** `size`                    | `button`                  |
-| Action with alternatives              | `SplitButton menus={…}`                                                                                                                      | `split-button`            |
-| Menu of actions                       | `Dropdown` › `DropdownTrigger` + `DropdownPopover` › `DropdownSection` › `DropdownMenu` › `DropdownItem` (`destructive` for dangerous items) | `dropdown`                |
-| Risky action with confirmation        | `ConfirmationDialog`, or `withConfirmation` (below)                                                                                          | `dialog`                  |
-| Copy a value                          | `Copy copyText`; `SnippetCopy` in snippets; `TruncateWithTooltip copyText` for long IDs                                                      | `copy`, `code`, `tooltip` |
-| Keyboard shortcut                     | `useSubmitShortcut`, `useFocusShortcut`, with `SubmitShortcutKey` or `FocusShortcutKey` as the hint                                          | `keyboard`                |
+| Job                                   | Use                                                                                                                                                           | Lib                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| Main, secondary or destructive action | `Button variant="primary" \| "secondary" \| "destructive"`; `size="sm"` (34 px) next to a field, `size="xs"` (26 px) in toolbars                              | `button`                  |
+| Submit a form                         | `SubmitButton`: shows a spinner and disables itself while the form's fetcher or mutation runs                                                                 | `button`                  |
+| Icon-only action                      | `Button variant="icon" size="sm" aria-label="…"`. `size`: `xs` 20 px (inline), `sm` 26 px (toolbars), `md` 28 px; without it the button pads its icon by 4 px | `button`                  |
+| Action with alternatives              | `SplitButton menus={…}`                                                                                                                                       | `split-button`            |
+| Menu of actions                       | `Dropdown` › `DropdownTrigger` + `DropdownPopover` › `DropdownSection` › `DropdownMenu` › `DropdownItem` (`destructive` for dangerous items)                  | `dropdown`                |
+| Risky action with confirmation        | `ConfirmationDialog`, or `withConfirmation` (below)                                                                                                           | `dialog`                  |
+| Copy a value                          | `Copy copyText`; `SnippetCopy` in snippets; `TruncateWithTooltip copyText` for long IDs                                                                       | `copy`, `code`, `tooltip` |
+| Keyboard shortcut                     | `useSubmitShortcut`, `useFocusShortcut`, with `SubmitShortcutKey` or `FocusShortcutKey` as the hint                                                           | `keyboard`                |
 
 **Navigation**
 
@@ -270,7 +272,7 @@ New components follow these names, and so does any prop you add or change. The l
 | ------------------------- | ------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Look and emphasis         | `variant`                             | Per component: `primary`, `secondary`, `destructive`, `icon` | —                                                                                                                                                                          |
 | Status meaning            | `intent`                              | `neutral`, `info`, `success`, `warning`, `danger`, `pending` | `Badge variant`, `Header variant`, `Indicator status` (uppercase), `ConfirmationDialog alertType`, `IssueBannerPill severity`; `Card` says `default` or `none` for neutral |
-| Size                      | `size`                                | `xs`, `sm`, `md`, `lg`; `md` is the default                  | `Badge size="base"`, `TooltipContent size="default"`, `SplitButton mini`; `Button`, `Spinner` and `DialogContent` have no size                                             |
+| Size                      | `size`                                | `xs`, `sm`, `md`, `lg`; `md` is the default                  | `Badge size="base"`, `TooltipContent size="default"`, `SplitButton mini`; `DialogContent` has no size; an icon `Button` without `size` pads its icon by 4 px               |
 | A quieter shade of a part | `tone`                                | Per component                                                | `FilterChip appearance`, `FocusShortcutKey variant`                                                                                                                        |
 | HTML-like flags           | `disabled`, `required`, `readonly`    | boolean                                                      | `DropdownItem isDisabled`; `Switch` takes React Aria props                                                                                                                 |
 | Async flags               | `isPending`, `isLoading`              | boolean                                                      | —                                                                                                                                                                          |
@@ -298,15 +300,15 @@ Interactive components handle rest, hover, pressed, focus-visible and disabled, 
 
 ### Gaps
 
-| Need                   | Today                                                     | Planned                                                                              |
-| ---------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Small and icon buttons | Sizes and radius rewritten in `className` on most buttons | `Button size`, icon button sizes, a `ghost` variant for text buttons without a frame |
-| Callout                | The recipe above, copied about a dozen times              | `Callout intent title icon`                                                          |
-| Status dot             | `Indicator` and four copies                               | `StatusDot intent pulse`                                                             |
-| Skeleton               | Hand-written `animate-pulse` bars                         | `Skeleton shape`                                                                     |
-| Segmented control      | Six local implementations                                 | `SegmentedControl` in `@restate/ui-tabs`                                             |
-| Show more              | Three components plus native `<details>`                  | One `Disclosure`                                                                     |
-| Dialog title           | The title classes copied into each dialog                 | A dialog title part                                                                  |
+| Need                   | Today                                                           | Planned                                  |
+| ---------------------- | --------------------------------------------------------------- | ---------------------------------------- |
+| Frameless text buttons | Restyled in `className` (`bg-transparent border-0 shadow-none`) | A `ghost` variant                        |
+| Callout                | The recipe above, copied about a dozen times                    | `Callout intent title icon`              |
+| Status dot             | `Indicator` and four copies                                     | `StatusDot intent pulse`                 |
+| Skeleton               | Hand-written `animate-pulse` bars                               | `Skeleton shape`                         |
+| Segmented control      | Six local implementations                                       | `SegmentedControl` in `@restate/ui-tabs` |
+| Show more              | Three components plus native `<details>`                        | One `Disclosure`                         |
+| Dialog title           | The title classes copied into each dialog                       | A dialog title part                      |
 
 ## Accessibility
 

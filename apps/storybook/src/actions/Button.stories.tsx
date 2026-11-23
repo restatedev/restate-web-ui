@@ -12,6 +12,7 @@ const meta = {
       control: 'inline-radio',
       options: ['primary', 'secondary', 'destructive', 'icon'],
     },
+    size: { control: 'inline-radio', options: ['xs', 'sm', 'md'] },
     disabled: { control: 'boolean' },
   },
 } satisfies Meta<typeof Button>;
@@ -49,6 +50,33 @@ export const Variants: Story = {
       <Button {...args} variant="primary" disabled>
         Disabled
       </Button>
+    </div>
+  ),
+};
+
+export const Sizes: Story = {
+  render: (args) => (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-end gap-4">
+        {(['xs', 'sm', 'md'] as const).map((size) => (
+          <span key={size} className="flex flex-col items-center gap-2">
+            <Button {...args} variant="secondary" size={size}>
+              Register deployment
+            </Button>
+            <code className="font-mono text-2xs text-tertiary">{size}</code>
+          </span>
+        ))}
+      </div>
+      <div className="flex items-end gap-4">
+        {(['xs', 'sm', 'md'] as const).map((size) => (
+          <span key={size} className="flex flex-col items-center gap-2">
+            <Button {...args} variant="icon" size={size} aria-label="Refresh">
+              <Icon name={IconName.Retry} size="sm" />
+            </Button>
+            <code className="font-mono text-2xs text-tertiary">{size}</code>
+          </span>
+        ))}
+      </div>
     </div>
   ),
 };

@@ -520,11 +520,7 @@ export function RunResult({
       {actions}
       <div className={styles.trailing()}>
         {checkAgain && (
-          <Button
-            variant="secondary"
-            className="rounded-lg px-3 py-1.5 text-sm"
-            onClick={checkAgain}
-          >
+          <Button variant="secondary" size="sm" onClick={checkAgain}>
             Check again
           </Button>
         )}

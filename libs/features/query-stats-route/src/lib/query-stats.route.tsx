@@ -743,7 +743,7 @@ function Component() {
                 type="button"
                 variant="icon"
                 aria-label="Download all query stats as JSON"
-                className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+                size="sm"
                 onClick={exportStats}
                 disabled={stats.length === 0}
               >
@@ -758,7 +758,7 @@ function Component() {
                 type="button"
                 variant="icon"
                 aria-label="Clear recorded query stats"
-                className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+                size="sm"
                 onClick={() => clearQueryStats(baseUrl)}
                 disabled={stats.length === 0}
               >

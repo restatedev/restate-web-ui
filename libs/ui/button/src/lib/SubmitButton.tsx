@@ -6,7 +6,7 @@ import {
   useState,
 } from 'react';
 import { useFetchers, useHref, useNavigation } from 'react-router';
-import { Button } from './Button';
+import { Button, type ButtonSize } from './Button';
 import { tv } from '@restate/util-styles';
 import { useIsMutating } from '@tanstack/react-query';
 import { Spinner } from '@restate/ui-loading';
@@ -19,6 +19,7 @@ export interface SubmitButtonProps {
   disabled?: boolean;
   value?: string;
   variant?: 'primary' | 'secondary' | 'destructive' | 'icon';
+  size?: ButtonSize;
   className?: string;
   autoFocus?: boolean;
   hideSpinner?: boolean;

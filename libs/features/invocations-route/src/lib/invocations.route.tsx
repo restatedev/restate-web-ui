@@ -329,11 +329,7 @@ function SlowQueryOverlay({
         {(isComplete || dashboardUrl) && (
           <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
             {isComplete && (
-              <Button
-                variant="primary"
-                onClick={onSwitchToPartial}
-                className="rounded-lg px-3 py-1 text-xs"
-              >
+              <Button variant="primary" onClick={onSwitchToPartial} size="xs">
                 Show a faster partial view
               </Button>
             )}
@@ -845,7 +841,7 @@ function Component() {
                       <Button
                         variant="secondary"
                         onClick={sortByCreatedAt}
-                        className="rounded-lg px-3 py-1 text-xs"
+                        size="xs"
                       >
                         Sort by created at
                       </Button>
@@ -872,7 +868,7 @@ function Component() {
                       <Button
                         variant="primary"
                         onClick={() => setListSampledOverride(false)}
-                        className="rounded-lg px-3 py-1 text-xs"
+                        size="xs"
                       >
                         Run a complete scan
                       </Button>

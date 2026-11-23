@@ -250,7 +250,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
               <Button
                 variant="icon"
                 aria-label="Refresh invocations"
-                className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+                size="sm"
                 disabled={isFetching || summary.isFetching}
                 onClick={() => {
                   void refetch();

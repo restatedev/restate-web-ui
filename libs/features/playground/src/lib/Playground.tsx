@@ -411,7 +411,7 @@ function Workspace({
                 {run.runner.isSending && (
                   <Button
                     variant="secondary"
-                    className="rounded-lg px-3 py-1.5 text-sm"
+                    size="sm"
                     onClick={run.runner.cancel}
                   >
                     Cancel
@@ -629,11 +629,7 @@ function ToolRunner({
             ⌘ or Ctrl + Enter
           </span>
           {run.runner.isSending && (
-            <Button
-              variant="secondary"
-              className="rounded-lg px-3 py-1.5 text-sm"
-              onClick={run.runner.cancel}
-            >
+            <Button variant="secondary" size="sm" onClick={run.runner.cancel}>
               Cancel
             </Button>
           )}

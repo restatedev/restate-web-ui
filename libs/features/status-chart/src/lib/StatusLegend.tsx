@@ -335,7 +335,7 @@ export function StatusLegend({
               <Button
                 variant="icon"
                 aria-label={`Show ${breakdownRow.label} breakdown`}
-                className="h-5 w-5 rounded-md p-0"
+                size="xs"
                 disabled={state !== 'success'}
               >
                 <Icon

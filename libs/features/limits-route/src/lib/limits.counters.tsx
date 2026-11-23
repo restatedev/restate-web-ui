@@ -311,7 +311,7 @@ function CountersComponent() {
                 ? 'Refreshing limit counters'
                 : 'Refresh limit counters'
             }
-            className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+            size="sm"
             onClick={() => {
               void counters.refetch();
               void rules.refetch();

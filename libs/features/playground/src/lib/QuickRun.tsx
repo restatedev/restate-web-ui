@@ -119,7 +119,7 @@ function QuickRunBody({
             <Button
               variant="icon"
               aria-label="Open the full playground"
-              className="flex h-7 w-7 items-center justify-center rounded-lg"
+              size="md"
               onClick={onOpenFull}
             >
               <Icon name={IconName.Maximize} size="sm" className="text-muted" />
@@ -229,7 +229,8 @@ function ResultPanel({
       actions={
         <Button
           variant="secondary"
-          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm"
+          size="sm"
+          className="flex items-center gap-1.5"
           onClick={record.isRunning ? onCancel : onEdit}
         >
           {record.isRunning ? (
