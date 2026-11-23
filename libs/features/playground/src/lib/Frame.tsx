@@ -85,7 +85,7 @@ export function LoadingState({
         </div>
       ) : (
         <div className="flex flex-auto items-center justify-center gap-2 text-sm text-muted">
-          {isPending && <Spinner className="h-4 w-4" />}
+          {isPending && <Spinner size="md" />}
           {isPending ? 'Loading…' : 'This service has no handlers to run.'}
         </div>
       )}

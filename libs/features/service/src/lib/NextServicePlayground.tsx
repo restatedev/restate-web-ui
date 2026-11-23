@@ -58,7 +58,7 @@ function Playground(props: ComponentProps<typeof LazyPlayground>) {
       <Suspense
         fallback={
           <PlaygroundStatus headerActions={props.headerActions}>
-            <Spinner className="h-4 w-4" />
+            <Spinner size="md" />
             Loading playground…
           </PlaygroundStatus>
         }

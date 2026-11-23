@@ -39,7 +39,7 @@ export function BodyEditor({
   const hydrated = useHydrated();
   const loading = (
     <div className="flex min-h-24 items-center gap-1.5 px-3 text-sm text-muted">
-      <Spinner className="h-4 w-4" />
+      <Spinner size="md" />
       Loading editor…
     </div>
   );

@@ -471,7 +471,7 @@ export function LastError({
                   'flex min-h-20 items-center justify-center gap-2 p-4 text-xs text-muted',
               })}
             >
-              <Spinner className="h-4 w-4" />
+              <Spinner size="md" />
               {loadingMessage ?? 'Loading error…'}
             </div>
           ) : queryError ? (

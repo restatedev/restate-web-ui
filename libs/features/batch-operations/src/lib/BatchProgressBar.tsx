@@ -195,7 +195,7 @@ export function BatchProgressBar({
                     <div className="text-left">
                       {formatPercentageWithoutFraction(processedRatio)}
                     </div>
-                    {isPending && <Spinner className="ml-auto h-3 w-3" />}
+                    {isPending && <Spinner size="xs" className="ml-auto" />}
                   </div>
                 </div>
               </div>

@@ -459,7 +459,7 @@ function Component() {
             role="status"
             className="flex items-center justify-center gap-2 px-5 py-20 text-sm text-muted"
           >
-            <Spinner className="h-4 w-4" />
+            <Spinner size="md" />
             Loading VQueue…
           </div>
         ) : !data ? (

@@ -58,7 +58,7 @@ function StepIcon({ entry }: { entry: JournalEntryV2 }) {
   return (
     <span className={stepIconStyles({ state })}>
       {state === 'pending' ? (
-        <Spinner className="h-3.5 w-3.5" />
+        <Spinner size="sm" />
       ) : (
         <Icon
           name={

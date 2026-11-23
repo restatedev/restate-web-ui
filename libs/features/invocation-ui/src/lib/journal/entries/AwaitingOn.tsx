@@ -273,7 +273,7 @@ function AwaitingOnContent({
   if (isLoading && !data) {
     return (
       <div className="flex items-center gap-1.5 p-2 text-2xs text-muted">
-        <Spinner className="h-3 w-3" />
+        <Spinner size="xs" />
         Loading…
       </div>
     );

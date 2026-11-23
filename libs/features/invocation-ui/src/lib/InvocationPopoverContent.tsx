@@ -38,7 +38,7 @@ export function InvocationPopoverContent({
         <div className="flex flex-wrap items-start gap-x-2 gap-y-3 px-3 py-2.5">
           {isPending ? (
             <div className="flex min-h-6 w-full items-center justify-center gap-1.5 text-xs text-muted">
-              <Spinner className="h-4 w-4" />
+              <Spinner size="md" />
               Loading…
             </div>
           ) : invocation ? (

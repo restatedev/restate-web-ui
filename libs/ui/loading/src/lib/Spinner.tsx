@@ -2,22 +2,37 @@ import type { ComponentProps } from 'react';
 import { tv } from '@restate/util-styles';
 
 const spinnerStyles = tv({
-  base: 'h-5 w-5 animate-spin',
+  base: 'shrink-0 animate-spin',
+  variants: {
+    size: {
+      xs: 'h-3 w-3',
+      sm: 'h-3.5 w-3.5',
+      md: 'h-4 w-4',
+      lg: 'h-5 w-5',
+    },
+  },
+  defaultVariants: {
+    size: 'lg',
+  },
 });
 
-export const Spinner = ({
-  className,
-  style,
-}: {
+export interface SpinnerProps {
+  size?: 'xs' | 'sm' | 'md' | 'lg';
+  label?: string;
   className?: string;
   style?: ComponentProps<'svg'>['style'];
-}) => (
+}
+
+export const Spinner = ({ size, label, className, style }: SpinnerProps) => (
   <svg
-    className={spinnerStyles({ className })}
+    className={spinnerStyles({ size, className })}
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
     style={style}
+    {...(label
+      ? { role: 'status', 'aria-label': label }
+      : { 'aria-hidden': true })}
   >
     <circle
       className="opacity-25"

@@ -141,7 +141,7 @@ export function PruneDeploymentsProgressBar({
             </Popover>
           )}
           <div className="ml-auto flex items-center gap-1 text-0.5xs text-muted">
-            {isPending && <Spinner className="h-3 w-3" />}
+            {isPending && <Spinner size="xs" />}
             <span>
               {formatNumber(processed)} / {formatNumber(total)}
             </span>

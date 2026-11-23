@@ -329,7 +329,7 @@ function LastJournalEntryPopoverContent({
     <DropdownSection title="Last journal entry">
       {isPending ? (
         <div className="flex items-center gap-2 p-3 text-sm text-muted">
-          <Spinner className="h-4 w-4" />
+          <Spinner size="md" />
           Loading last journal entry…
         </div>
       ) : error ? (

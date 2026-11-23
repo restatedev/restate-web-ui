@@ -455,7 +455,7 @@ export function RunButton({
       className={sendStyles({ className })}
     >
       {runner.isSending ? (
-        <Spinner className="h-3.5 w-3.5" />
+        <Spinner size="sm" />
       ) : (
         <Icon name={IconName.Play} size="sm" className="fill-current" />
       )}

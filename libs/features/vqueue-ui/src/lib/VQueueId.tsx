@@ -107,7 +107,7 @@ function VQueueFallbackContent({
           role={loading ? 'status' : undefined}
           className="flex min-h-12 items-center justify-start gap-2 bg-surface px-4 py-3 text-xs text-muted"
         >
-          {loading && <Spinner className="h-4 w-4 shrink-0" />}
+          {loading && <Spinner size="md" />}
           <span>{message}</span>
         </div>
       </DropdownSection>

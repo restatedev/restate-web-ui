@@ -38,7 +38,7 @@ export function NotificationProgressTracker({
 
   return (
     <>
-      {!progress?.isFinished && <Spinner className="h-4 w-4 shrink-0" />}
+      {!progress?.isFinished && <Spinner size="md" />}
       {progress?.isFinished
         ? finishedContent({
             successful: progress.successful,

@@ -40,7 +40,7 @@ export function QuickRun({ service, handler, onOpenFull }: QuickRunProps) {
   if (!contract || !current) {
     return (
       <div className="flex min-h-32 w-[30rem] max-w-[calc(100vw-2rem)] items-center justify-center gap-2 p-4 text-sm text-muted">
-        {loaded.isPending && <Spinner className="h-4 w-4" />}
+        {loaded.isPending && <Spinner size="md" />}
         {loaded.error
           ? 'Couldn’t load this service.'
           : loaded.isPending

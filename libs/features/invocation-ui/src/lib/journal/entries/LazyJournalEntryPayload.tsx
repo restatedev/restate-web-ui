@@ -452,7 +452,7 @@ function PayloadContent({
     <>
       {isPending && (
         <div className="flex items-center gap-1.5 py-2.5 pr-4 text-sm text-muted">
-          <Spinner className="h-4 w-4" />
+          <Spinner size="md" />
           Loading…
         </div>
       )}
@@ -702,7 +702,7 @@ function LazyFailure({
   if (isPending) {
     return (
       <div className={className}>
-        <Spinner className="h-3 w-3" />
+        <Spinner size="xs" />
       </div>
     );
   }

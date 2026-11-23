@@ -488,7 +488,7 @@ export function RunResult({
           !view.isDone &&
           !message && (
             <p className="flex items-center gap-1.5 text-xs text-muted">
-              {view.isLive && <Spinner className="h-3 w-3 shrink-0" />}
+              {view.isLive && <Spinner size="xs" />}
               {view.note ??
                 'Waiting for the result. You can close this, Restate keeps it running.'}
             </p>

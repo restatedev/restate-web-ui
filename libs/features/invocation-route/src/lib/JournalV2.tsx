@@ -782,7 +782,7 @@ export function JournalV2({
   if (isPending[invocationId]) {
     const loading = (
       <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-muted">
-        <Spinner className="h-4 w-4" />
+        <Spinner size="md" />
         Loading…
       </div>
     );
@@ -847,7 +847,7 @@ export function JournalV2({
               fallback={
                 <ContentPanelSection>
                   <div className="flex items-center gap-1.5 p-4 text-sm text-muted">
-                    <Spinner className="h-4 w-4" />
+                    <Spinner size="md" />
                     Loading…
                   </div>
                 </ContentPanelSection>

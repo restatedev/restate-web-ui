@@ -613,7 +613,7 @@ function StateObjectRefreshingStatus({
 
   return (
     <span className={refreshingStatus()}>
-      <Spinner className="h-3.5 w-3.5 shrink-0" />
+      <Spinner size="sm" />
       Refreshing keys…
     </span>
   );
@@ -828,7 +828,7 @@ function StateChildCell({
         <Cell className={loadMoreCell()}>
           {child.status === 'loading' ? (
             <span className={childStatus({ className: 'pl-7' })}>
-              <Spinner className="h-3.5 w-3.5 shrink-0" />
+              <Spinner size="sm" />
               Loading keys…
             </span>
           ) : child.status === 'empty' ? (
@@ -913,7 +913,7 @@ function StateLoadMoreCell({
       >
         {isFetchingNextPage ? (
           <>
-            <Spinner className="h-3.5 w-3.5 shrink-0" />
+            <Spinner size="sm" />
             Loading more keys…
           </>
         ) : (

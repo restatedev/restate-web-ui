@@ -181,7 +181,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
                 <span className="sr-only">Child check incomplete</span>
               </>
             ) : (
-              checkProgress && <Spinner className="h-3 w-3 text-muted" />
+              checkProgress && <Spinner size="xs" className="text-muted" />
             )}
           </Button>
         </HoverTooltip>
