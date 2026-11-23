@@ -12,6 +12,7 @@ import { useRestateContext } from '@restate/features-restate-context';
 import { useInvocationsRecent } from './useInvocationsMemory';
 import { TERMINAL_INVOCATION_STATUSES } from '@restate/data-access-admin-api-spec';
 import { useCanSortInvocationsByTransition } from '@restate/data-access-admin-api-hooks';
+import { describeStatusFilter } from './describeStatusFilter';
 
 // ─────────────────────────────────────────────────────────────
 // Preset definitions
@@ -20,6 +21,7 @@ import { useCanSortInvocationsByTransition } from '@restate/data-access-admin-ap
 interface InvocationShortcut {
   id: string;
   label: string;
+  hint?: string;
   filters: {
     id: string;
     operation: string;
@@ -59,6 +61,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   {
     id: 'inflight',
     label: 'In-flight',
+    hint: 'Not finished yet: running, held up or suspended',
     sort: { field: 'created_at', order: 'DESC' },
     filters: [
       {
@@ -71,6 +74,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   {
     id: 'stuck',
     label: 'Held up',
+    hint: 'Waiting to start, retry or resume',
     filters: [
       {
         id: 'status',
@@ -79,20 +83,6 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
       },
     ],
     sort: { field: 'created_at', order: 'ASC' },
-  },
-  {
-    id: 'notcompleted',
-    label: 'Not completed',
-    sort: { field: 'created_at', order: 'DESC' },
-    filters: [
-      {
-        id: 'status',
-        operation: 'NOT_IN',
-        // Mirror of COMPLETED_STATUSES in @restate/util-invocation-links;
-        // matches toInFlightPlusScheduledInvocationsHref (in-flight + scheduled).
-        value: TERMINAL_INVOCATION_STATUSES,
-      },
-    ],
   },
   {
     id: 'completed',
@@ -105,6 +95,13 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
         value: TERMINAL_INVOCATION_STATUSES,
       },
     ],
+  },
+  {
+    id: 'suspended',
+    label: 'Suspended',
+    hint: 'Waiting for a call, timer, promise or awakeable',
+    sort: { field: 'created_at', order: 'DESC' },
+    filters: [{ id: 'status', operation: 'IN', value: ['suspended'] }],
   },
   // {
   //   id: 'idempotent',
@@ -122,6 +119,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   {
     id: 'scheduled',
     label: 'Scheduled',
+    hint: 'Set to start later',
     filters: [{ id: 'status', operation: 'IN', value: ['scheduled'] }],
     sort: { field: 'created_at', order: 'DESC' },
     columns: [...DEFAULT_PRESET_COLUMNS, 'scheduled_start_at'],
@@ -207,6 +205,7 @@ export function getInvocationPresetSearch(
 export interface InvocationPresetDefinition {
   id: string;
   label: string;
+  hint?: string;
   filters: InvocationShortcut['filters'];
   search: string;
 }
@@ -221,6 +220,7 @@ export function listInvocationPresets(
   ].map((shortcut) => ({
     id: shortcut.id,
     label: shortcut.label,
+    hint: shortcut.hint,
     filters: shortcut.filters,
     search: shortcutSearch(shortcut, canSortByTransition),
   }));
@@ -324,6 +324,13 @@ function urlMatchesShortcut(
   });
 }
 
+function statusOnlyParams(searchParams: URLSearchParams) {
+  const params = new URLSearchParams();
+  const status = searchParams.get('filter_status');
+  if (status) params.set('filter_status', status);
+  return params;
+}
+
 function classifyInvocationsUrl(
   path: string,
   pathname: string,
@@ -332,14 +339,10 @@ function classifyInvocationsUrl(
   const detail = pathname.match(new RegExp(`^${path}/([^/]+)`));
   if (detail?.[1]) return { kind: 'detail', id: detail[1] };
   if (pathname !== path) return null;
-  if (urlMatchesShortcut(searchParams, ALL_INVOCATIONS_SHORTCUT)) {
-    return { kind: 'all' };
-  }
-  const preset = INVOCATION_SHORTCUTS.find((s) =>
-    urlMatchesShortcut(searchParams, s),
-  );
-  if (preset) return { kind: 'preset', id: preset.id };
-  return { kind: 'custom' };
+  const preset = getInvocationStatusPreset(searchParams);
+  if (preset === 'all') return { kind: 'all' };
+  if (preset === 'custom') return { kind: 'custom' };
+  return { kind: 'preset', id: preset };
 }
 
 /**
@@ -362,8 +365,8 @@ export type InvocationPreset =
   | 'processing'
   | 'idempotent'
   | 'scheduled'
-  | 'notcompleted'
   | 'completed'
+  | 'suspended'
   | 'custom';
 
 /**
@@ -380,6 +383,18 @@ export function getInvocationPreset(
     urlMatchesShortcut(searchParams, s),
   );
   return (preset?.id as InvocationPreset) ?? 'custom';
+}
+
+/**
+ * Same as `getInvocationPreset`, but looks only at the status filter, so a
+ * service or time-range filter on top of a preset still counts as that preset.
+ * The sidebar and the status row on the page both use it, so they always
+ * highlight the same item.
+ */
+export function getInvocationStatusPreset(
+  searchParams: URLSearchParams,
+): InvocationPreset {
+  return getInvocationPreset(statusOnlyParams(searchParams));
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -431,6 +446,7 @@ export function InvocationsSidebarItem({
   const presetSubItems: SidebarSubItem[] = shortcuts.map((s) => ({
     href: shortcutHref(path, s, canSortByTransition),
     label: s.label,
+    hint: s.hint,
     match: ((loc) => {
       const k = classify(loc);
       return k?.kind === 'preset' && k.id === s.id;
@@ -478,7 +494,10 @@ export function InvocationsSidebarItem({
     const value = location.search.replace(/^\?/, '');
     extraSubItems.push({
       href: `${path}?${value}`,
-      label: 'Last query',
+      label:
+        describeStatusFilter(
+          new URLSearchParams(location.search).get('filter_status'),
+        ) ?? 'Last query',
       match: (loc) => classify(loc)?.kind === 'custom',
       preserveSearchParams: false,
     });

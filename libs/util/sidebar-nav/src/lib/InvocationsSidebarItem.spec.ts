@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { getInvocationPresetSearch } from './InvocationsSidebarItem';
+import {
+  getInvocationPresetSearch,
+  getInvocationStatusPreset,
+  listInvocationPresets,
+} from './InvocationsSidebarItem';
 
 function sort(search: string) {
   const params = new URLSearchParams(search);
@@ -27,6 +31,7 @@ describe('invocation shortcut sorting', () => {
       'stuck',
       'all',
       'completed',
+      'suspended',
       'scheduled',
     ]) {
       expect(sort(getInvocationPresetSearch(id, true))).toEqual([
@@ -34,5 +39,63 @@ describe('invocation shortcut sorting', () => {
         'DESC',
       ]);
     }
+  });
+});
+
+function statusParam(operation: 'IN' | 'NOT_IN', value: string[]) {
+  return JSON.stringify({ operation, value });
+}
+
+describe('invocation status presets', () => {
+  it('lists the rail presets first, then All, then the rest', () => {
+    expect(listInvocationPresets(false).map(({ id }) => id)).toEqual([
+      'processing',
+      'inflight',
+      'stuck',
+      'all',
+      'completed',
+      'suspended',
+      'scheduled',
+    ]);
+  });
+
+  it('gives a hint only to the views that need one', () => {
+    const hinted = listInvocationPresets(false)
+      .filter(({ hint }) => hint)
+      .map(({ id }) => id);
+    expect(hinted).toEqual(['inflight', 'stuck', 'suspended', 'scheduled']);
+  });
+
+  it('matches a preset by its status filter alone', () => {
+    const params = new URLSearchParams({
+      filter_status: statusParam('IN', ['suspended']),
+      filter_target_service_name: JSON.stringify({
+        operation: 'IN',
+        value: ['Greeter'],
+      }),
+    });
+    expect(getInvocationStatusPreset(params)).toBe('suspended');
+  });
+
+  it('treats a URL without a status filter as All', () => {
+    const params = new URLSearchParams({
+      filter_target_service_name: JSON.stringify({
+        operation: 'IN',
+        value: ['Greeter'],
+      }),
+    });
+    expect(getInvocationStatusPreset(params)).toBe('all');
+  });
+
+  it('treats any other status filter as custom', () => {
+    const params = new URLSearchParams({
+      filter_status: statusParam('NOT_IN', [
+        'succeeded',
+        'failed',
+        'cancelled',
+        'killed',
+      ]),
+    });
+    expect(getInvocationStatusPreset(params)).toBe('custom');
   });
 });
