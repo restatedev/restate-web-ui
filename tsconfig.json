@@ -331,6 +331,9 @@
     },
     {
       "path": "./libs/features/playground"
+    },
+    {
+      "path": "./apps/storybook"
     }
   ]
 }

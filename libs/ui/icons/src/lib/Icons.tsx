@@ -428,6 +428,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Monitor]: Monitor,
 };
 
+export const ICON_NAMES = Object.keys(ICONS) as IconName[];
+
 const styles = tv({
   base: 'h-[1.5em] w-[1.5em] text-current',
 });

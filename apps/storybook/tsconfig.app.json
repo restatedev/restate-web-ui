@@ -1,0 +1,88 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "out-tsc/app",
+    "tsBuildInfoFile": "out-tsc/app/tsconfig.app.tsbuildinfo",
+    "types": ["node", "vite/client"]
+  },
+  "include": [
+    ".storybook/*.ts",
+    ".storybook/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "references": [
+    {
+      "path": "../../libs/ui/tooltip/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/popover/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/dialog/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/nav/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/tabs/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/header/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/section/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/card/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/radio-group/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/form-field/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/notification/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/error/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/empty-state/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/loading/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/badge/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/action-text/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/chip/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/dropdown/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/split-button/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/link/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/code/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/copy/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/icons/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/button/tsconfig.lib.json"
+    }
+  ]
+}

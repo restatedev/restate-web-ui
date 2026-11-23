@@ -10,6 +10,7 @@
 - **Lint**: `pnpm nx lint <project>`
 - **Typecheck**: `pnpm nx typecheck <project>` (e.g., `pnpm nx typecheck web-ui`); every project runs `tsc --build tsconfig.json`, covering its runtime and spec configs, after the declarations of the projects it depends on are emitted (into each lib's `dist/`)
 - **Sync project references**: `pnpm nx sync` (CI runs `pnpm nx sync:check`)
+- **Storybook**: `pnpm nx serve storybook` serves the component catalog on `localhost:6006` (set `STORYBOOK_PORT` to change it); `pnpm nx build storybook` builds it into `dist/apps/storybook`. Stories live in `apps/storybook/src`, one file per component family
 - **E2E**: `pnpm nx e2e web-ui-e2e`. It reuses a dev server already running on `UI_PORT` (default 4300), so in a worktree set the same `UI_PORT` as that worktree's dev server
 
 ## Library Generation
@@ -51,7 +52,7 @@ Example: `pnpm nx g @nx/react:lib libs/ui/badge --importPath=@restate/ui-badge` 
 - **Formatting**: oxfmt (`.oxfmtrc.json`) with single quotes, trailing commas, Tailwind class sorting; run `pnpm nx format`
 - **Linting**: oxlint (`.oxlintrc.json`); `tools/oxlint-plugin-restate.js` enforces the `tv()` className rule and bans Tailwind palette colors (`restate/no-palette-colors`)
 - **Styling**: Tailwind CSS, use `tv()` from `@restate/util-styles` for component variants. Never use string interpolation for dynamic Tailwind classes (e.g., `${isVoid ? 'text-subtle' : 'text-muted'}`). Always use `tv()` with variants instead.
-- **Colors**: only role tokens from `@restate/util-styles/theme.css` (`bg-surface`, `text-muted`, `border-default`, `bg-danger-subtle`, …), never palette classes (`bg-gray-100`) or `var(--color-*)`. Before styling UI, read `libs/util/styles/DESIGN.md` for which token to use when and the common recipes. The dev server renders every token and some shared components at `/ui/design-system`
+- **Colors**: only role tokens from `@restate/util-styles/theme.css` (`bg-surface`, `text-muted`, `border-default`, `bg-danger-subtle`, …), never palette classes (`bg-gray-100`) or `var(--color-*)`. Before styling UI, read `libs/util/styles/DESIGN.md` for which token to use when and the common recipes. The dev server renders every token at `/ui/design-system`, and Storybook shows every shared component
 - **Components**: React 19, React Aria Components for UI primitives. Before building or changing UI, read the root `DESIGN.md`: which `@restate/ui-*` component does which job, the prop naming rules, and the rule that `className` only places a component. New components take `ref` as a plain prop; existing `forwardRef` components stay until you touch them
 - **Types**: Define props interfaces explicitly, use `PropsWithChildren` when needed
 - **Testing**: Vitest + Testing Library, test files use `.spec.tsx` suffix (`.spec.ts` in JS libs)

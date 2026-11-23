@@ -45,7 +45,7 @@ apps/web-ui and Cloud  routes and pages
 - Each `libs/ui/<name>` is a package, `@restate/ui-<name>`, imported by package name.
 - `libs/ui` takes plain props and doesn't import `@restate/features-*` or `@restate/data-access-*`. Two old imports break this (`ui-issue-banner` → `features-system-health`, `ui-dialog` → `features-user-preference`); don't add more.
 - Some theme pieces live in the app, not in util-styles: the `text-3xs`, `text-2xs` and `text-0.5xs` sizes, the keyframes, the `3xl` breakpoint and the `@tall:` variant are in `apps/web-ui/app/tailwind.css`, so any other app that uses these libs has to copy them. **Planned:** move them into `@restate/util-styles`, so both apps import one theme.
-- The dev server shows tokens and some components at `/ui/design-system`.
+- Storybook shows every shared component with its variants and states, in both themes: `pnpm nx serve storybook`, stories in `apps/storybook/src`. The dev server shows the color tokens at `/ui/design-system`.
 
 ## Colors
 
@@ -345,9 +345,9 @@ Interactive components handle rest, hover, pressed, focus-visible and disabled, 
 1. The API follows the [conventions](#component-api-conventions), with props exported as `<Name>Props`.
 2. Styles are one `tv()`; nothing is copied from another component.
 3. Keyboard, focus and screen reader work, and icon-only parts have an `aria-label`.
-4. It works in light and dark: check `/ui/design-system` and the pages you touched.
+4. It works in light and dark: check its stories and the pages you touched in both themes.
 5. A spec covers behavior (keyboard, states) with Testing Library.
-6. `/ui/design-system` shows it with its variants and states.
+6. A story in `apps/storybook/src/<group>/<Name>.stories.tsx` shows its variants and states; overlays open in the story's `play` function.
 7. This file is updated: the catalog row, and the gaps table if you closed a gap.
 8. Breaking changes keep the old prop as an alias marked `/** @deprecated use … */`, and callers move in the same PR or the next. Other apps that use these libs pick the change up later, so keep the alias until they have moved.
 9. The PR shows before and after screenshots.
