@@ -280,12 +280,12 @@ function RestartInvocationContent() {
                     {deploymentEndpoint}
                   </div>
                   {isCurrent && (
-                    <Badge size="xs" variant="info">
+                    <Badge size="xs" intent="info">
                       CURRENT
                     </Badge>
                   )}
                   {isLatest && !isCurrent && (
-                    <Badge size="xs" variant="info">
+                    <Badge size="xs" intent="info">
                       LATEST
                     </Badge>
                   )}

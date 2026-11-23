@@ -24,9 +24,9 @@ export function LimitValue({ value, disabled }: LimitValueProps) {
   const { root, label, value: valueStyles } = styles({ disabled });
 
   return (
-    <Badge variant="default" className={root()}>
+    <Badge className={root()}>
       <span className={label()}>concurrency =</span>
-      <Badge variant="default" className={valueStyles()}>
+      <Badge className={valueStyles()}>
         {value != null ? (
           formatNumber(value)
         ) : (

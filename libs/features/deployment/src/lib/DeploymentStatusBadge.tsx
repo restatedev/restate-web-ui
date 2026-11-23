@@ -39,7 +39,7 @@ export function DeploymentStatusBadge({
 }) {
   return (
     <Badge
-      variant={status === 'active' ? 'success' : 'default'}
+      intent={status === 'active' ? 'success' : 'neutral'}
       className={styles({ status, className })}
     >
       <span className="relative flex h-2 w-2 items-center justify-center">

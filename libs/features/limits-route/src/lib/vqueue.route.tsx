@@ -321,7 +321,7 @@ function VQueueHeader({
       icon={IconName.Layers}
       iconLabel="VQueue"
       iconClassName="rotate-[87deg]"
-      variant={identity?.isPaused ? 'warning' : 'default'}
+      intent={identity?.isPaused ? 'warning' : 'neutral'}
       className="min-w-0"
       trail={trail}
     >

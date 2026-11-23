@@ -242,7 +242,7 @@ function CounterSummaryCell({
 
 function RuleStatusBadge({ disabled }: { disabled: boolean }) {
   return (
-    <Badge size="sm" variant={disabled ? 'default' : 'info'}>
+    <Badge size="sm" intent={disabled ? 'neutral' : 'info'}>
       {disabled ? 'Disabled' : 'Enabled'}
     </Badge>
   );

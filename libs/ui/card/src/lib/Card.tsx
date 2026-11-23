@@ -1,7 +1,7 @@
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Link } from '@restate/ui-link';
-import { tv } from '@restate/util-styles';
+import { tv, type Intent } from '@restate/util-styles';
 import {
   Children,
   createContext,
@@ -13,14 +13,7 @@ import {
   type Ref,
 } from 'react';
 
-export type CardIntent =
-  | 'success'
-  | 'danger'
-  | 'warning'
-  | 'pending'
-  | 'info'
-  | 'default'
-  | 'none';
+export type CardIntent = Intent | 'none';
 
 const CardIntentContext = createContext<CardIntent>('none');
 
@@ -36,7 +29,7 @@ const cardStyles = tv({
       warning: { box: 'border-warning/70 before:from-warning-vivid/20' },
       pending: { box: 'border-pending/70 before:from-pending-vivid/20' },
       info: { box: 'border-info/70 before:from-info-vivid/20' },
-      default: { box: 'border-default/70 before:from-(--sheen)' },
+      neutral: { box: 'border-default/70 before:from-(--sheen)' },
       none: {
         box: 'border-default ring-1 ring-surface/50 ring-inset before:from-(--sheen)',
       },
@@ -110,7 +103,7 @@ const cardHeaderStyles = tv({
         icon: 'text-info',
         title: 'text-info-strong',
       },
-      default: {
+      neutral: {
         tab: 'border-default/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-(--sheen) to-transparent to-50%',
         icon: 'text-muted',
         title: 'text-tertiary',

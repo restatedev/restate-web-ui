@@ -108,7 +108,7 @@ export function DeploymentServicesTable({
                   <Revision revision={row.revision} />
                 )}
                 {isLatest ? (
-                  <Badge size="xs" variant="info">
+                  <Badge size="xs" intent="info">
                     Latest
                   </Badge>
                 ) : row.latestRevision !== undefined ? (

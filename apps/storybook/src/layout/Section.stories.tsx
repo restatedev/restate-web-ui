@@ -53,16 +53,16 @@ export const Headers: Story = {
       <Header icon={IconName.Invocation} iconLabel="Invocation">
         Default header
       </Header>
-      <Header variant="success" icon={IconName.Check} iconLabel="Succeeded">
+      <Header intent="success" icon={IconName.Check} iconLabel="Succeeded">
         Succeeded
       </Header>
-      <Header variant="warning" icon={IconName.Pause} iconLabel="Paused">
+      <Header intent="warning" icon={IconName.Pause} iconLabel="Paused">
         Paused after 70 attempts
       </Header>
-      <Header variant="danger" icon={IconName.CircleX} iconLabel="Failed">
+      <Header intent="danger" icon={IconName.CircleX} iconLabel="Failed">
         Failed with a terminal error
       </Header>
-      <Header variant="pending" icon={IconName.Timer} iconLabel="Pending">
+      <Header intent="pending" icon={IconName.Timer} iconLabel="Pending">
         Waiting to run
       </Header>
     </div>

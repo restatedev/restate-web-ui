@@ -95,7 +95,7 @@ export function InvocationBatchActions({
           {Boolean(invocationIds.length || totalCount) && (
             <Badge
               size="xs"
-              variant={invocationIds.length > 0 ? 'default' : 'info'}
+              intent={invocationIds.length > 0 ? 'neutral' : 'info'}
             >
               {invocationIds.length > 0
                 ? invocationIds.length

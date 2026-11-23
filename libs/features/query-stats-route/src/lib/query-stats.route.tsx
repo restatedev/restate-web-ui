@@ -499,7 +499,7 @@ function renderStatsCell(
                 {stat.description}
               </TruncateWithTooltip>
               {stat.deprecated && (
-                <Badge size="sm" variant="warning" className="shrink-0">
+                <Badge size="sm" intent="warning" className="shrink-0">
                   Deprecated
                 </Badge>
               )}

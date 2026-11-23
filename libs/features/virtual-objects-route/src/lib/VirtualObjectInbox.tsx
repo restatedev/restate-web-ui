@@ -187,7 +187,7 @@ function InboxBatchActions({
           >
             Actions
             {inboxCount !== undefined && inboxCount > 0 && (
-              <Badge size="xs" variant="info">
+              <Badge size="xs" intent="info">
                 {formatNumber(inboxCount, true)}
               </Badge>
             )}

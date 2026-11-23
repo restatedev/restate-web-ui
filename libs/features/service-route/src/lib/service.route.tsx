@@ -83,7 +83,7 @@ function Component() {
               className="shrink-0"
               contentClassName="max-w-64 break-normal"
             >
-              <Badge variant="warning" size="sm" className="gap-1">
+              <Badge intent="warning" size="sm" className="gap-1">
                 <Icon name={IconName.EyeOff} size="xs" />
                 Private
               </Badge>

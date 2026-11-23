@@ -56,7 +56,7 @@ export function TransientError({
     return (
       <div className="item-center mr-2 flex gap-2">
         <Badge
-          variant="warning"
+          intent="warning"
           size="sm"
           className="gap-0 truncate px-0 py-0 font-sans font-normal"
         >
@@ -137,7 +137,7 @@ export function NoCommandTransientError({
     return (
       <div className="item-center mr-2 flex gap-2">
         <Badge
-          variant="warning"
+          intent="warning"
           size="sm"
           className="gap-0 truncate px-0 py-0.5 font-sans font-normal"
         >

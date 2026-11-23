@@ -109,7 +109,7 @@ export function ServiceDeploymentsTable({ service }: { service: string }) {
               <div className="flex items-center gap-1.5">
                 <Revision revision={row.revision} />
                 {row.isLatest && (
-                  <Badge size="xs" variant="info">
+                  <Badge size="xs" intent="info">
                     Latest
                   </Badge>
                 )}

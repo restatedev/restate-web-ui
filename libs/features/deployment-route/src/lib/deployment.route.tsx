@@ -145,7 +145,7 @@ function Component() {
         <Header
           icon={icon}
           iconLabel="Deployment"
-          variant={isDeprecated ? 'warning' : 'default'}
+          intent={isDeprecated ? 'warning' : 'neutral'}
           className="min-w-0"
           trail={<Breadcrumbs variant="flat" />}
         >

@@ -275,7 +275,7 @@ function WaitingQueuesCell({ value }: { value?: number | null }) {
   }
   return (
     <Badge
-      variant="warning"
+      intent="warning"
       size="sm"
       className="min-w-7 justify-center font-semibold tabular-nums"
       aria-label={`${formatNumber(count)} waiting VQueues`}

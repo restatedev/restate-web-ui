@@ -755,7 +755,7 @@ function Group({ title, children }: PropsWithChildren<{ title: string }>) {
 function Components() {
   const intents = [
     'none',
-    'default',
+    'neutral',
     'info',
     'success',
     'warning',
@@ -796,12 +796,12 @@ function Components() {
           </Link>
         </Group>
         <Group title="Badge">
-          <Badge>default</Badge>
-          <Badge variant="info">info</Badge>
-          <Badge variant="success">success</Badge>
-          <Badge variant="warning">warning</Badge>
-          <Badge variant="danger">danger</Badge>
-          <Badge variant="success" size="sm">
+          <Badge>neutral</Badge>
+          <Badge intent="info">info</Badge>
+          <Badge intent="success">success</Badge>
+          <Badge intent="warning">warning</Badge>
+          <Badge intent="danger">danger</Badge>
+          <Badge intent="success" size="sm">
             sm
           </Badge>
         </Group>

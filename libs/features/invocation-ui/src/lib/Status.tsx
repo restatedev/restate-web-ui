@@ -56,7 +56,7 @@ function getBadgeVariant(
       return 'danger';
 
     default:
-      return 'default';
+      return 'neutral';
   }
 }
 
@@ -67,7 +67,7 @@ const styles = tv({
       success: '',
       danger: '',
       warning: '',
-      default: 'bg-muted',
+      neutral: 'bg-muted',
       info: '',
     },
     status: {
@@ -160,7 +160,7 @@ export function InvocationStatusBadge({
   const variant = getBadgeVariant(status, isRetrying);
   return (
     <Badge
-      variant={variant}
+      intent={variant}
       className={styles({
         className,
         status,

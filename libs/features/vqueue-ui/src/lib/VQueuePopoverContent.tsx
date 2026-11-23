@@ -868,7 +868,7 @@ function VQueuePopoverHeader({ data }: { data: VqueueSnapshot }) {
           className="ml-0 h-5 w-5 shrink-0 rounded-md p-1 text-muted"
         />
         {data.identity.isPaused && (
-          <Badge variant="warning" size="xs">
+          <Badge intent="warning" size="xs">
             Paused
           </Badge>
         )}

@@ -423,7 +423,7 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
               invalid key
             </Badge>
           ) : result ? (
-            <Badge size="sm" variant="success" className="shrink-0 gap-1">
+            <Badge size="sm" intent="success" className="shrink-0 gap-1">
               <Icon name={IconName.Check} size="xs" />
               applies at {levelLabel}
             </Badge>
