@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react';
+import type { ComponentProps } from 'react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 import type {
@@ -56,7 +57,9 @@ function at(url: string): SidebarLocation {
   return { pathname, searchParams };
 }
 
-function renderItem(subItems?: SidebarSubItem[]) {
+function renderItem(
+  subItems?: ComponentProps<typeof OverviewSidebarItem>['subItems'],
+) {
   render(
     <MemoryRouter initialEntries={['/env/overview']}>
       <OverviewSidebarItem baseUrl="/env" subItems={subItems} />

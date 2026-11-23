@@ -26,7 +26,7 @@ interface OverviewSidebarItemProps {
   baseUrl?: string;
   disabled?: boolean;
   preserveSearchParams?: boolean | string[];
-  subItems?: SidebarSubItem[];
+  subItems?: (SidebarSubItem & { match: SidebarMatch })[];
 }
 
 type OverviewRecent =
@@ -242,7 +242,7 @@ export function OverviewSidebarItem({
         Boolean(
           currentOverviewDetail(baseUrl, loc.pathname, loc.searchParams),
         ) ||
-        subItems.some((item) => item.match?.(loc))
+        subItems.some((item) => item.match(loc))
       }
       icon={IconName.House}
       label="Overview"
