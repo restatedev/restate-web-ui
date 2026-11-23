@@ -4,7 +4,8 @@ import {
   ServiceExplainer,
 } from '@restate/features-explainers';
 import { TriggerRegisterDeploymentDialog } from '@restate/features-register-deployment';
-import { IconName } from '@restate/ui-icons';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
 import { Spinner } from '@restate/ui-loading';
 import { ErrorPopoverPill } from './ErrorPopoverPill';
 
@@ -51,14 +52,24 @@ export function NoDeploymentPlaceholder({
         )}
       </p>
       <div className="mt-4 flex flex-wrap justify-center gap-2">
-        {tunnel?.isEnabled && (
-          <TriggerRegisterDeploymentDialog
-            endpoint="connect://"
-            icon={IconName.Connect}
-          >
-            Connect your service
-          </TriggerRegisterDeploymentDialog>
-        )}
+        {tunnel?.isEnabled &&
+          (tunnel.configureSdkHref ? (
+            <Link
+              variant="secondary-button"
+              href={tunnel.configureSdkHref}
+              className="flex items-center gap-2 px-3"
+            >
+              <Icon name={IconName.Connect} className="h-4 w-4" />
+              Connect your service
+            </Link>
+          ) : (
+            <TriggerRegisterDeploymentDialog
+              endpoint="connect://"
+              icon={IconName.Connect}
+            >
+              Connect your service
+            </TriggerRegisterDeploymentDialog>
+          ))}
         <TriggerRegisterDeploymentDialog />
         {OnboardingGuide && (
           <OnboardingGuide stage="register-deployment-trigger" />

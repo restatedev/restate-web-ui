@@ -26,6 +26,7 @@ interface OverviewSidebarItemProps {
   baseUrl?: string;
   disabled?: boolean;
   preserveSearchParams?: boolean | string[];
+  subItems?: SidebarSubItem[];
 }
 
 type OverviewRecent =
@@ -145,6 +146,7 @@ export function OverviewSidebarItem({
   baseUrl = '',
   disabled,
   preserveSearchParams = true,
+  subItems = [],
 }: OverviewSidebarItemProps) {
   const path = `${baseUrl}/overview`;
   const [searchParams] = useSearchParams();
@@ -188,13 +190,15 @@ export function OverviewSidebarItem({
     ? `${path}?view=deployments&${carryQuery}`
     : `${path}?view=deployments`;
 
+  const isOverviewPage = (pathname: string) =>
+    pathname === path || pathname === `${path}/`;
   const servicesMatch: SidebarMatch = (loc) => {
-    if (!loc.pathname.startsWith(path)) return false;
+    if (!isOverviewPage(loc.pathname)) return false;
     const view = loc.searchParams.get('view');
     return !view || view === 'services';
   };
   const deploymentsMatch: SidebarMatch = (loc) =>
-    loc.pathname.startsWith(path) &&
+    isOverviewPage(loc.pathname) &&
     loc.searchParams.get('view') === 'deployments';
 
   const visibleRecent = current ?? recent;
@@ -235,7 +239,10 @@ export function OverviewSidebarItem({
       href={path}
       match={(loc) =>
         loc.pathname.startsWith(path) ||
-        Boolean(currentOverviewDetail(baseUrl, loc.pathname, loc.searchParams))
+        Boolean(
+          currentOverviewDetail(baseUrl, loc.pathname, loc.searchParams),
+        ) ||
+        subItems.some((item) => item.match?.(loc))
       }
       icon={IconName.House}
       label="Overview"
@@ -266,6 +273,7 @@ export function OverviewSidebarItem({
             preserveSearchParams: true,
           },
         },
+        ...subItems,
       ]}
     />
   );
