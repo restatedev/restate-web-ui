@@ -739,6 +739,12 @@ export function useRegisterDeploymentContext() {
     error instanceof RestateError && error.restateCode === 'META0014';
   const isBreakingChangeError =
     error instanceof RestateError && error.restateCode === 'META0006';
+  const isInProcessTunnel = isTunnel && tunnelMode === 'in-process';
+  const isServiceNotConnectedError =
+    error instanceof RestateError &&
+    error.restateCode === 'META0003' &&
+    isInProcessTunnel &&
+    Boolean(tunnelName);
 
   return {
     isAdvanced,
@@ -773,11 +779,12 @@ export function useRegisterDeploymentContext() {
     isCloudRun,
     tunnelName,
     tunnelMode,
-    isInProcessTunnel: isTunnel && tunnelMode === 'in-process',
+    isInProcessTunnel,
     isOnboarding,
     targetType: getTargetType(endpoint, tunnelName),
     isHttp1Error,
     isBreakingChangeError,
+    isServiceNotConnectedError,
     updateShouldAllowBreakingChange,
     shouldAllowBreakingChange,
     isUpdate: mode === 'update',
