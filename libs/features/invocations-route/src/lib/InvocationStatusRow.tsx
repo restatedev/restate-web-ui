@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   SelectionIndicator,
@@ -22,12 +22,18 @@ import {
   listInvocationPresets,
 } from '@restate/util-sidebar-nav';
 import { vqueueSummaryStyles } from '@restate/features-status-chart';
+import { COLUMN_QUERY_PREFIX, getDefaultInvocationColumns } from './columns';
 
 const ROW_PRESETS = ['all', 'processing', 'inflight', 'stuck', 'completed'];
-const MORE_PRESETS = ['suspended', 'scheduled'];
+const MORE_PRESETS = ['suspended', 'scheduled', 'notcompleted'];
+const DEFAULT_COLUMNS: readonly string[] = getDefaultInvocationColumns();
 
-const moreButtonStyles = tv({
-  base: 'flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted shadow-none hover:bg-emphasis/40 hover:text-secondary',
+const rowStyles = tv({
+  slots: {
+    root: 'flex max-w-full flex-wrap items-center justify-center gap-1',
+    group: 'flex-wrap justify-center',
+    more: 'flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted shadow-none hover:bg-emphasis/40 hover:text-secondary',
+  },
 });
 
 interface StatusItem {
@@ -37,21 +43,25 @@ interface StatusItem {
   hint?: string;
 }
 
-function statusHref(
+export function invocationStatusHref(
   baseUrl: string,
   current: URLSearchParams,
   presetSearch: string,
 ) {
   const params = new URLSearchParams(current);
   const preset = new URLSearchParams(presetSearch);
-  params.delete('filter_status');
   const status = preset.get('filter_status');
-  if (status) params.set('filter_status', status);
-  const field = preset.get('sort_field');
-  const order = preset.get('sort_order');
-  if (field && order) {
-    params.set('sort_field', field);
-    params.set('sort_order', order);
+  if (status) {
+    params.set('filter_status', status);
+  } else {
+    params.delete('filter_status');
+  }
+  const selected = params.getAll(COLUMN_QUERY_PREFIX);
+  for (const column of preset.getAll(COLUMN_QUERY_PREFIX)) {
+    const isDefault = DEFAULT_COLUMNS.includes(column);
+    if (!selected.includes(column) && (!isDefault || selected.length === 0)) {
+      params.append(COLUMN_QUERY_PREFIX, column);
+    }
   }
   return `${baseUrl}/invocations?${params.toString()}`;
 }
@@ -63,24 +73,20 @@ function pick(items: StatusItem[], ids: string[]) {
 export function InvocationStatusRow({
   searchParams,
   baseUrl,
-  canSortByTransition,
 }: {
   searchParams: URLSearchParams;
   baseUrl: string;
-  canSortByTransition: boolean;
 }) {
   const navigate = useNavigate();
   const search = searchParams.toString();
   const { row, more, active, custom } = useMemo(() => {
     const current = new URLSearchParams(search);
-    const items = listInvocationPresets(canSortByTransition).map(
-      (preset): StatusItem => ({
-        id: preset.id,
-        label: preset.label,
-        hint: preset.hint,
-        href: statusHref(baseUrl, current, preset.search),
-      }),
-    );
+    const items = listInvocationPresets().map((preset): StatusItem => ({
+      id: preset.id,
+      label: preset.label,
+      hint: preset.hint,
+      href: invocationStatusHref(baseUrl, current, preset.search),
+    }));
     const active = getInvocationStatusPreset(current);
     const custom: StatusItem | undefined =
       active === 'custom'
@@ -97,18 +103,24 @@ export function InvocationStatusRow({
       active,
       custom,
     };
-  }, [search, baseUrl, canSortByTransition]);
+  }, [search, baseUrl]);
 
   const go = (href: string) =>
     navigate(href, { flushSync: true, preventScrollReset: true });
   const promoted = more.filter(({ id }) => id === active);
   const items = [...row, ...promoted, ...(custom ? [custom] : [])];
+  const extraId = promoted[0]?.id ?? custom?.id;
+  const [group, setGroup] = useState({ extraId, key: 0 });
+  if (group.extraId !== extraId) {
+    setGroup({ extraId, key: extraId ? group.key + 1 : group.key });
+  }
   const { focusTabList, focusTab, focusIndicator } = vqueueSummaryStyles();
+  const styles = rowStyles();
 
   return (
-    <div className="flex items-center gap-1">
+    <div className={styles.root()}>
       <ToggleButtonGroup
-        key={promoted[0]?.id ?? (custom ? 'custom' : 'presets')}
+        key={group.key}
         aria-label="Invocation status"
         selectionMode="single"
         disallowEmptySelection
@@ -118,7 +130,7 @@ export function InvocationStatusRow({
           const href = items.find(({ id }) => id === key)?.href;
           if (href) go(href);
         }}
-        className={focusTabList()}
+        className={focusTabList({ className: styles.group() })}
       >
         {items.map((item) => (
           <HintTooltip key={item.id} hint={item.hint} placement="bottom">
@@ -131,7 +143,7 @@ export function InvocationStatusRow({
       </ToggleButtonGroup>
       <Dropdown>
         <DropdownTrigger>
-          <Button variant="icon" className={moreButtonStyles()}>
+          <Button variant="icon" className={styles.more()}>
             More
             <Icon
               name={IconName.ChevronsUpDown}

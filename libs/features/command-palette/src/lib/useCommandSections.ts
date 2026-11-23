@@ -103,19 +103,13 @@ const SERVICE_TYPE_LABELS: Record<Service['ty'], string> = {
 
 const PRESET_KEYWORDS: Record<string, string[]> = {
   processing: ['active', 'executing'],
-  inflight: [
-    'active',
-    'inflight',
-    'ongoing',
-    'open',
-    'unfinished',
-    'incomplete',
-  ],
+  inflight: ['active', 'inflight', 'ongoing'],
   stuck: ['stuck', 'blocked', 'pending', 'paused', 'backing off', 'waiting'],
   all: ['every', 'list'],
   completed: ['done', 'finished', 'succeeded', 'failed'],
   suspended: ['waiting', 'sleeping', 'awaiting', 'timer', 'awakeable'],
   scheduled: ['delayed', 'later', 'future'],
+  notcompleted: ['open', 'unfinished', 'incomplete'],
 };
 
 type BatchActionId =
@@ -133,6 +127,7 @@ const PRESET_BATCH_ACTIONS: Record<string, BatchActionId[]> = {
   stuck: ['cancel', 'resume', 'retry-now', 'kill'],
   suspended: ['cancel', 'pause', 'kill'],
   scheduled: ['cancel', 'kill'],
+  notcompleted: ['cancel', 'kill'],
   completed: ['restart-as-new', 'purge'],
 };
 

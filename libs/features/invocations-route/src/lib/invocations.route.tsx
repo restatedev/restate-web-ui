@@ -680,11 +680,7 @@ function Component() {
         byStage={matchingSummary.byStage}
         byStatus={matchingSummary.byStatus}
         focusControl={
-          <InvocationStatusRow
-            searchParams={searchParams}
-            baseUrl={baseUrl}
-            canSortByTransition={canSortByTransition}
-          />
+          <InvocationStatusRow searchParams={searchParams} baseUrl={baseUrl} />
         }
         focus={vqueueSummaryFocus}
         breakdownMode={countMode}

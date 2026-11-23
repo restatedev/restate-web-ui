@@ -33,6 +33,7 @@ describe('invocation shortcut sorting', () => {
       'completed',
       'suspended',
       'scheduled',
+      'notcompleted',
     ]) {
       expect(sort(getInvocationPresetSearch(id, true))).toEqual([
         'transitioned_at',
@@ -56,6 +57,7 @@ describe('invocation status presets', () => {
       'completed',
       'suspended',
       'scheduled',
+      'notcompleted',
     ]);
   });
 
@@ -63,7 +65,13 @@ describe('invocation status presets', () => {
     const hinted = listInvocationPresets(false)
       .filter(({ hint }) => hint)
       .map(({ id }) => id);
-    expect(hinted).toEqual(['inflight', 'stuck', 'suspended', 'scheduled']);
+    expect(hinted).toEqual([
+      'inflight',
+      'stuck',
+      'suspended',
+      'scheduled',
+      'notcompleted',
+    ]);
   });
 
   it('matches a preset by its status filter alone', () => {
@@ -87,7 +95,7 @@ describe('invocation status presets', () => {
     expect(getInvocationStatusPreset(params)).toBe('all');
   });
 
-  it('treats any other status filter as custom', () => {
+  it('matches the overview Not completed links to the Not completed view', () => {
     const params = new URLSearchParams({
       filter_status: statusParam('NOT_IN', [
         'succeeded',
@@ -95,6 +103,13 @@ describe('invocation status presets', () => {
         'cancelled',
         'killed',
       ]),
+    });
+    expect(getInvocationStatusPreset(params)).toBe('notcompleted');
+  });
+
+  it('treats any other status filter as custom', () => {
+    const params = new URLSearchParams({
+      filter_status: statusParam('IN', ['paused', 'backing-off']),
     });
     expect(getInvocationStatusPreset(params)).toBe('custom');
   });

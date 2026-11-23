@@ -124,6 +124,21 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
     sort: { field: 'created_at', order: 'DESC' },
     columns: [...DEFAULT_PRESET_COLUMNS, 'scheduled_start_at'],
   },
+  {
+    id: 'notcompleted',
+    label: 'Not completed',
+    hint: 'Not finished yet, including scheduled',
+    sort: { field: 'created_at', order: 'DESC' },
+    filters: [
+      {
+        id: 'status',
+        operation: 'NOT_IN',
+        // Mirror of COMPLETED_STATUSES in @restate/util-invocation-links;
+        // matches toInFlightPlusScheduledInvocationsHref (in-flight + scheduled).
+        value: TERMINAL_INVOCATION_STATUSES,
+      },
+    ],
+  },
 ];
 
 const ALL_INVOCATIONS_SHORTCUT: InvocationShortcut = {
@@ -211,7 +226,7 @@ export interface InvocationPresetDefinition {
 }
 
 export function listInvocationPresets(
-  canSortByTransition: boolean,
+  canSortByTransition = false,
 ): InvocationPresetDefinition[] {
   return [
     ...INVOCATION_SHORTCUTS.slice(0, 3),
@@ -367,6 +382,7 @@ export type InvocationPreset =
   | 'scheduled'
   | 'completed'
   | 'suspended'
+  | 'notcompleted'
   | 'custom';
 
 /**
