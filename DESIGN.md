@@ -44,7 +44,7 @@ apps/web-ui and Cloud  routes and pages
 
 - Each `libs/ui/<name>` is a package, `@restate/ui-<name>`, imported by package name.
 - `libs/ui` takes plain props and doesn't import `@restate/features-*` or `@restate/data-access-*`. Two old imports break this (`ui-issue-banner` → `features-system-health`, `ui-dialog` → `features-user-preference`); don't add more.
-- Some theme pieces live in the app, not in util-styles: the `text-3xs`, `text-2xs` and `text-0.5xs` sizes, the keyframes, the `3xl` breakpoint and the `@tall:` variant are in `apps/web-ui/app/tailwind.css`, so any other app that uses these libs has to copy them. **Planned:** move them into `@restate/util-styles`, so both apps import one theme.
+- The whole theme lives in `@restate/util-styles/theme.css`: role colors, the `text-3xs`, `text-2xs` and `text-0.5xs` sizes, the fonts, the keyframes, the `3xl` breakpoint and the `@tall:` variant. An app imports it once after `tailwindcss`; its own stylesheet keeps only page-level rules.
 - Storybook shows every shared component with its variants and states, in both themes: `pnpm nx serve storybook`, stories in `apps/storybook/src`. The dev server shows the color tokens at `/ui/design-system`.
 
 ## Colors
@@ -144,7 +144,7 @@ Depth comes from tonal layers, not shadows: `sunken` < `canvas` < `overlay` < `s
 - Motion confirms a change; it never decorates. Hover and press change color at once or with the default `transition`. Overlays enter and leave in about 200 ms with `tailwindcss-animate` (`animate-in fade-in zoom-in-105`).
 - Loops (`animate-ping`, `animate-pulse`, `animate-pulseButton`, `animate-scanlineSweep`) are only for live state: running work, pending items, loading. Wrap them in `motion-safe:` or hide them with `motion-reduce:`. Most existing loops don't yet; new ones must.
 - Animate `transform` and `opacity`, not layout.
-- The keyframes (`countdown`, `pulseButton`, `scanlineSweep`, `memoryScan` and others) live in the app's `tailwind.css`. Reuse one before adding a near-duplicate. **Planned:** move them into util-styles with a global `prefers-reduced-motion` rule.
+- The keyframes (`countdown`, `pulseButton`, `scanlineSweep`, `memoryScan` and others) live in util-styles' `theme.css`. Reuse one before adding a near-duplicate, and give a looping animation a `motion-reduce:` fallback, as `Skeleton` does.
 
 ## Voice & Content Strategy
 
