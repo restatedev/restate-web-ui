@@ -1,4 +1,5 @@
 import { ErrorBanner } from '@restate/ui-error';
+import { Skeleton } from '@restate/ui-loading';
 import { Cell, Row } from './Row';
 
 export function LoadingRows({
@@ -24,8 +25,9 @@ export function LoadingRows({
                   paddingRight: `${hashCode((index + 1) * 11, (i + 1) * 13)}%`,
                 }}
               >
-                <div
-                  className="min-h-full w-full animate-pulse rounded-md bg-emphasis motion-reduce:animate-none"
+                <Skeleton
+                  shape="block"
+                  className="block min-h-full w-full"
                   style={{
                     animationDelay: `-${(index * 160 + i * 90) % 1600}ms`,
                     animationDuration: '2s',

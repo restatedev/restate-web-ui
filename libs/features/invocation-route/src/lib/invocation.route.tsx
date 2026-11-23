@@ -38,6 +38,7 @@ import {
 import { useInvocationsRecent } from '@restate/util-sidebar-nav';
 import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { CardGrid } from '@restate/ui-card';
+import { Skeleton } from '@restate/ui-loading';
 
 const lastFailureContainer = tv({
   base: 'z-20 min-w-0 origin-bottom-right rounded-2xl p-0',
@@ -223,8 +224,8 @@ function Component() {
         >
           {isPending ? (
             <>
-              <div className="min-h-28 w-full animate-pulse rounded-xl bg-emphasis" />
-              <div className="min-h-28 w-full animate-pulse rounded-xl bg-emphasis" />
+              <Skeleton shape="card" className="block min-h-28 w-full" />
+              <Skeleton shape="card" className="block min-h-28 w-full" />
             </>
           ) : (
             <>

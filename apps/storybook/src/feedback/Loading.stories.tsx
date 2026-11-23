@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { IconName } from '@restate/ui-icons';
-import { Ellipsis, Spinner, StatusDot } from '@restate/ui-loading';
+import { Ellipsis, Skeleton, Spinner, StatusDot } from '@restate/ui-loading';
 
 const meta = {
   title: 'Feedback/Loading',
@@ -67,5 +67,25 @@ export const StatusDotWithIcon: Story = {
       <StatusDot intent="pending" icon={IconName.TriangleAlert} pulse />
       Degraded
     </span>
+  ),
+};
+
+export const Skeletons: Story = {
+  render: () => (
+    <div className="flex max-w-md flex-col gap-4 text-sm text-secondary">
+      {(
+        [
+          ['text', 'h-3 w-24'],
+          ['pill', 'h-5 w-16'],
+          ['block', 'h-9 w-full'],
+          ['card', 'min-h-28 w-full'],
+        ] as const
+      ).map(([shape, size]) => (
+        <div key={shape} className="flex flex-col gap-1.5">
+          <code className="font-mono text-2xs text-tertiary">{shape}</code>
+          <Skeleton shape={shape} className={size} />
+        </div>
+      ))}
+    </div>
   ),
 };

@@ -21,13 +21,10 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { formatNumber, formatPlurals } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
+import { Skeleton } from '@restate/ui-loading';
 
 const valueStyles = tv({
   base: 'text-xs text-tertiary tabular-nums',
-});
-
-const skeletonStyles = tv({
-  base: 'inline-block h-4 w-32 animate-pulse rounded-full bg-emphasis/70',
 });
 
 const captionStyles = tv({
@@ -40,10 +37,6 @@ const captionStyles = tv({
   },
   defaultVariants: { tone: 'default' },
 });
-
-function Skeleton() {
-  return <span className={skeletonStyles()} />;
-}
 
 function CopyValue({ value }: { value: string }) {
   return (
@@ -105,7 +98,7 @@ export function DetailsCard({
         <DeploymentSdkRow deployment={deployment} />
       ) : (
         <CardRow>
-          <Skeleton />
+          <Skeleton shape="pill" className="h-4 w-32" />
         </CardRow>
       )}
       <DeploymentProtocolRows deployment={deployment} />

@@ -7,7 +7,7 @@ import { Cell, PanelTable, PanelTableColumn, Row } from '@restate/ui-table';
 import { ErrorBanner } from '@restate/ui-error';
 import { DropdownItem, DropdownSection } from '@restate/ui-dropdown';
 import { Icon, IconName } from '@restate/ui-icons';
-import { Spinner } from '@restate/ui-loading';
+import { Spinner, Skeleton } from '@restate/ui-loading';
 import { formatBytes } from '@restate/util-intl';
 import {
   Popover,
@@ -114,8 +114,6 @@ const stateObjectStyles = tv({
     collapsedPreviewValue:
       'inline-block max-w-[28ch] truncate align-bottom text-muted',
     collapsedPreviewPunctuation: 'shrink-0 text-subtle',
-    previewSkeleton:
-      'block h-4 w-44 max-w-full animate-pulse rounded-md bg-emphasis/80',
     refreshingStatus:
       'flex min-w-0 items-center gap-1.5 text-xs text-subtle italic',
     childStatus: 'flex min-w-0 items-center gap-1.5 text-xs text-muted',
@@ -636,7 +634,6 @@ function StateObjectCollapsedPreview({
     collapsedPreviewKey,
     collapsedPreviewValue,
     collapsedPreviewPunctuation,
-    previewSkeleton,
   } = stateObjectStyles();
   const { entriesQuery, loadedEntries } = useStateObjectEntries(
     serviceName,
@@ -646,7 +643,7 @@ function StateObjectCollapsedPreview({
   const entries = loadedEntries ?? row.state;
 
   if (isLoadingPreview && !loadedEntries && row.state.length === 0) {
-    return <span className={previewSkeleton()} />;
+    return <Skeleton shape="block" className="block h-4 w-44 max-w-full" />;
   }
   const previewState = entries.slice(0, COLLAPSED_STATE_PREVIEW_KEYS);
   const isComplete = Boolean(loadedEntries) && !entriesQuery.hasNextPage;

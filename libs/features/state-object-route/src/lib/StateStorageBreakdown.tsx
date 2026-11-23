@@ -14,6 +14,7 @@ import {
 import { tv } from '@restate/util-styles';
 import { useSearchParams } from 'react-router';
 import { getStateServiceHref } from './ServiceSelector';
+import { Skeleton } from '@restate/ui-loading';
 
 const MAX_VISIBLE_STORAGE_SERVICES = 10;
 
@@ -26,7 +27,6 @@ const STORAGE_SEGMENT_COLORS = Array.from(
 const styles = tv({
   slots: {
     root: 'flex w-full flex-col items-stretch gap-2',
-    skeleton: 'h-9 w-full animate-pulse rounded-md bg-emphasis',
     empty:
       'h-9 rounded-md border-[1.5px] border-dashed border-strong/70 bg-emphasis/70 shadow-[inset_0_1px_2px_0_--theme(--box-shadow-color-default/4%)]',
     bar: 'relative flex h-9 w-full items-stretch gap-[2.5px] py-1',
@@ -206,7 +206,6 @@ export function StateStorageBreakdown() {
   const { baseUrl } = useRestateContext();
   const {
     root,
-    skeleton,
     empty,
     bar,
     segmentWrap,
@@ -251,7 +250,7 @@ export function StateStorageBreakdown() {
   }
 
   if (query.isPending) {
-    return <div className={skeleton()} aria-hidden />;
+    return <Skeleton shape="block" className="block h-9 w-full" />;
   }
 
   if (total === 0) {

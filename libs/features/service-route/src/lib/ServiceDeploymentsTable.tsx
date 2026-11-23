@@ -16,6 +16,7 @@ import { RelativeDate } from '@restate/ui-tooltip';
 import { deploymentHref } from '@restate/util-panel';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
+import { Skeleton } from '@restate/ui-loading';
 
 type ColumnId = 'deployment' | 'revision' | 'status' | 'registered';
 interface DeploymentRow {
@@ -129,7 +130,7 @@ export function ServiceDeploymentsTable({ service }: { service: string }) {
                   }
                 />
               ) : isStatusPending ? (
-                <span className="block h-5 w-16 animate-pulse rounded-full bg-emphasis/70" />
+                <Skeleton shape="pill" className="block h-5 w-16" />
               ) : null}
             </Cell>
           );

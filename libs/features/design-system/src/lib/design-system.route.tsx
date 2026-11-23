@@ -290,7 +290,6 @@ const recipes = tv({
     chip: 'w-fit rounded bg-muted px-1 py-px text-2xs font-medium text-tertiary',
     inverse:
       'rounded-xl border border-inverse bg-inverse/90 px-3 py-2 text-sm text-inverse-secondary shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)] backdrop-blur-xl',
-    skeleton: 'h-5 w-32 animate-pulse rounded-full bg-emphasis/70',
   },
 });
 
@@ -897,9 +896,6 @@ function Recipes() {
         </Recipe>
         <Recipe title="Floating inverse panel" classes={[r.inverse()]}>
           <div className={r.inverse()}>Oct 16, 2026, 6:29:02 PM</div>
-        </Recipe>
-        <Recipe title="Skeleton" classes={[r.skeleton()]}>
-          <span className={r.skeleton()} />
         </Recipe>
       </div>
     </Block>

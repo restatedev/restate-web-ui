@@ -51,17 +51,7 @@ import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { formatConfigDuration, type ServiceConfig } from './serviceConfig';
-
-const skeletonStyles = tv({
-  base: 'inline-block animate-pulse rounded-full bg-emphasis/70',
-  variants: {
-    variant: {
-      hero: 'h-6 w-16',
-      default: 'h-4 w-12',
-    },
-  },
-  defaultVariants: { variant: 'default' },
-});
+import { Skeleton } from '@restate/ui-loading';
 
 const captionStyles = tv({
   base: 'flex min-w-0 items-center gap-1 text-2xs font-medium text-subtle',
@@ -73,10 +63,6 @@ const captionStyles = tv({
   },
   defaultVariants: { tone: 'default' },
 });
-
-function Skeleton({ variant }: { variant?: 'hero' | 'default' }) {
-  return <span className={skeletonStyles({ variant })} />;
-}
 
 function HeroText({
   title,
@@ -217,7 +203,7 @@ export function DeploymentProtocolRows({
             )}
           </div>
         ) : (
-          <Skeleton />
+          <Skeleton shape="pill" className="h-4 w-12" />
         )}
       </CardRow>
       <CardRow label="Service protocol">
@@ -232,7 +218,7 @@ export function DeploymentProtocolRows({
             }
           />
         ) : (
-          <Skeleton />
+          <Skeleton shape="pill" className="h-4 w-12" />
         )}
       </CardRow>
     </>
@@ -292,7 +278,7 @@ export function DeploymentCard({
       ) : (
         <CardRow variant="hero">
           <HeroText title="Latest revision" />
-          <Skeleton variant="hero" />
+          <Skeleton shape="pill" className="h-6 w-16" />
         </CardRow>
       )}
       <DeploymentSdkRow deployment={deployment} />
@@ -541,7 +527,7 @@ function ConfigRow({
   }
   return (
     <CardRow label={<RowLabel icon={icon}>{label}</RowLabel>}>
-      {isPending ? <Skeleton /> : content}
+      {isPending ? <Skeleton shape="pill" className="h-4 w-12" /> : content}
     </CardRow>
   );
 }

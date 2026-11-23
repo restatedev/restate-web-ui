@@ -55,6 +55,7 @@ import {
   sortDeployments,
   sortDeploymentServices,
 } from './sortDeployments';
+import { Skeleton } from '@restate/ui-loading';
 
 type DeploymentColumn =
   | 'deployment'
@@ -446,7 +447,7 @@ export function DeploymentsTable() {
             return (
               <Cell>
                 {isDeploymentStatusLoading ? (
-                  <span className="block h-6 w-20 shrink-0 animate-pulse rounded-full bg-emphasis/70" />
+                  <Skeleton shape="pill" className="block h-6 w-20 shrink-0" />
                 ) : (
                   <DeploymentStatusBadge status={deployment.status} />
                 )}

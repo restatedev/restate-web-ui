@@ -37,6 +37,7 @@ import {
   DeploymentDetails,
   deploymentTabFromSearch,
 } from './DeploymentDetails';
+import { Skeleton } from '@restate/ui-loading';
 
 function EndpointChip({
   endpoint,
@@ -85,7 +86,7 @@ function EndpointChip({
           >
             <ChipSegment className="min-w-0 bg-surface pr-1 pl-2 font-mono text-[90%] text-tertiary">
               {isPending ? (
-                <span className="inline-block h-3.5 w-48 animate-pulse rounded bg-emphasis" />
+                <Skeleton className="h-3.5 w-48" />
               ) : (
                 <>
                   <TruncateTooltipTrigger>{endpoint}</TruncateTooltipTrigger>

@@ -74,6 +74,9 @@
       "path": "../../ui/badge/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/loading/tsconfig.lib.json"
+    },
+    {
       "path": "../../util/humantime/tsconfig.lib.json"
     },
     {

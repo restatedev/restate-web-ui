@@ -35,7 +35,7 @@ import { EmptyState } from '@restate/ui-empty-state';
 import { ErrorBanner } from '@restate/ui-error';
 import { Header } from '@restate/ui-header';
 import { Icon, IconName } from '@restate/ui-icons';
-import { Spinner } from '@restate/ui-loading';
+import { Spinner, Skeleton } from '@restate/ui-loading';
 import type {
   QueryClauseSchema,
   QueryClauseType,
@@ -290,7 +290,7 @@ function StageTabLabel({
           {formatNumber(count, true)}
         </span>
       ) : isPending ? (
-        <span className="inline-block h-3 w-5 animate-pulse rounded bg-emphasis" />
+        <Skeleton className="h-3 w-5" />
       ) : null}
       {schedulerData && <InboxSchedulingStatus data={schedulerData} />}
     </span>

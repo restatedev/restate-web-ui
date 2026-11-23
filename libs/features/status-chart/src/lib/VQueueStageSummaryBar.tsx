@@ -20,6 +20,7 @@ import {
 } from './constants';
 import { BreakdownMode } from './BreakdownMode';
 import type { StatusEntry } from './useOrderedStatuses';
+import { Skeleton } from '@restate/ui-loading';
 
 export type VQueueSummaryFocus = 'all' | 'not-completed' | 'completed';
 
@@ -65,10 +66,6 @@ export const vqueueSummaryStyles = tv({
       false: {},
     },
   },
-});
-
-const skeletonStyles = tv({
-  base: 'h-7 w-full animate-pulse rounded-md bg-emphasis',
 });
 
 const emptyStyles = tv({
@@ -292,10 +289,7 @@ export function VQueueStageSummaryBar({
   if (isLoading) {
     return (
       <div className={container({ class: className })}>
-        <div
-          className={skeletonStyles({ class: 'col-span-full' })}
-          aria-hidden
-        />
+        <Skeleton shape="block" className="col-span-full block h-7 w-full" />
       </div>
     );
   }

@@ -24,7 +24,7 @@ import {
 } from '@restate/features-status-chart';
 import { useWaveAnimation } from '@restate/ui-wave-animation';
 import { OVERVIEW_WAVE_TARGET } from './overviewWave';
-import { Ellipsis, Spinner } from '@restate/ui-loading';
+import { Ellipsis, Spinner, Skeleton } from '@restate/ui-loading';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -340,9 +340,7 @@ function TabCount({
   isLoading?: boolean;
 }) {
   if (isLoading) {
-    return (
-      <span className="ml-1 inline-block h-3 w-5 animate-pulse rounded bg-emphasis" />
-    );
+    return <Skeleton className="ml-1 h-3 w-5" />;
   }
   return (
     <span className="ml-1 rounded bg-muted px-1 py-px text-2xs font-medium text-muted tabular-nums">
@@ -412,7 +410,7 @@ function HeroGauge({
           </div>
         )}
         {isLoading ? (
-          <div className="h-7 w-14 animate-pulse rounded-lg bg-emphasis sm:h-8" />
+          <Skeleton shape="block" className="block h-7 w-14 sm:h-8" />
         ) : isError ? (
           <span className="text-xl font-semibold text-faint">–</span>
         ) : (
