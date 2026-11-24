@@ -712,25 +712,27 @@ export function useRegisterDeployment(
           retryWithHttp1 &&
           args.body &&
           args.body.dry_run &&
-          'uri' in args.body
+          'use_http_11' in args.body &&
+          !args.body.use_http_11
         ) {
-          try {
-            await _mutationFn(
-              {
-                ...args,
-                body: {
-                  ...args.body,
-                  use_http_11: true,
-                },
+          const worksWithHttp1 = await _mutationFn(
+            {
+              ...args,
+              body: {
+                ...args.body,
+                use_http_11: true,
               },
-              { client: queryCLient, meta },
-            );
+            },
+            { client: queryCLient, meta },
+          ).then(
+            () => true,
+            () => false,
+          );
+          if (worksWithHttp1) {
             throw new RestateError(
               'Service discovery response failed, and the server may have responded in HTTP1.1.',
               'META0014',
             );
-          } catch (_) {
-            throw originalError;
           }
         }
         throw originalError;
@@ -800,30 +802,32 @@ export function useUpdateDeployment(
           retryWithHttp1 &&
           args.body &&
           args.body.dry_run &&
-          'uri' in args.body
+          'use_http_11' in args.body &&
+          !args.body.use_http_11
         ) {
-          try {
-            await _mutationFn(
-              {
-                ...args,
-                parameters: {
-                  path: {
-                    deployment,
-                  },
-                },
-                body: {
-                  ...args.body,
-                  use_http_11: true,
+          const worksWithHttp1 = await _mutationFn(
+            {
+              ...args,
+              parameters: {
+                path: {
+                  deployment,
                 },
               },
-              { client: queryCLient, meta },
-            );
+              body: {
+                ...args.body,
+                use_http_11: true,
+              },
+            },
+            { client: queryCLient, meta },
+          ).then(
+            () => true,
+            () => false,
+          );
+          if (worksWithHttp1) {
             throw new RestateError(
               'Service discovery response failed, and the server may have responded in HTTP1.1.',
               'META0014',
             );
-          } catch (_) {
-            throw originalError;
           }
         }
         throw originalError;
