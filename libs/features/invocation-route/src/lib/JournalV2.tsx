@@ -103,6 +103,7 @@ import {
   findLineRow,
   getLineHash,
   getRowLinePath,
+  LAST_FAILURE_HASH,
   parseLineHash,
 } from './journalLineLinks';
 import {
@@ -413,6 +414,10 @@ export function JournalV2({
       )
     : 0;
 
+  const { commandIndex: failureCommandIndex } = useFailureRelatedCommandIndex(
+    journalAndInvocationData,
+    { enabled: withTimeline },
+  );
   const journalProblems = useJournalProblems({
     enabled: Boolean(withTimeline),
     invocationId,
@@ -420,6 +425,7 @@ export function JournalV2({
     rows: entriesWithoutInputUnfiltered,
     inputEntry,
     showErrors: Boolean(detail.errors),
+    failureCommandIndex,
   });
   const entriesWithoutInput = journalProblems.entries;
   const shownProblemRows = journalProblems.navigableRows;
@@ -470,14 +476,19 @@ export function JournalV2({
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
 
-  const { commandIndex: failureCommandIndex } = useFailureRelatedCommandIndex(
-    journalAndInvocationData,
-    { enabled: withTimeline },
-  );
+  const { ownFailureEntry } = journalProblems;
   const failureRowIndex = useMemo(
     () =>
-      findCommandRow(entriesWithoutInput, invocationId, failureCommandIndex),
-    [entriesWithoutInput, invocationId, failureCommandIndex],
+      ownFailureEntry
+        ? entriesWithoutInput.findLastIndex(
+            (row) => row.entry === ownFailureEntry,
+          )
+        : findCommandRow(
+            entriesWithoutInput,
+            invocationId,
+            failureCommandIndex,
+          ),
+    [entriesWithoutInput, invocationId, failureCommandIndex, ownFailureEntry],
   );
   const failureRow =
     failureRowIndex >= 0
@@ -498,9 +509,15 @@ export function JournalV2({
         : undefined,
     [linePath, entriesWithoutInputUnfiltered],
   );
+  const isFailureHash = Boolean(withTimeline) && hash === LAST_FAILURE_HASH;
   const selectedRowIndex = useMemo(
-    () => (linePath ? findLineRow(entriesWithoutInput, linePath).index : -1),
-    [linePath, entriesWithoutInput],
+    () =>
+      linePath
+        ? findLineRow(entriesWithoutInput, linePath).index
+        : isFailureHash
+          ? failureRowIndex
+          : -1,
+    [linePath, entriesWithoutInput, isFailureHash, failureRowIndex],
   );
   const lineParent =
     lineRow && linePath && lineRow.depth < linePath.length
@@ -557,7 +574,7 @@ export function JournalV2({
       return;
     }
     if (
-      linePath &&
+      (linePath || isFailureHash) &&
       (isLineCollapsed || invocationIds.some((id) => isPending[id]))
     ) {
       return;
@@ -588,6 +605,7 @@ export function JournalV2({
     hash,
     locationKey,
     linePath,
+    isFailureHash,
     isLineCollapsed,
     selectedRowIndex,
     invocationIds,
@@ -634,7 +652,7 @@ export function JournalV2({
   useEffect(() => {
     const row = virtualizer.measurementsCache[focusRowIndex];
     const list = entriesListRef.current;
-    if (linePath && !hasScrolledToFocus.current) {
+    if ((linePath || isFailureHash) && !hasScrolledToFocus.current) {
       hasScrolledToFocus.current = true;
       return;
     }
@@ -650,7 +668,14 @@ export function JournalV2({
         scrollMargin -
         window.innerHeight / 3,
     });
-  }, [withTimeline, focusRowIndex, virtualizer, scrollMargin, linePath]);
+  }, [
+    withTimeline,
+    focusRowIndex,
+    virtualizer,
+    scrollMargin,
+    linePath,
+    isFailureHash,
+  ]);
   const rowCenter = (index: number) => {
     const row = virtualizer.measurementsCache[index];
     return row ? row.start - scrollMargin + row.size / 2 : index * 36;

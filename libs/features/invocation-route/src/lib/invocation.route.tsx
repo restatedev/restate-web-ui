@@ -18,6 +18,8 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { Section } from '@restate/ui-section';
 import { Actions } from './actions';
 import { JournalV2 } from './JournalV2';
+import { LAST_FAILURE_HASH } from './journalLineLinks';
+import { findOwnPauseOrRetry } from './problemRows';
 import { useRestateContext } from '@restate/features-restate-context';
 import { ServiceTarget } from '@restate/features-service-target';
 import { tv } from '@restate/util-styles';
@@ -126,6 +128,24 @@ function Component() {
   const hasRelatedCommandRow = Boolean(
     relatedCommand && relatedCommand.type !== 'Input',
   );
+  const isHeldUp =
+    isPaused || journalAndInvocationData?.status === 'backing-off';
+  const hasOwnFailureRow = useMemo(
+    () =>
+      isHeldUp &&
+      Boolean(
+        findOwnPauseOrRetry(
+          journalAndInvocationData?.journal?.entries,
+          relatedCommandIndex,
+        ),
+      ),
+    [isHeldUp, journalAndInvocationData, relatedCommandIndex],
+  );
+  const failureLineHash = hasRelatedCommandRow
+    ? `#command-${relatedCommandIndex}`
+    : hasOwnFailureRow
+      ? LAST_FAILURE_HASH
+      : undefined;
 
   const lastError = getRestateError(journalAndInvocationData) ?? pausedError;
   const shouldShowFailure =
@@ -291,7 +311,7 @@ function Component() {
                   }}
                 />
               </div>
-              {hasRelatedCommandRow && (
+              {failureLineHash && (
                 <div
                   className="-translate-y-2 px-2"
                   style={{ marginLeft: 'var(--failure-anchor-x, 0px)' }}
@@ -300,9 +320,11 @@ function Component() {
                     variant="icon"
                     className="inline-flex rounded-md px-2 text-xs"
                     preserveQueryParams={currentQueryParams}
-                    href={`#command-${relatedCommandIndex}`}
+                    href={failureLineHash}
                   >
-                    Go to the related line (#{relatedCommandIndex})
+                    {hasRelatedCommandRow
+                      ? `Go to the related line (#${relatedCommandIndex})`
+                      : 'Go to the related line'}
                     <Icon
                       name={IconName.ChevronDown}
                       className="ml-1 h-4 w-4"

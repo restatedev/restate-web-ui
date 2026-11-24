@@ -19,6 +19,7 @@ import {
   addChildProblems,
   filterJournalRows,
   findJournalProblems,
+  findOwnPauseOrRetry,
   getChildIdsToCheck,
   getProblemRowKey,
   getProblemTone,
@@ -72,6 +73,7 @@ export function useJournalProblems({
   rows,
   inputEntry,
   showErrors,
+  failureCommandIndex,
 }: {
   enabled: boolean;
   invocationId: string;
@@ -79,6 +81,7 @@ export function useJournalProblems({
   rows: CombinedJournalEntry[];
   inputEntry?: JournalEntryV2;
   showErrors: boolean;
+  failureCommandIndex?: number;
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const isProblemsOnly =
@@ -189,6 +192,39 @@ export function useJournalProblems({
     [],
   );
 
+  const status = data[invocationId]?.status;
+  const ownFailureEntry = useMemo(
+    () =>
+      enabled && (status === 'paused' || status === 'backing-off')
+        ? findOwnPauseOrRetry(
+            data[invocationId]?.journal?.entries,
+            failureCommandIndex,
+          )
+        : undefined,
+    [enabled, status, data, invocationId, failureCommandIndex],
+  );
+  const hasInputProblem =
+    enabled &&
+    Boolean(
+      inputEntry?.isRetrying ||
+      journalProblems?.unmatchedRetryInvocations.has(invocationId) ||
+      ownFailureEntry,
+    );
+  const isInputRecovered =
+    hasInputProblem && !inputEntry?.isRetrying && !isChildProblemStatus(status);
+  const invocationTone: ProblemTone | undefined = hasInputProblem
+    ? isInputRecovered
+      ? 'neutral'
+      : 'warning'
+    : undefined;
+  const invocationProblemRow = useMemo(() => {
+    if (!ownFailureEntry) {
+      return undefined;
+    }
+    const index = rows.findLastIndex((row) => row.entry === ownFailureEntry);
+    return index === -1 ? undefined : index;
+  }, [ownFailureEntry, rows]);
+
   const [findText, setFindText] = useState('');
   const query = useDeferredValue(findText.trim().toLowerCase());
   const filtered = useMemo(
@@ -200,11 +236,20 @@ export function useJournalProblems({
               problemsOnly: isProblemsOnly,
               query,
               pastRetries: showErrors ? undefined : retriedCommands,
+              invocationProblemRow,
             },
             problems.kindByRow,
           )
         : undefined,
-    [isProblemsOnly, query, rows, problems, showErrors, retriedCommands],
+    [
+      isProblemsOnly,
+      query,
+      rows,
+      problems,
+      showErrors,
+      retriedCommands,
+      invocationProblemRow,
+    ],
   );
   const filteredRows = filtered?.rows ?? rows;
 
@@ -302,32 +347,42 @@ export function useJournalProblems({
         );
       }
     });
+    const invocationRowKey =
+      invocationProblemRow === undefined
+        ? undefined
+        : getProblemRowKey(rows[invocationProblemRow]);
+    if (invocationRowKey && invocationTone) {
+      tones.set(invocationRowKey, invocationTone);
+    }
     return tones;
-  }, [enabled, problems, rows, recoveredRows]);
+  }, [
+    enabled,
+    problems,
+    rows,
+    recoveredRows,
+    invocationProblemRow,
+    invocationTone,
+  ]);
 
   const inputKey = `${invocationId}:input`;
-  const hasInputProblem =
-    enabled &&
-    Boolean(
-      inputEntry?.isRetrying ||
-      journalProblems?.unmatchedRetryInvocations.has(invocationId),
-    );
   const navigableRows = useMemo(() => {
+    const rowIndexes =
+      invocationProblemRow === undefined
+        ? problems.rowIndexes
+        : [...problems.rowIndexes, invocationProblemRow].sort((a, b) => a - b);
     const keys = new Set(
-      problems.rowIndexes.map((index) => getProblemRowKey(rows[index])),
+      rowIndexes.map((index) => getProblemRowKey(rows[index])),
     );
     const shown =
       entries === rows
-        ? problems.rowIndexes
+        ? rowIndexes
         : entries.flatMap((row, index) =>
             keys.has(getProblemRowKey(row)) ? [index] : [],
           );
-    return hasInputProblem ? [INPUT_ROW, ...shown] : shown;
-  }, [problems, entries, rows, hasInputProblem]);
-  const isInputRecovered =
-    hasInputProblem &&
-    !inputEntry?.isRetrying &&
-    !isChildProblemStatus(data[invocationId]?.status);
+    return hasInputProblem && invocationProblemRow === undefined
+      ? [INPUT_ROW, ...shown]
+      : shown;
+  }, [problems, entries, rows, hasInputProblem, invocationProblemRow]);
   const problemStats = useMemo(() => {
     const stats = getProblemStats(
       problems.kindByRow,
@@ -340,7 +395,7 @@ export function useJournalProblems({
     } else if (inputEntry?.isRetrying) {
       stats.retrying += 1;
     } else if (hasInputProblem) {
-      stats.stuckInputStatus = data[invocationId]?.status;
+      stats.stuckInputStatus = status;
     }
     return stats;
   }, [
@@ -351,10 +406,12 @@ export function useJournalProblems({
     hasInputProblem,
     isInputRecovered,
     inputEntry,
-    data,
-    invocationId,
+    status,
   ]);
-  const isInputActive = hasInputProblem && activeProblemKey === inputKey;
+  const isInputActive =
+    hasInputProblem &&
+    invocationProblemRow === undefined &&
+    activeProblemKey === inputKey;
   const activeProblemIndex = useMemo(
     () =>
       activeProblemKey && activeProblemKey !== inputKey
@@ -395,11 +452,8 @@ export function useJournalProblems({
     entries,
     problemTotal: problems.rowIndexes.length + (hasInputProblem ? 1 : 0),
     problemStats,
-    inputTone: hasInputProblem
-      ? isInputRecovered
-        ? ('neutral' as const)
-        : ('warning' as const)
-      : undefined,
+    inputTone: invocationProblemRow === undefined ? invocationTone : undefined,
+    ownFailureEntry,
     isInputActive,
     problemTones,
     pastRetries: enabled && !showErrors ? retriedCommands : undefined,
