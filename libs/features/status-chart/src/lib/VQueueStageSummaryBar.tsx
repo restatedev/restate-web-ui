@@ -7,11 +7,7 @@ import {
 } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
-import {
-  SelectionIndicator,
-  ToggleButton,
-  ToggleButtonGroup,
-} from 'react-aria-components';
+import { SegmentedControl } from '@restate/ui-tabs';
 import {
   DEFAULT_STYLE,
   INBOX_STAGE_GRADIENT,
@@ -47,12 +43,6 @@ export const vqueueSummaryStyles = tv({
       'col-start-1 row-start-2 mx-auto flex items-center text-2xs text-muted md:row-start-1 md:mx-0 md:justify-self-start',
     breakdownControl:
       'col-start-1 row-start-1 justify-self-center md:col-start-2 md:self-center md:justify-self-end md:pr-1',
-    focusTabList:
-      'relative flex max-w-full gap-0 rounded-xl border-[0.5px] border-tint-subtle bg-tint-subtle shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-default/3%)]',
-    focusTab:
-      'relative isolate flex min-h-0 cursor-default items-baseline justify-center gap-1.5 rounded-xl px-3 py-1.5 font-sans text-xs whitespace-nowrap text-tertiary outline-offset-2 outline-focus transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] hover:text-primary focus-visible:outline-2 pressed:text-primary selected:text-primary',
-    focusIndicator:
-      'absolute inset-0 -z-10 rounded-xl border border-tint bg-raised shadow-xs motion-safe:transition-[translate,width,height] motion-safe:duration-300 motion-safe:ease-out',
     focusCount: 'font-medium text-muted tabular-nums',
     panels:
       'col-start-1 row-start-3 w-full overflow-visible md:col-span-2 md:row-start-2',
@@ -264,19 +254,10 @@ export function VQueueStageSummaryBar({
   const inboxBreakdownLoading = isBreakdownLoading?.('inbox') ?? false;
   const hasInboxBreakdown = visibleInboxStatuses.length > 0;
   const hasCompletedBreakdown = visibleCompletedStatuses.length > 0;
-  const {
-    container,
-    focusRow,
-    breakdownControl,
-    focusTabList,
-    focusTab,
-    focusIndicator,
-    focusCount,
-    panels,
-    rail,
-  } = vqueueSummaryStyles({
-    pulse: Boolean(isFetching),
-  });
+  const { container, focusRow, breakdownControl, focusCount, panels, rail } =
+    vqueueSummaryStyles({
+      pulse: Boolean(isFetching),
+    });
   const percentageScope = `of ${formatNumber(focusedPopulationTotal, true)}`;
   const focusedPopulationDescription = `${
     focus === 'all' ? 'all' : focus
@@ -561,61 +542,57 @@ export function VQueueStageSummaryBar({
         {focusControl !== undefined ? (
           focusControl
         ) : (
-          <ToggleButtonGroup
-            aria-label="Invocation breakdown"
-            selectionMode="single"
-            disallowEmptySelection
-            selectedKeys={selectedFocus ? [selectedFocus] : []}
-            onSelectionChange={(keys) => {
-              const [nextFocus] = keys;
-              if (nextFocus) onFocusChange?.(nextFocus as VQueueSummaryFocus);
-            }}
-            className={focusTabList()}
-          >
-            <ToggleButton id="all" className={focusTab()}>
-              <span>All statuses</span>
-              {renderFocusCount(
-                'All-status',
-                populationTotal,
-                countsUnavailable || completedStageIsUnavailable
-                  ? 'unavailable'
-                  : completedStageIsLoading
-                    ? 'loading'
-                    : areStageCountsPartial && populationTotal === 0
+          <SegmentedControl
+            size="md"
+            label="Invocation breakdown"
+            value={selectedFocus ?? null}
+            onChange={(nextFocus) => onFocusChange?.(nextFocus)}
+            options={[
+              {
+                value: 'all',
+                label: 'All statuses',
+                count: renderFocusCount(
+                  'All-status',
+                  populationTotal,
+                  countsUnavailable || completedStageIsUnavailable
+                    ? 'unavailable'
+                    : completedStageIsLoading
+                      ? 'loading'
+                      : areStageCountsPartial && populationTotal === 0
+                        ? 'unknown'
+                        : 'known',
+                ),
+              },
+              {
+                value: 'not-completed',
+                label: 'Not completed',
+                count: renderFocusCount(
+                  'Not-completed',
+                  populationNotCompletedCount,
+                  countsUnavailable
+                    ? 'unavailable'
+                    : areStageCountsPartial && populationNotCompletedCount === 0
                       ? 'unknown'
                       : 'known',
-              )}
-              <SelectionIndicator className={focusIndicator()} />
-            </ToggleButton>
-            <ToggleButton id="not-completed" className={focusTab()}>
-              <span>Not completed</span>
-              {renderFocusCount(
-                'Not-completed',
-                populationNotCompletedCount,
-                countsUnavailable
-                  ? 'unavailable'
-                  : areStageCountsPartial && populationNotCompletedCount === 0
-                    ? 'unknown'
-                    : 'known',
-              )}
-              <SelectionIndicator className={focusIndicator()} />
-            </ToggleButton>
-            <ToggleButton id="completed" className={focusTab()}>
-              <span>Completed</span>
-              {renderFocusCount(
-                'Completed',
-                populationCompletedCount,
-                countsUnavailable || completedStageIsUnavailable
-                  ? 'unavailable'
-                  : completedStageIsLoading
-                    ? 'loading'
-                    : areStageCountsPartial && populationCompletedCount === 0
-                      ? 'unknown'
-                      : 'known',
-              )}
-              <SelectionIndicator className={focusIndicator()} />
-            </ToggleButton>
-          </ToggleButtonGroup>
+                ),
+              },
+              {
+                value: 'completed',
+                label: 'Completed',
+                count: renderFocusCount(
+                  'Completed',
+                  populationCompletedCount,
+                  countsUnavailable || completedStageIsUnavailable
+                    ? 'unavailable'
+                    : completedStageIsLoading
+                      ? 'loading'
+                      : areStageCountsPartial && populationCompletedCount === 0
+                        ? 'unknown'
+                        : 'known',
+                ),
+              },
+            ]}
+          />
         )}
       </div>
       <div className={panels()}>{summaryRail}</div>

@@ -179,17 +179,17 @@ Find the job, then use the component. Every package is `@restate/ui-<name>`.
 
 **Navigation**
 
-| Job                              | Use                                                                                                                                                                                  | Lib             |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------- |
-| Link in text                     | `Link`. A `?…` href merges into the current search params (`preserveQueryParams`, on by default); pass an array of names to carry those params to another path                       | `link`          |
-| Link that looks like a button    | `Link variant="button" \| "secondary-button" \| "destructive-button"`: the `Button` look and `size`, with a link's pointer. `variant="icon"` is a quiet link with a hover background | `link`          |
-| Link in a callout or helper text | `Link intent="info" \| "success" \| "warning" \| "danger"`: the callout's color, a bit stronger, with a matching underline. Pass the callout's `intent`                              | `link`          |
-| Sub-pages of a page              | `Nav` with `NavItem` (paths) or `NavSearchItem` (a search param value)                                                                                                               | `nav`           |
-| Tabs in a panel                  | `ContentPanel tabs={…}`                                                                                                                                                              | `content-panel` |
-| Tabs with panels elsewhere       | `Tabs` › `TabList` › `Tab`, `TabPanels` › `TabPanel` (`queryParam` keeps the tab in the URL). No page uses it today, so check it fits first                                          | `tabs`          |
-| Switch a view or a value         | `SegmentedControl label options value onChange` from `@restate/ui-tabs`: one Tab stop, arrow keys move the selection. `Tabs` when each choice shows its own panel                    | `tabs`          |
-| Sidebar                          | `SidebarNav`, `SidebarNavItem`                                                                                                                                                       | `layout`        |
-| Trail                            | `Breadcrumbs` inside `BreadcrumbsProvider`                                                                                                                                           | `breadcrumbs`   |
+| Job                              | Use                                                                                                                                                                                                                                                                                                                    | Lib             |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| Link in text                     | `Link`. A `?…` href merges into the current search params (`preserveQueryParams`, on by default); pass an array of names to carry those params to another path                                                                                                                                                         | `link`          |
+| Link that looks like a button    | `Link variant="button" \| "secondary-button" \| "destructive-button"`: the `Button` look and `size`, with a link's pointer. `variant="icon"` is a quiet link with a hover background                                                                                                                                   | `link`          |
+| Link in a callout or helper text | `Link intent="info" \| "success" \| "warning" \| "danger"`: the callout's color, a bit stronger, with a matching underline. Pass the callout's `intent`                                                                                                                                                                | `link`          |
+| Sub-pages of a page              | `Nav` with `NavItem` (paths) or `NavSearchItem` (a search param value)                                                                                                                                                                                                                                                 | `nav`           |
+| Tabs in a panel                  | `ContentPanel tabs={…}`                                                                                                                                                                                                                                                                                                | `content-panel` |
+| Tabs with panels elsewhere       | `Tabs` › `TabList` › `Tab`, `TabPanels` › `TabPanel` (`queryParam` keeps the tab in the URL). No page uses it today, so check it fits first                                                                                                                                                                            | `tabs`          |
+| Switch a view or a value         | `SegmentedControl label options value onChange` from `@restate/ui-tabs`: one Tab stop, arrow keys move the selection. `size="md"` for the bigger switch above the invocation list and the status chart; an option's `hint` shows on hover and its `count` after the label. `Tabs` when each choice shows its own panel | `tabs`          |
+| Sidebar                          | `SidebarNav`, `SidebarNavItem`                                                                                                                                                                                                                                                                                         | `layout`        |
+| Trail                            | `Breadcrumbs` inside `BreadcrumbsProvider`                                                                                                                                                                                                                                                                             | `breadcrumbs`   |
 
 **Forms**
 
@@ -303,10 +303,10 @@ Interactive components handle rest, hover, pressed, focus-visible and disabled, 
 
 ### Gaps
 
-| Need              | Today                                                                                                                                              | Planned                      |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| Segmented control | The status chart's stage switch, the playground's two hand-built tab strips, and `Nav` used to pick a value (`SnippetTabs`, journal payload views) | `SegmentedControl` or `Tabs` |
-| Show more         | Three components plus native `<details>`                                                                                                           | One `Disclosure`             |
+| Need              | Today                                                             | Planned                      |
+| ----------------- | ----------------------------------------------------------------- | ---------------------------- |
+| Segmented control | `Nav` used to pick a value (`SnippetTabs`, journal payload views) | `SegmentedControl` or `Tabs` |
+| Show more         | Three components plus native `<details>`                          | One `Disclosure`             |
 
 ## Accessibility
 
