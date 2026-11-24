@@ -27,7 +27,8 @@ export function ServiceNotConnected({
           Error details
           <Icon
             name={IconName.ChevronDown}
-            className="h-3.5 w-3.5 group-expanded/details:rotate-180"
+            size="sm"
+            className="group-expanded/details:rotate-180"
           />
         </Button>
       </Callout>

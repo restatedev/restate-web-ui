@@ -151,6 +151,26 @@ function SidebarPanels() {
           href="/invocations"
           icon={IconName.Invocation}
           label="Invocations"
+          subItems={[
+            { href: '/invocations?preset=processing', label: 'Running' },
+            {
+              href: '/invocations?preset=inflight',
+              label: 'In-flight',
+              hint: 'Not finished yet: running, held up or suspended',
+            },
+            {
+              href: '/invocations?preset=stuck',
+              label: 'Held up',
+              hint: 'Waiting to start, retry or resume',
+            },
+            { href: '/invocations', label: 'All' },
+            { href: '/invocations?preset=completed', label: 'Completed' },
+            {
+              href: '/invocations?preset=suspended',
+              label: 'Suspended',
+              hint: 'Waiting for a call, timer, promise or awakeable',
+            },
+          ]}
         />
         <SidebarNavItem
           href="/workflows"
