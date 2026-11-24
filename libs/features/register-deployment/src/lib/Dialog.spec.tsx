@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   RegisterDeploymentDialog,
   TriggerRegisterDeploymentDialog,
+  UpdateDeploymentDialog,
 } from './Dialog';
 
 const toHttp = vi.fn(
@@ -15,6 +16,14 @@ const toHttp = vi.fn(
     `https://tunnel.example:9080/env/${name}/${mode === 'in-process' ? 'http/in-process/9080/' : `http/${url}`}`,
 );
 const register = vi.fn();
+const registerOptions = vi.fn();
+const update = vi.fn();
+const updateOptions = vi.fn();
+const deployments = new Map<string, { id: string; uri: string }>();
+const fromHttp = (url?: string) =>
+  url?.startsWith('https://tunnel.example:9080/env/')
+    ? { name: url.split('/')[4] ?? '', tunnelUrl: '' }
+    : undefined;
 const host: {
   OnboardingGuide?: (props: { stage: string; endpoint?: string }) => ReactNode;
   isTunnelEnabled: boolean;
@@ -26,7 +35,7 @@ vi.mock('@restate/features-restate-context', async (importOriginal) => ({
   >()),
   useRestateContext: () => ({
     tunnel: host.isTunnelEnabled
-      ? { isEnabled: true, toHttp, fromHttp: () => undefined }
+      ? { isEnabled: true, toHttp, fromHttp }
       : undefined,
     OnboardingGuide: host.OnboardingGuide,
   }),
@@ -37,36 +46,48 @@ vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
     typeof import('@restate/data-access-admin-api-hooks')
   >()),
   useListDeployments: () => ({
-    data: { deployments: new Map() },
+    data: { deployments },
     refetch: vi.fn(),
   }),
-  useRegisterDeployment: () => ({
-    mutate: register,
-    reset: vi.fn(),
-    isPending: false,
-    error: null,
-  }),
-  useUpdateDeployment: () => ({
-    mutate: vi.fn(),
-    reset: vi.fn(),
-    isPending: false,
-    error: null,
-  }),
+  useRegisterDeployment: (options: unknown) => {
+    registerOptions(options);
+    return {
+      mutate: register,
+      reset: vi.fn(),
+      isPending: false,
+      error: null,
+    };
+  },
+  useUpdateDeployment: (_deployment: string, options: unknown) => {
+    updateOptions(options);
+    return {
+      mutate: update,
+      reset: vi.fn(),
+      isPending: false,
+      error: null,
+    };
+  },
 }));
 
 afterEach(() => {
   cleanup();
   register.mockClear();
+  registerOptions.mockClear();
+  update.mockClear();
+  updateOptions.mockClear();
+  deployments.clear();
   toHttp.mockClear();
   host.OnboardingGuide = undefined;
   host.isTunnelEnabled = true;
 });
 
-function open(search: string) {
-  const router = createMemoryRouter(
-    [{ path: '*', element: <RegisterDeploymentDialog /> }],
-    { initialEntries: [`/${search}`] },
-  );
+function open(
+  search: string,
+  dialog: ReactNode = <RegisterDeploymentDialog />,
+) {
+  const router = createMemoryRouter([{ path: '*', element: dialog }], {
+    initialEntries: [`/${search}`],
+  });
   render(
     <QueryClientProvider client={new QueryClient()}>
       <RouterProvider router={router} />
@@ -223,6 +244,25 @@ describe('RegisterDeploymentDialog', () => {
     expect(screen.getByPlaceholderText('Deployment name')).toHaveValue('');
   });
 
+  it.each([
+    { endpoint: 'http://localhost:9080', retryWithHttp1: true },
+    { endpoint: 'connect://greeter-v1', retryWithHttp1: false },
+  ])(
+    'sets retryWithHttp1 to $retryWithHttp1 for a $endpoint dry run',
+    async ({ endpoint, retryWithHttp1 }) => {
+      const user = open(`?register-deployment=${endpoint}`);
+
+      await user.click(await screen.findByRole('button', { name: /Next/ }));
+
+      expect(register).toHaveBeenCalledWith({
+        body: expect.objectContaining({ dry_run: true }),
+      });
+      expect(registerOptions).toHaveBeenLastCalledWith(
+        expect.objectContaining({ retryWithHttp1 }),
+      );
+    },
+  );
+
   it('opens on Connected service with an empty name for a bare connect:// prefill', async () => {
     open('?register-deployment=connect://');
 
@@ -233,6 +273,36 @@ describe('RegisterDeploymentDialog', () => {
       screen.getByRole('radio', { name: 'Connected service' }),
     ).toBeChecked();
   });
+});
+
+describe('UpdateDeploymentDialog', () => {
+  it.each([
+    {
+      saved: 'an HTTP deployment',
+      uri: 'http://localhost:9081/',
+      retryWithHttp1: true,
+    },
+    {
+      saved: 'a connected service',
+      uri: 'https://tunnel.example:9080/env/greeter-v1/http/in-process/9080/',
+      retryWithHttp1: false,
+    },
+  ])(
+    'sets retryWithHttp1 to $retryWithHttp1 when updating $saved',
+    async ({ uri, retryWithHttp1 }) => {
+      deployments.set('dp_1', { id: 'dp_1', uri });
+      const user = open('?update-deployment=dp_1', <UpdateDeploymentDialog />);
+
+      await user.click(await screen.findByRole('button', { name: /Next/ }));
+
+      expect(update).toHaveBeenCalledWith({
+        body: expect.objectContaining({ use_http_11: false, dry_run: true }),
+      });
+      expect(updateOptions).toHaveBeenLastCalledWith(
+        expect.objectContaining({ retryWithHttp1 }),
+      );
+    },
+  );
 });
 
 describe('TriggerRegisterDeploymentDialog', () => {

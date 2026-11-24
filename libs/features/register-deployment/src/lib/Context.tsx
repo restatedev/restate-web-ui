@@ -395,8 +395,13 @@ export function DeploymentRegistrationState({
     [],
   );
 
+  const retryWithHttp1 =
+    state.stage !== 'confirm' &&
+    !state.useHttp11 &&
+    !state.isTunnel &&
+    !tunnel?.fromHttp(state.endpoint);
   const register = useRegisterDeployment({
-    retryWithHttp1: state.stage !== 'confirm' && !state.useHttp11,
+    retryWithHttp1,
     onSuccess(data) {
       updateServices({
         services: data?.services,
@@ -421,7 +426,7 @@ export function DeploymentRegistrationState({
   const update = useUpdateDeployment(
     searchParams.get(UPDATE_DEPLOYMENT_QUERY) || '',
     {
-      retryWithHttp1: state.stage !== 'confirm' && !state.useHttp11,
+      retryWithHttp1,
       onSuccess(data) {
         updateServices({
           services: data?.services,
