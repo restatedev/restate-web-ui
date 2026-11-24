@@ -101,6 +101,36 @@ export function getInvocationRetryKey(invocationId: string) {
   return `${invocationId}:invocation`;
 }
 
+export function isOwnPauseOrRetry(entry?: JournalEntryV2) {
+  return (
+    entry?.category === 'event' &&
+    ((entry.type === 'Paused' &&
+      entry.isPending === true &&
+      !(
+        'relatedCommandIndex' in entry &&
+        typeof entry.relatedCommandIndex === 'number'
+      )) ||
+      entry.type === 'Retrying')
+  );
+}
+
+export function findInvocationProblemRow(
+  rows: CombinedJournalEntry[],
+  invocationId: string,
+) {
+  for (let index = rows.length - 1; index >= 0; index--) {
+    const row = rows[index];
+    if (
+      row?.depth === 0 &&
+      row.invocationId === invocationId &&
+      isOwnPauseOrRetry(row.entry)
+    ) {
+      return index;
+    }
+  }
+  return undefined;
+}
+
 export function getPastRetries(
   row: CombinedJournalEntry,
   retried: ReadonlyMap<string, PastRetries>,
@@ -518,7 +548,9 @@ const ROW_TYPE_LABELS: Record<string, string> = {
 };
 
 export function getProblemRowKey(row?: CombinedJournalEntry) {
-  return row ? `${row.invocationId}:${row.entry?.index}` : undefined;
+  return row
+    ? `${row.invocationId}:${row.entry?.index ?? row.entry?.type}`
+    : undefined;
 }
 
 type EntryKind =
@@ -641,6 +673,7 @@ export interface JournalRowFilter {
   problemsOnly: boolean;
   query: string;
   pastRetries?: ReadonlyMap<string, PastRetries>;
+  invocationProblemRow?: number;
 }
 
 function countRetryMatches(
@@ -659,7 +692,7 @@ function countRetryMatches(
 
 export function filterJournalRows(
   rows: CombinedJournalEntry[],
-  { problemsOnly, query, pastRetries }: JournalRowFilter,
+  { problemsOnly, query, pastRetries, invocationProblemRow }: JournalRowFilter,
   kindByRow: Map<number, ProblemKind>,
 ) {
   const groupHasProblems: boolean[] = [];
@@ -691,6 +724,7 @@ export function filterJournalRows(
       isTopShown =
         !problemsOnly ||
         kindByRow.has(index) ||
+        index === invocationProblemRow ||
         Boolean(groupHasProblems[group]);
     }
     lastRowAtDepth[row.depth] = index;

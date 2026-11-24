@@ -2,12 +2,14 @@ import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import {
   addChildProblems,
   filterJournalRows,
+  findInvocationProblemRow,
   findProblems,
   findJournalProblems,
   getChildIdsToCheck,
   getInvocationRetryKey,
   getPastRetries,
   getPausedCommands,
+  getProblemRowKey,
   getProblemStats,
   getRecoveredRows,
   getRetriedCommands,
@@ -63,6 +65,13 @@ function pausedEvent(
 
 function manualPause(index: number): JournalEntryV2 {
   return { index, category: 'event', type: 'Event: Paused' } as JournalEntryV2;
+}
+
+function lifecycle(
+  type: string,
+  fields: Record<string, unknown> = {},
+): JournalEntryV2 {
+  return { category: 'event', type, ...fields } as JournalEntryV2;
 }
 
 function row(
@@ -595,6 +604,45 @@ describe('paused invocations', () => {
   });
 });
 
+describe('findInvocationProblemRow', () => {
+  it('finds the current pause or the next retry of the invocation', () => {
+    const paused = [
+      row(lifecycle('Running')),
+      row(command(1)),
+      row(lifecycle('Paused', { index: 9, isPending: true })),
+    ];
+    const retrying = [row(command(1)), row(lifecycle('Retrying'))];
+
+    expect(findInvocationProblemRow(paused, ROOT)).toBe(2);
+    expect(findInvocationProblemRow(retrying, ROOT)).toBe(1);
+  });
+
+  it('skips past pauses, pauses on a step and child invocations', () => {
+    const rows = [
+      row(command(1)),
+      row(lifecycle('Paused', { index: 8, isPending: false })),
+      row(
+        lifecycle('Paused', {
+          index: 9,
+          isPending: true,
+          relatedCommandIndex: 1,
+        }),
+      ),
+      row(lifecycle('Retrying'), { invocationId: 'inv_child', depth: 1 }),
+    ];
+
+    expect(findInvocationProblemRow(rows, ROOT)).toBeUndefined();
+  });
+});
+
+describe('getProblemRowKey', () => {
+  it('tells lifecycle rows without an index apart', () => {
+    expect(getProblemRowKey(row(lifecycle('Running')))).not.toBe(
+      getProblemRowKey(row(lifecycle('Retrying'))),
+    );
+  });
+});
+
 describe('waiting notifications', () => {
   it('flags only notifications that are still pending', () => {
     const awaited = (isPending: boolean) =>
@@ -643,6 +691,19 @@ describe('filterJournalRows', () => {
 
     expect(shown.map(({ entry }) => entry?.index)).toEqual([0, 2, 3]);
     expect(matches).toBe(1);
+  });
+
+  it('keeps the row that shows the problem of the invocation itself', () => {
+    const paused = [...rows, row(lifecycle('Paused', { index: 9 }))];
+    const shownIndexes = (invocationProblemRow?: number) =>
+      filterJournalRows(
+        paused,
+        { problemsOnly: true, query: '', invocationProblemRow },
+        kindByRow,
+      ).rows.map(({ entry }) => entry?.index);
+
+    expect(shownIndexes()).toEqual([0, 2, 3]);
+    expect(shownIndexes(5)).toEqual([0, 2, 3, 9]);
   });
 
   it('keeps the lifecycle rows of an invocation without commands', () => {

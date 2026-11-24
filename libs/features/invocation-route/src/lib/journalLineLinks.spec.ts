@@ -3,6 +3,7 @@ import {
   findLineRow,
   getLineHash,
   getRowLinePath,
+  LAST_FAILURE_HASH,
   parseLineHash,
 } from './journalLineLinks';
 import type { CombinedJournalEntry } from './useProcessedJournal';
@@ -33,6 +34,7 @@ describe('line hashes', () => {
       '#command-',
       '#command-5:',
       '#command-5:x',
+      LAST_FAILURE_HASH,
     ]) {
       expect(parseLineHash(hash)).toBeUndefined();
     }

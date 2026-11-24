@@ -18,6 +18,7 @@ import { formatNumber } from '@restate/util-intl';
 import {
   addChildProblems,
   filterJournalRows,
+  findInvocationProblemRow,
   findJournalProblems,
   getChildIdsToCheck,
   getProblemRowKey,
@@ -189,6 +190,29 @@ export function useJournalProblems({
     [],
   );
 
+  const hasInputProblem =
+    enabled &&
+    Boolean(
+      inputEntry?.isRetrying ||
+      journalProblems?.unmatchedRetryInvocations.has(invocationId),
+    );
+  const isInputRecovered =
+    hasInputProblem &&
+    !inputEntry?.isRetrying &&
+    !isChildProblemStatus(data[invocationId]?.status);
+  const invocationTone: ProblemTone | undefined = hasInputProblem
+    ? isInputRecovered
+      ? 'neutral'
+      : 'warning'
+    : undefined;
+  const invocationProblemRow = useMemo(
+    () =>
+      hasInputProblem
+        ? findInvocationProblemRow(rows, invocationId)
+        : undefined,
+    [hasInputProblem, rows, invocationId],
+  );
+
   const [findText, setFindText] = useState('');
   const query = useDeferredValue(findText.trim().toLowerCase());
   const filtered = useMemo(
@@ -200,11 +224,20 @@ export function useJournalProblems({
               problemsOnly: isProblemsOnly,
               query,
               pastRetries: showErrors ? undefined : retriedCommands,
+              invocationProblemRow,
             },
             problems.kindByRow,
           )
         : undefined,
-    [isProblemsOnly, query, rows, problems, showErrors, retriedCommands],
+    [
+      isProblemsOnly,
+      query,
+      rows,
+      problems,
+      showErrors,
+      retriedCommands,
+      invocationProblemRow,
+    ],
   );
   const filteredRows = filtered?.rows ?? rows;
 
@@ -302,32 +335,42 @@ export function useJournalProblems({
         );
       }
     });
+    const invocationRowKey =
+      invocationProblemRow === undefined
+        ? undefined
+        : getProblemRowKey(rows[invocationProblemRow]);
+    if (invocationRowKey && invocationTone) {
+      tones.set(invocationRowKey, invocationTone);
+    }
     return tones;
-  }, [enabled, problems, rows, recoveredRows]);
+  }, [
+    enabled,
+    problems,
+    rows,
+    recoveredRows,
+    invocationProblemRow,
+    invocationTone,
+  ]);
 
   const inputKey = `${invocationId}:input`;
-  const hasInputProblem =
-    enabled &&
-    Boolean(
-      inputEntry?.isRetrying ||
-      journalProblems?.unmatchedRetryInvocations.has(invocationId),
-    );
   const navigableRows = useMemo(() => {
+    const rowIndexes =
+      invocationProblemRow === undefined
+        ? problems.rowIndexes
+        : [...problems.rowIndexes, invocationProblemRow].sort((a, b) => a - b);
     const keys = new Set(
-      problems.rowIndexes.map((index) => getProblemRowKey(rows[index])),
+      rowIndexes.map((index) => getProblemRowKey(rows[index])),
     );
     const shown =
       entries === rows
-        ? problems.rowIndexes
+        ? rowIndexes
         : entries.flatMap((row, index) =>
             keys.has(getProblemRowKey(row)) ? [index] : [],
           );
-    return hasInputProblem ? [INPUT_ROW, ...shown] : shown;
-  }, [problems, entries, rows, hasInputProblem]);
-  const isInputRecovered =
-    hasInputProblem &&
-    !inputEntry?.isRetrying &&
-    !isChildProblemStatus(data[invocationId]?.status);
+    return hasInputProblem && invocationProblemRow === undefined
+      ? [INPUT_ROW, ...shown]
+      : shown;
+  }, [problems, entries, rows, hasInputProblem, invocationProblemRow]);
   const problemStats = useMemo(() => {
     const stats = getProblemStats(
       problems.kindByRow,
@@ -395,11 +438,7 @@ export function useJournalProblems({
     entries,
     problemTotal: problems.rowIndexes.length + (hasInputProblem ? 1 : 0),
     problemStats,
-    inputTone: hasInputProblem
-      ? isInputRecovered
-        ? ('neutral' as const)
-        : ('warning' as const)
-      : undefined,
+    inputTone: invocationProblemRow === undefined ? invocationTone : undefined,
     isInputActive,
     problemTones,
     pastRetries: enabled && !showErrors ? retriedCommands : undefined,
