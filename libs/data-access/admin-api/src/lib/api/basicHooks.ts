@@ -7,20 +7,19 @@ import {
 } from '@restate/util-feature-flag';
 import { useAdminBaseUrl } from '../AdminBaseUrlProvider';
 import { adminApi } from './adminApi';
-import { metaQueryOptions, type MetaSnapshot } from './meta';
+import {
+  getEnabledFeatures,
+  metaQueryOptions,
+  type MetaSnapshot,
+} from './meta';
 import { HookQueryOptions } from './hookTypes';
 import { getEnabledUiFeatures } from './uiFeatures';
 
 const EMPTY_FEATURES: Set<string> = new Set();
 
 function selectEnabledFeatures(meta: MetaSnapshot): Set<string> {
-  const features = meta.features;
-  if (!features) return EMPTY_FEATURES;
-  const out = new Set<string>();
-  for (const [name, enabled] of Object.entries(features)) {
-    if (enabled) out.add(name);
-  }
-  return out.size === 0 ? EMPTY_FEATURES : out;
+  const enabled = getEnabledFeatures(meta);
+  return enabled.length === 0 ? EMPTY_FEATURES : new Set(enabled);
 }
 
 export function useVersion(options?: HookQueryOptions<'/version', 'get'>) {

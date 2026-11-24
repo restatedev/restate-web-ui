@@ -395,8 +395,13 @@ export function DeploymentRegistrationState({
     [],
   );
 
+  const retryWithHttp1 =
+    state.stage !== 'confirm' &&
+    !state.useHttp11 &&
+    !state.isTunnel &&
+    !tunnel?.fromHttp(state.endpoint);
   const register = useRegisterDeployment({
-    retryWithHttp1: state.stage !== 'confirm' && !state.useHttp11,
+    retryWithHttp1,
     onSuccess(data) {
       updateServices({
         services: data?.services,
@@ -421,7 +426,7 @@ export function DeploymentRegistrationState({
   const update = useUpdateDeployment(
     searchParams.get(UPDATE_DEPLOYMENT_QUERY) || '',
     {
-      retryWithHttp1: state.stage !== 'confirm' && !state.useHttp11,
+      retryWithHttp1,
       onSuccess(data) {
         updateServices({
           services: data?.services,
@@ -739,6 +744,12 @@ export function useRegisterDeploymentContext() {
     error instanceof RestateError && error.restateCode === 'META0014';
   const isBreakingChangeError =
     error instanceof RestateError && error.restateCode === 'META0006';
+  const isInProcessTunnel = isTunnel && tunnelMode === 'in-process';
+  const isServiceNotConnectedError =
+    error instanceof RestateError &&
+    error.restateCode === 'META0003' &&
+    isInProcessTunnel &&
+    Boolean(tunnelName);
 
   return {
     isAdvanced,
@@ -773,11 +784,12 @@ export function useRegisterDeploymentContext() {
     isCloudRun,
     tunnelName,
     tunnelMode,
-    isInProcessTunnel: isTunnel && tunnelMode === 'in-process',
+    isInProcessTunnel,
     isOnboarding,
     targetType: getTargetType(endpoint, tunnelName),
     isHttp1Error,
     isBreakingChangeError,
+    isServiceNotConnectedError,
     updateShouldAllowBreakingChange,
     shouldAllowBreakingChange,
     isUpdate: mode === 'update',

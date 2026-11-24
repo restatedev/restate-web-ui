@@ -1,5 +1,7 @@
 import type { CombinedJournalEntry } from './useProcessedJournal';
 
+export const LAST_FAILURE_HASH = '#last-failure';
+
 export function parseLineHash(hash: string) {
   const match = /^#command-(\d+(?::\d+)*)$/.exec(hash);
   return match?.[1]?.split(':').map(Number);

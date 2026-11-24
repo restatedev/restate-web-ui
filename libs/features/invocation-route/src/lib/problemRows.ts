@@ -101,6 +101,45 @@ export function getInvocationRetryKey(invocationId: string) {
   return `${invocationId}:invocation`;
 }
 
+type PausedEntry = Extract<
+  JournalEntryV2,
+  { type?: 'Paused'; category?: 'event' }
+>;
+
+function hasJournalCommand(entries: JournalEntryV2[], commandIndex?: number) {
+  return (
+    typeof commandIndex === 'number' &&
+    entries.some(
+      (entry) =>
+        entry.category === 'command' && entry.commandIndex === commandIndex,
+    )
+  );
+}
+
+export function findOwnPauseOrRetry(
+  entries: JournalEntryV2[] | undefined,
+  failureCommandIndex?: number,
+) {
+  if (!entries || hasJournalCommand(entries, failureCommandIndex)) {
+    return undefined;
+  }
+  return entries.findLast((entry) => {
+    if (entry.category !== 'event') {
+      return false;
+    }
+    if (entry.type === 'Retrying') {
+      return true;
+    }
+    const paused = entry as PausedEntry;
+    return (
+      entry.type === 'Paused' &&
+      paused.isPending === true &&
+      Boolean(paused.message || paused.code) &&
+      !hasJournalCommand(entries, paused.relatedCommandIndex)
+    );
+  });
+}
+
 export function getPastRetries(
   row: CombinedJournalEntry,
   retried: ReadonlyMap<string, PastRetries>,
@@ -518,7 +557,9 @@ const ROW_TYPE_LABELS: Record<string, string> = {
 };
 
 export function getProblemRowKey(row?: CombinedJournalEntry) {
-  return row ? `${row.invocationId}:${row.entry?.index}` : undefined;
+  return row
+    ? `${row.invocationId}:${row.entry?.index ?? row.entry?.type}`
+    : undefined;
 }
 
 type EntryKind =
@@ -641,6 +682,7 @@ export interface JournalRowFilter {
   problemsOnly: boolean;
   query: string;
   pastRetries?: ReadonlyMap<string, PastRetries>;
+  invocationProblemRow?: number;
 }
 
 function countRetryMatches(
@@ -659,7 +701,7 @@ function countRetryMatches(
 
 export function filterJournalRows(
   rows: CombinedJournalEntry[],
-  { problemsOnly, query, pastRetries }: JournalRowFilter,
+  { problemsOnly, query, pastRetries, invocationProblemRow }: JournalRowFilter,
   kindByRow: Map<number, ProblemKind>,
 ) {
   const groupHasProblems: boolean[] = [];
@@ -691,6 +733,7 @@ export function filterJournalRows(
       isTopShown =
         !problemsOnly ||
         kindByRow.has(index) ||
+        index === invocationProblemRow ||
         Boolean(groupHasProblems[group]);
     }
     lastRowAtDepth[row.depth] = index;

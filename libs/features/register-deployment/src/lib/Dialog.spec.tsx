@@ -3,11 +3,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { RestateError } from '@restate/util-errors';
 import {
   RegisterDeploymentDialog,
   TriggerRegisterDeploymentDialog,
+  UpdateDeploymentDialog,
 } from './Dialog';
 
 const toHttp = vi.fn(
@@ -15,6 +17,15 @@ const toHttp = vi.fn(
     `https://tunnel.example:9080/env/${name}/${mode === 'in-process' ? 'http/in-process/9080/' : `http/${url}`}`,
 );
 const register = vi.fn();
+const registration: { error: Error | null } = { error: null };
+const registerOptions = vi.fn();
+const update = vi.fn();
+const updateOptions = vi.fn();
+const deployments = new Map<string, { id: string; uri: string }>();
+const fromHttp = (url?: string) =>
+  url?.startsWith('https://tunnel.example:9080/env/')
+    ? { name: url.split('/')[4] ?? '', tunnelUrl: '' }
+    : undefined;
 const host: {
   OnboardingGuide?: (props: { stage: string; endpoint?: string }) => ReactNode;
   isTunnelEnabled: boolean;
@@ -26,7 +37,7 @@ vi.mock('@restate/features-restate-context', async (importOriginal) => ({
   >()),
   useRestateContext: () => ({
     tunnel: host.isTunnelEnabled
-      ? { isEnabled: true, toHttp, fromHttp: () => undefined }
+      ? { isEnabled: true, toHttp, fromHttp }
       : undefined,
     OnboardingGuide: host.OnboardingGuide,
   }),
@@ -37,36 +48,53 @@ vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
     typeof import('@restate/data-access-admin-api-hooks')
   >()),
   useListDeployments: () => ({
-    data: { deployments: new Map() },
+    data: { deployments },
     refetch: vi.fn(),
   }),
-  useRegisterDeployment: () => ({
-    mutate: register,
-    reset: vi.fn(),
-    isPending: false,
-    error: null,
-  }),
-  useUpdateDeployment: () => ({
-    mutate: vi.fn(),
-    reset: vi.fn(),
-    isPending: false,
-    error: null,
-  }),
+  useRegisterDeployment: (options: unknown) => {
+    registerOptions(options);
+    const [error, setError] = useState<Error | null>(null);
+    return {
+      mutate: (variables: unknown) => {
+        register(variables);
+        setError(registration.error);
+      },
+      reset: () => setError(null),
+      isPending: false,
+      error,
+    };
+  },
+  useUpdateDeployment: (_deployment: string, options: unknown) => {
+    updateOptions(options);
+    return {
+      mutate: update,
+      reset: vi.fn(),
+      isPending: false,
+      error: null,
+    };
+  },
 }));
 
 afterEach(() => {
   cleanup();
   register.mockClear();
+  registration.error = null;
+  registerOptions.mockClear();
+  update.mockClear();
+  updateOptions.mockClear();
+  deployments.clear();
   toHttp.mockClear();
   host.OnboardingGuide = undefined;
   host.isTunnelEnabled = true;
 });
 
-function open(search: string) {
-  const router = createMemoryRouter(
-    [{ path: '*', element: <RegisterDeploymentDialog /> }],
-    { initialEntries: [`/${search}`] },
-  );
+function open(
+  search: string,
+  dialog: ReactNode = <RegisterDeploymentDialog />,
+) {
+  const router = createMemoryRouter([{ path: '*', element: dialog }], {
+    initialEntries: [`/${search}`],
+  });
   render(
     <QueryClientProvider client={new QueryClient()}>
       <RouterProvider router={router} />
@@ -223,6 +251,25 @@ describe('RegisterDeploymentDialog', () => {
     expect(screen.getByPlaceholderText('Deployment name')).toHaveValue('');
   });
 
+  it.each([
+    { endpoint: 'http://localhost:9080', retryWithHttp1: true },
+    { endpoint: 'connect://greeter-v1', retryWithHttp1: false },
+  ])(
+    'sets retryWithHttp1 to $retryWithHttp1 for a $endpoint dry run',
+    async ({ endpoint, retryWithHttp1 }) => {
+      const user = open(`?register-deployment=${endpoint}`);
+
+      await user.click(await screen.findByRole('button', { name: /Next/ }));
+
+      expect(register).toHaveBeenCalledWith({
+        body: expect.objectContaining({ dry_run: true }),
+      });
+      expect(registerOptions).toHaveBeenLastCalledWith(
+        expect.objectContaining({ retryWithHttp1 }),
+      );
+    },
+  );
+
   it('opens on Connected service with an empty name for a bare connect:// prefill', async () => {
     open('?register-deployment=connect://');
 
@@ -233,6 +280,92 @@ describe('RegisterDeploymentDialog', () => {
       screen.getByRole('radio', { name: 'Connected service' }),
     ).toBeChecked();
   });
+
+  it('explains a META0003 for a connected service and folds the raw error away', async () => {
+    registration.error = new RestateError(
+      "[META0003] got status code '503 Service Unavailable'. Body: Tunnel unavailable",
+      'META0003',
+    );
+    const user = open('?register-deployment=connect://greeter-v1');
+
+    await user.click(await screen.findByRole('button', { name: /Next/ }));
+
+    expect(
+      screen.getByText(/No service is connected as greeter-v1 yet/),
+    ).toBeVisible();
+    expect(screen.getByText('Connected as "greeter-v1"')).toBeVisible();
+    expect(screen.getByText(/then click Next again/)).toBeVisible();
+    const raw = screen.getByText(/Body: Tunnel unavailable/);
+    expect(raw).not.toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: /Error details/ }));
+
+    expect(raw).toBeVisible();
+  });
+
+  it('keeps the raw META0003 banner for an HTTP endpoint', async () => {
+    registration.error = new RestateError(
+      "[META0003] error when calling 'http://localhost:9080/discover': Connection refused",
+      'META0003',
+    );
+    const user = open('?register-deployment=http://localhost:9080');
+
+    await user.click(await screen.findByRole('button', { name: /Next/ }));
+
+    expect(
+      screen.getByText(
+        'Cannot reach the service endpoint to execute discovery',
+      ),
+    ).toBeVisible();
+    expect(screen.getByText(/Connection refused/)).toBeVisible();
+    expect(screen.queryByText(/No service is connected/)).toBeNull();
+    expect(screen.queryByRole('button', { name: /Error details/ })).toBeNull();
+  });
+
+  it('keeps the raw banner for other errors of a connected service', async () => {
+    registration.error = new RestateError(
+      '[META0013] received a bad response from the SDK',
+      'META0013',
+    );
+    const user = open('?register-deployment=connect://greeter-v1');
+
+    await user.click(await screen.findByRole('button', { name: /Next/ }));
+
+    expect(
+      screen.getByText(/received a bad response from the SDK/),
+    ).toBeVisible();
+    expect(screen.queryByText(/No service is connected/)).toBeNull();
+  });
+});
+
+describe('UpdateDeploymentDialog', () => {
+  it.each([
+    {
+      saved: 'an HTTP deployment',
+      uri: 'http://localhost:9081/',
+      retryWithHttp1: true,
+    },
+    {
+      saved: 'a connected service',
+      uri: 'https://tunnel.example:9080/env/greeter-v1/http/in-process/9080/',
+      retryWithHttp1: false,
+    },
+  ])(
+    'sets retryWithHttp1 to $retryWithHttp1 when updating $saved',
+    async ({ uri, retryWithHttp1 }) => {
+      deployments.set('dp_1', { id: 'dp_1', uri });
+      const user = open('?update-deployment=dp_1', <UpdateDeploymentDialog />);
+
+      await user.click(await screen.findByRole('button', { name: /Next/ }));
+
+      expect(update).toHaveBeenCalledWith({
+        body: expect.objectContaining({ use_http_11: false, dry_run: true }),
+      });
+      expect(updateOptions).toHaveBeenLastCalledWith(
+        expect.objectContaining({ retryWithHttp1 }),
+      );
+    },
+  );
 });
 
 describe('TriggerRegisterDeploymentDialog', () => {

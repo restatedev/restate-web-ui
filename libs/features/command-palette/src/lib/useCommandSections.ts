@@ -106,9 +106,10 @@ const PRESET_KEYWORDS: Record<string, string[]> = {
   inflight: ['active', 'inflight', 'ongoing'],
   stuck: ['stuck', 'blocked', 'pending', 'paused', 'backing off', 'waiting'],
   all: ['every', 'list'],
-  notcompleted: ['open', 'unfinished', 'incomplete'],
   completed: ['done', 'finished', 'succeeded', 'failed'],
+  suspended: ['waiting', 'sleeping', 'awaiting', 'timer', 'awakeable'],
   scheduled: ['delayed', 'later', 'future'],
+  notcompleted: ['open', 'unfinished', 'incomplete'],
 };
 
 type BatchActionId =
@@ -124,8 +125,9 @@ const PRESET_BATCH_ACTIONS: Record<string, BatchActionId[]> = {
   processing: ['cancel', 'pause', 'kill'],
   inflight: ['cancel', 'pause', 'kill'],
   stuck: ['cancel', 'resume', 'retry-now', 'kill'],
-  notcompleted: ['cancel', 'kill'],
+  suspended: ['cancel', 'pause', 'kill'],
   scheduled: ['cancel', 'kill'],
+  notcompleted: ['cancel', 'kill'],
   completed: ['restart-as-new', 'purge'],
 };
 

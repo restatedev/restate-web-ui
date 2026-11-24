@@ -7,6 +7,7 @@ export function useTooltipWithHover({
   triggerRef,
   contentRef,
   delay = 250,
+  closeDelay = delay,
 }: {
   shouldDisplayTooltip?: VoidFunction;
   open: VoidFunction;
@@ -14,6 +15,7 @@ export function useTooltipWithHover({
   triggerRef: RefObject<HTMLElement | null>;
   contentRef: RefObject<HTMLElement | null>;
   delay?: number;
+  closeDelay?: number;
 }) {
   useEffect(() => {
     const elementTriggeringHover = triggerRef?.current;
@@ -51,7 +53,7 @@ export function useTooltipWithHover({
         }
         timeout = setTimeout(() => {
           close();
-        }, delay);
+        }, closeDelay);
       }
     };
     elementTriggeringHover?.addEventListener('mouseenter', enterHandler);
@@ -64,5 +66,13 @@ export function useTooltipWithHover({
       elementTriggeringHover?.removeEventListener('mouseenter', enterHandler);
       elementTriggeringHover?.removeEventListener('mouseleave', leaveHandler);
     };
-  }, [close, contentRef, delay, open, shouldDisplayTooltip, triggerRef]);
+  }, [
+    close,
+    closeDelay,
+    contentRef,
+    delay,
+    open,
+    shouldDisplayTooltip,
+    triggerRef,
+  ]);
 }

@@ -43,6 +43,9 @@ export function HoverTooltip({
   disabled = false,
   contentClassName,
   onOpenChange,
+  delay,
+  closeDelay,
+  hideAfterPress = false,
 }: PropsWithChildren<{
   content: ReactNode;
   className?: string;
@@ -55,6 +58,9 @@ export function HoverTooltip({
   placement?: 'top' | 'bottom' | 'left' | 'right';
   disabled?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
+  delay?: number;
+  closeDelay?: number;
+  hideAfterPress?: boolean;
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const cursorAnchorRef = useRef<HTMLSpanElement>(null);
@@ -170,6 +176,8 @@ export function HoverTooltip({
     close,
     triggerRef,
     contentRef,
+    delay,
+    closeDelay,
   });
 
   const updateCursorAnchor = useCallback(
@@ -203,14 +211,19 @@ export function HoverTooltip({
 
   const handleMouseLeave = useCallback(() => {
     isPointerOverRef.current = false;
+    if (hideAfterPress) {
+      pressSuppressUntilRef.current = 0;
+    }
     clearReopenTimeout();
-  }, [clearReopenTimeout]);
+  }, [clearReopenTimeout, hideAfterPress]);
 
   const handlePointerDown = useCallback(() => {
-    pressSuppressUntilRef.current = Date.now() + PRESS_SUPPRESS_MS;
+    pressSuppressUntilRef.current = hideAfterPress
+      ? Number.POSITIVE_INFINITY
+      : Date.now() + PRESS_SUPPRESS_MS;
     clearReopenTimeout();
     close();
-  }, [clearReopenTimeout, close]);
+  }, [clearReopenTimeout, close, hideAfterPress]);
 
   const handleOpenChange = useCallback(
     (nextIsOpen: boolean) => {
@@ -240,7 +253,8 @@ export function HoverTooltip({
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onWheelCapture={handleWheelStart}
-        onPointerDown={handlePointerDown}
+        onPointerDown={hideAfterPress ? undefined : handlePointerDown}
+        onPointerDownCapture={hideAfterPress ? handlePointerDown : undefined}
       >
         {children}
         {followCursor && (
