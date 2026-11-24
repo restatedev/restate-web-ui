@@ -121,7 +121,7 @@ import {
   useInvocationsForm,
   useListInvocationsParameters,
 } from './useInvocationsQueryFilters';
-import { FilterShortcuts } from './FilterShortcuts';
+import { InvocationStatusRow } from './InvocationStatusRow';
 import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
 import {
@@ -420,7 +420,6 @@ function Component() {
   const {
     data: summaryData,
     focus: vqueueSummaryFocus,
-    selectedFocus: selectedVqueueSummaryFocus,
     byStage,
     byStatus,
     hasServiceScope,
@@ -446,14 +445,6 @@ function Component() {
   const isStageSummaryLoading = isStageSummaryQueryLoading && !healthError;
   const isSummaryError = isSummaryQueryError || Boolean(healthError);
   const { data: deploymentsData } = useListDeployments();
-  // Href that clears filter_status — drives the legend's leading "All"
-  // reset entry. Simply deletes the key; the loader doesn't auto-restore
-  // unless ?restore=1 is present.
-  const clearStatusFilterHref = useMemo(() => {
-    const out = new URLSearchParams(searchParams);
-    out.delete('filter_status');
-    return `${baseUrl}/invocations?${out.toString()}`;
-  }, [searchParams, baseUrl]);
   const hasActiveFilters = Array.from(searchParams.keys()).some((key) =>
     key.startsWith(FILTER_QUERY_PREFIX),
   );
@@ -604,17 +595,6 @@ function Component() {
     if (!invocationId) return;
     navigate(invocationRouteLocation(baseUrl, invocationId, searchParams));
   }, [baseUrl, navigate, openInvocationId, searchParams]);
-  const changeVqueueSummaryFocus = useCallback(
-    (focus: typeof vqueueSummaryFocus) => {
-      navigate(
-        focus === 'all'
-          ? clearStatusFilterHref
-          : statusHref(focus === 'completed' ? 'finished' : 'not-completed'),
-        { flushSync: true, preventScrollReset: true },
-      );
-    },
-    [clearStatusFilterHref, navigate, statusHref],
-  );
 
   useEffect(() => {
     const isMac = navigator.platform.toUpperCase().includes('MAC');
@@ -699,10 +679,10 @@ function Component() {
       <VQueueStageSummaryBar
         byStage={matchingSummary.byStage}
         byStatus={matchingSummary.byStatus}
-        showFocusCounts={false}
+        focusControl={
+          <InvocationStatusRow searchParams={searchParams} baseUrl={baseUrl} />
+        }
         focus={vqueueSummaryFocus}
-        selectedFocus={selectedVqueueSummaryFocus}
-        onFocusChange={changeVqueueSummaryFocus}
         breakdownMode={countMode}
         canSampleBreakdown={canSampleBreakdown}
         fixedBreakdownMode={fixedBreakdownMode}
@@ -1027,14 +1007,6 @@ function InvocationsForm({
           {FilterChip}
         </AddFilterTrigger>
       </FilterBuilder>
-      <div className="absolute right-0 bottom-0 left-0 flex h-8 w-full overflow-hidden rounded-b-xl mask-[linear-gradient(to_right,transparent_0,black_6px,black_calc(100%-192px),transparent_calc(100%-100px))]">
-        <div className="flex [scrollbar-width:thin] items-center gap-2 overflow-auto pb-0.5 pl-1.5">
-          <div className="ml-1 flex h-full shrink-0 items-center text-xs text-inverse-muted">
-            Quick Filters:
-          </div>
-          <FilterShortcuts schema={schema} />
-        </div>
-      </div>
       <SubmitButton
         ref={submitRef}
         isPending={isFetching}

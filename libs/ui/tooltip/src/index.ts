@@ -7,4 +7,5 @@ export * from './lib/TruncateWithTooltip';
 export * from './lib/TruncateMiddle';
 export * from './lib/DateTooltip';
 export * from './lib/HoverTooltip';
+export * from './lib/HintTooltip';
 export * from './lib/RelativeDate';

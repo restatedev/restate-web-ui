@@ -6,6 +6,7 @@ import {
   formatPercentage,
 } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
+import type { ReactNode } from 'react';
 import {
   SelectionIndicator,
   ToggleButton,
@@ -37,7 +38,7 @@ const INBOX_PATTERN = hatchPattern('var(--background-color-hatch-pending)');
 const NEUTRAL_HATCH_PATTERN = hatchPattern('var(--background-color-hatch)');
 const INBOX_HIGHLIGHT =
   'linear-gradient(to bottom, color-mix(in oklab, var(--box-shadow-color-highlight) 12%, transparent), transparent 60%)';
-const styles = tv({
+export const vqueueSummaryStyles = tv({
   slots: {
     container:
       'grid w-full grid-cols-1 items-center gap-y-2.5 md:grid-cols-[auto_minmax(0,1fr)]',
@@ -124,6 +125,20 @@ const runningFlowStyles = tv({
   base: 'pointer-events-none absolute inset-0 animate-runningFlow opacity-20 motion-reduce:animate-none',
 });
 
+type FocusControlProps =
+  | {
+      focusControl: ReactNode;
+      selectedFocus?: never;
+      onFocusChange?: never;
+      showFocusCounts?: never;
+    }
+  | {
+      focusControl?: never;
+      selectedFocus?: VQueueSummaryFocus | null;
+      onFocusChange: (focus: VQueueSummaryFocus) => void;
+      showFocusCounts?: boolean;
+    };
+
 const COMPLETED_LOADING_STAGE: VQueueStageSummaryEntry = {
   name: 'finished',
   label: 'Completed',
@@ -156,12 +171,11 @@ export function VQueueStageSummaryBar({
   isBreakdownLoading,
   isBreakdownError,
   showFocusCounts = true,
+  focusControl,
 }: {
   byStage: VQueueStageSummaryEntry[];
   byStatus: VQueueStatusSummaryEntry[];
   focus: VQueueSummaryFocus;
-  selectedFocus?: VQueueSummaryFocus | null;
-  onFocusChange: (focus: VQueueSummaryFocus) => void;
   breakdownMode: 'estimate' | 'exact';
   canSampleBreakdown: boolean;
   fixedBreakdownMode?: 'estimate' | 'exact';
@@ -179,8 +193,7 @@ export function VQueueStageSummaryBar({
   comparisonScope?: 'all' | 'service';
   isBreakdownLoading?: (stageName: string) => boolean;
   isBreakdownError?: (stageName: string) => boolean;
-  showFocusCounts?: boolean;
-}) {
+} & FocusControlProps) {
   const matchingStageData = new Map(
     byStage.map((stage) => [stage.name, stage]),
   );
@@ -264,7 +277,7 @@ export function VQueueStageSummaryBar({
     focusCount,
     panels,
     rail,
-  } = styles({
+  } = vqueueSummaryStyles({
     pulse: Boolean(isFetching),
   });
   const percentageScope = `of ${formatNumber(focusedPopulationTotal, true)}`;
@@ -551,61 +564,65 @@ export function VQueueStageSummaryBar({
         </div>
       )}
       <div className={focusRow()}>
-        <ToggleButtonGroup
-          aria-label="Invocation breakdown"
-          selectionMode="single"
-          disallowEmptySelection
-          selectedKeys={selectedFocus ? [selectedFocus] : []}
-          onSelectionChange={(keys) => {
-            const [nextFocus] = keys;
-            if (nextFocus) onFocusChange(nextFocus as VQueueSummaryFocus);
-          }}
-          className={focusTabList()}
-        >
-          <ToggleButton id="all" className={focusTab()}>
-            <span>All statuses</span>
-            {renderFocusCount(
-              'All-status',
-              populationTotal,
-              countsUnavailable || completedStageIsUnavailable
-                ? 'unavailable'
-                : completedStageIsLoading
-                  ? 'loading'
-                  : areStageCountsPartial && populationTotal === 0
+        {focusControl !== undefined ? (
+          focusControl
+        ) : (
+          <ToggleButtonGroup
+            aria-label="Invocation breakdown"
+            selectionMode="single"
+            disallowEmptySelection
+            selectedKeys={selectedFocus ? [selectedFocus] : []}
+            onSelectionChange={(keys) => {
+              const [nextFocus] = keys;
+              if (nextFocus) onFocusChange?.(nextFocus as VQueueSummaryFocus);
+            }}
+            className={focusTabList()}
+          >
+            <ToggleButton id="all" className={focusTab()}>
+              <span>All statuses</span>
+              {renderFocusCount(
+                'All-status',
+                populationTotal,
+                countsUnavailable || completedStageIsUnavailable
+                  ? 'unavailable'
+                  : completedStageIsLoading
+                    ? 'loading'
+                    : areStageCountsPartial && populationTotal === 0
+                      ? 'unknown'
+                      : 'known',
+              )}
+              <SelectionIndicator className={focusIndicator()} />
+            </ToggleButton>
+            <ToggleButton id="not-completed" className={focusTab()}>
+              <span>Not completed</span>
+              {renderFocusCount(
+                'Not-completed',
+                populationNotCompletedCount,
+                countsUnavailable
+                  ? 'unavailable'
+                  : areStageCountsPartial && populationNotCompletedCount === 0
                     ? 'unknown'
                     : 'known',
-            )}
-            <SelectionIndicator className={focusIndicator()} />
-          </ToggleButton>
-          <ToggleButton id="not-completed" className={focusTab()}>
-            <span>Not completed</span>
-            {renderFocusCount(
-              'Not-completed',
-              populationNotCompletedCount,
-              countsUnavailable
-                ? 'unavailable'
-                : areStageCountsPartial && populationNotCompletedCount === 0
-                  ? 'unknown'
-                  : 'known',
-            )}
-            <SelectionIndicator className={focusIndicator()} />
-          </ToggleButton>
-          <ToggleButton id="completed" className={focusTab()}>
-            <span>Completed</span>
-            {renderFocusCount(
-              'Completed',
-              populationCompletedCount,
-              countsUnavailable || completedStageIsUnavailable
-                ? 'unavailable'
-                : completedStageIsLoading
-                  ? 'loading'
-                  : areStageCountsPartial && populationCompletedCount === 0
-                    ? 'unknown'
-                    : 'known',
-            )}
-            <SelectionIndicator className={focusIndicator()} />
-          </ToggleButton>
-        </ToggleButtonGroup>
+              )}
+              <SelectionIndicator className={focusIndicator()} />
+            </ToggleButton>
+            <ToggleButton id="completed" className={focusTab()}>
+              <span>Completed</span>
+              {renderFocusCount(
+                'Completed',
+                populationCompletedCount,
+                countsUnavailable || completedStageIsUnavailable
+                  ? 'unavailable'
+                  : completedStageIsLoading
+                    ? 'loading'
+                    : areStageCountsPartial && populationCompletedCount === 0
+                      ? 'unknown'
+                      : 'known',
+              )}
+              <SelectionIndicator className={focusIndicator()} />
+            </ToggleButton>
+          </ToggleButtonGroup>
+        )}
       </div>
       <div className={panels()}>{summaryRail}</div>
     </div>
