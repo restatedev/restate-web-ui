@@ -9,6 +9,7 @@ import {
   AllRevisions,
   LatestRevisionDeployment,
 } from '@restate/features-deployment';
+import { getVisibleMetadataEntries } from '@restate/features-options';
 import { useRestateContext } from '@restate/features-restate-context';
 import {
   Handler as ServiceHandler,
@@ -54,6 +55,12 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
 import { sortServices, type OverviewService } from './sortServices';
+import { groupServices, useServiceGroupBy } from './serviceGroups';
+import {
+  isServiceGroupRow,
+  renderServiceGroupCell,
+  type ServiceGroupTableRow,
+} from './ServiceGroupCells';
 
 type ServiceColumn =
   | 'name'
@@ -72,6 +79,12 @@ interface OverviewHandlerTableRow {
   id: string;
   handler: Handler;
 }
+
+type OverviewTableRow =
+  | OverviewServiceTableRow
+  | ServiceGroupTableRow<OverviewServiceTableRow>;
+
+const NO_COLLAPSED_GROUPS = new Set<string>();
 
 const COLUMNS: PanelTableColumn<ServiceColumn>[] = [
   {
@@ -118,6 +131,8 @@ const COLUMNS: PanelTableColumn<ServiceColumn>[] = [
 const tableStyles = tv({
   slots: {
     row: 'cursor-pointer [content-visibility:auto]',
+    groupRow:
+      'cursor-pointer bg-subtle [content-visibility:auto] hover:bg-muted',
     childRow: 'cursor-pointer bg-subtle/30 hover:bg-muted/80',
     identityCell: '[&&&]:overflow-visible',
     serviceIdentity: 'flex min-w-0 items-center gap-2',
@@ -200,7 +215,10 @@ export function getServiceTableRows({
       includesFilter(service.name, normalizedFilter) ||
       includesFilter(service.ty, normalizedFilter) ||
       includesFilter(service.deployment_id, normalizedFilter) ||
-      includesFilter(getEndpoint(deployment), normalizedFilter);
+      includesFilter(getEndpoint(deployment), normalizedFilter) ||
+      getVisibleMetadataEntries(service.metadata).some(([key, value]) =>
+        includesFilter(`${key}:${value}`, normalizedFilter),
+      );
     const matchingHandlers = handlers.filter((handler) =>
       handlerMatchesFilter(handler, normalizedFilter),
     );
@@ -614,14 +632,42 @@ export function ServicesTable() {
     [rows],
   );
   const styles = tableStyles();
+  const [groupBy] = useServiceGroupBy();
+  const [collapsed, setCollapsed] = useState(() => ({
+    groupBy,
+    ids: NO_COLLAPSED_GROUPS,
+  }));
+  const collapsedGroups =
+    collapsed.groupBy === groupBy ? collapsed.ids : NO_COLLAPSED_GROUPS;
+  const toggleGroup = (groupId: string) => {
+    const next = new Set(collapsedGroups);
+    if (next.has(groupId)) {
+      next.delete(groupId);
+    } else {
+      next.add(groupId);
+    }
+    setCollapsed({ groupBy, ids: next });
+  };
+  const items = useMemo<OverviewTableRow[]>(() => {
+    if (groupBy === 'none') return rows;
+    return groupServices(
+      rows,
+      groupBy,
+      (deploymentId) =>
+        getEndpoint(deploymentsMap?.get(deploymentId)) ?? deploymentId,
+    ).flatMap((group) => [
+      { id: group.id, kind: 'group' as const, group },
+      ...(collapsedGroups.has(group.id) ? [] : group.services),
+    ]);
+  }, [collapsedGroups, deploymentsMap, groupBy, rows]);
 
   return (
-    <PanelTable
+    <PanelTable<OverviewTableRow, ServiceColumn>
       aria-label="Services and handlers"
       columns={COLUMNS}
-      items={rows}
+      items={items}
       isLoading={isDeploymentsFetching || isServicesPending}
-      numOfRows={Math.max(rows.length, 6)}
+      numOfRows={Math.max(items.length, 6)}
       treeColumn="name"
       expandedKeys={visibleExpandedKeys}
       onExpandedChange={(nextExpandedKeys) => {
@@ -643,6 +689,10 @@ export function ServicesTable() {
         setServiceSortDescriptor(descriptor ?? null)
       }
       onRowAction={(rowId) => {
+        if (items.some((row) => row.id === rowId && isServiceGroupRow(row))) {
+          toggleGroup(String(rowId));
+          return;
+        }
         const service = serviceRows.get(String(rowId));
         if (service) {
           navigate(serviceHref(baseUrl, { service: service.name }));
@@ -658,9 +708,13 @@ export function ServicesTable() {
           );
         }
       }}
-      rowClassName={styles.row()}
+      rowClassName={(row) =>
+        isServiceGroupRow(row) ? styles.groupRow() : styles.row()
+      }
       rowDataAttributes={() => OVERVIEW_ROW_WAVE}
       bodyDependencies={[
+        groupBy,
+        collapsedGroups,
         visibleExpandedKeys,
         notCompletedInvocationCounts,
         serviceStageCounts,
@@ -669,6 +723,8 @@ export function ServicesTable() {
         isServiceSummaryError,
       ]}
       rowDependencies={[
+        groupBy,
+        collapsedGroups,
         visibleExpandedKeys,
         notCompletedInvocationCounts,
         serviceStageCounts,
@@ -684,6 +740,19 @@ export function ServicesTable() {
         />
       }
       renderCell={(row, column) => {
+        if (isServiceGroupRow<OverviewServiceTableRow>(row)) {
+          return renderServiceGroupCell({
+            row,
+            column,
+            groupBy,
+            isExpanded: !collapsedGroups.has(row.id),
+            deploymentsMap,
+            stageCounts: serviceStageCounts,
+            serviceIssuesMap,
+            isLoading: isServiceSummaryLoading,
+            isError: isServiceSummaryError,
+          });
+        }
         if (column.id === 'name') {
           return (
             <Cell className={styles.identityCell()}>
@@ -779,15 +848,17 @@ export function ServicesTable() {
         }
         return <Cell />;
       }}
-      renderChildRows={(row, columns) => (
-        <HandlerRows
-          service={row}
-          columns={columns}
-          baseUrl={baseUrl}
-          linkParams={linkParams}
-          handlerInvocations={handlerInvocations}
-        />
-      )}
+      renderChildRows={(row, columns) =>
+        isServiceGroupRow(row) ? null : (
+          <HandlerRows
+            service={row}
+            columns={columns}
+            baseUrl={baseUrl}
+            linkParams={linkParams}
+            handlerInvocations={handlerInvocations}
+          />
+        )
+      }
     />
   );
 }

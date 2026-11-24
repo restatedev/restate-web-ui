@@ -78,6 +78,7 @@ export function useOverviewData({
             handlers: isHandlersPending
               ? undefined
               : (fullServices.get(name)?.handlers ?? []),
+            metadata: fullServices.get(name)?.metadata,
           },
         ]),
       ),
