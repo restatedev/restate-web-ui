@@ -96,7 +96,7 @@ function VQueueFallbackContent({
               size="md"
               className="min-w-0 shrink font-normal"
             />
-            <Copy copyText={id} size="xs" tone="muted" className="ml-0" />
+            <Copy copyText={id} size="xs" tone="muted" />
           </div>
         }
       >

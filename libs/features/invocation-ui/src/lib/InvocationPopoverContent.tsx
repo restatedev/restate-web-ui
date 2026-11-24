@@ -28,7 +28,7 @@ export function InvocationPopoverContent({
                 {id}
               </span>
             )}
-            <Copy copyText={id} size="xs" tone="secondary" className="ml-0" />
+            <Copy copyText={id} size="xs" tone="secondary" />
           </span>
         }
       >
