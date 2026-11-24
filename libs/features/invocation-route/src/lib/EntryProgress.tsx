@@ -321,7 +321,7 @@ function getLineVariant(
       return 'idleWarning';
     case 'backing-off':
       return 'backingOff';
-    case 'pending':
+    case 'new':
     case 'ready':
     case 'yielded':
       return 'idlePending';

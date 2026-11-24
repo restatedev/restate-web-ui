@@ -47,6 +47,9 @@
       "path": "../../data-access/admin-api/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/notification/tsconfig.lib.json"
+    },
+    {
       "path": "../../util/panel/tsconfig.lib.json"
     },
     {

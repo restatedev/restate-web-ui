@@ -8,7 +8,7 @@ const stages = [
     name: 'inbox',
     label: 'Inbox',
     count: 55,
-    statuses: ['pending', 'backing-off'],
+    statuses: ['new', 'backing-off'],
     breakdownIsPartial: true,
   },
   {
@@ -132,10 +132,10 @@ describe('VQueueStageLegend', () => {
           byStage={stages}
           byStatus={[
             {
-              name: 'pending',
-              label: 'Pending',
+              name: 'new',
+              label: 'New',
               count: 55,
-              statuses: ['pending'],
+              statuses: ['new'],
             },
           ]}
           focus="not-completed"
@@ -150,7 +150,7 @@ describe('VQueueStageLegend', () => {
     );
 
     expect(
-      await screen.findByRole('link', { name: 'Pending: ~100% of Inbox' }),
+      await screen.findByRole('link', { name: 'New: ~100% of Inbox' }),
     ).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Scheduled' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Yielded' })).toBeTruthy();

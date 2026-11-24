@@ -11,7 +11,7 @@ describe('describeStatusFilter', () => {
       describeStatusFilter(
         status('NOT_IN', [
           'scheduled',
-          'pending',
+          'new',
           'yielded',
           'ready',
           'backing-off',
@@ -25,7 +25,7 @@ describe('describeStatusFilter', () => {
       describeStatusFilter(
         status('IN', [
           'scheduled',
-          'pending',
+          'new',
           'yielded',
           'ready',
           'backing-off',
@@ -40,15 +40,13 @@ describe('describeStatusFilter', () => {
   it('names the inbox stage', () => {
     expect(
       describeStatusFilter(
-        status('IN', [
-          'scheduled',
-          'pending',
-          'yielded',
-          'ready',
-          'backing-off',
-        ]),
+        status('IN', ['scheduled', 'new', 'yielded', 'ready', 'backing-off']),
       ),
     ).toBe('Inbox');
+  });
+
+  it('reads the old Pending name as New', () => {
+    expect(describeStatusFilter(status('IN', ['pending']))).toBe('New');
   });
 
   it('names failed, cancelled and killed together as Failed', () => {

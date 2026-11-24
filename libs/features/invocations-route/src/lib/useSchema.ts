@@ -47,7 +47,7 @@ export function useSchema() {
         type: 'STRING_LIST',
         options: [
           { value: 'scheduled', label: 'Scheduled' },
-          { value: 'pending', label: 'Pending' },
+          { value: 'new', label: 'New', description: 'Was Pending' },
           { value: 'running', label: 'Running' },
           { value: 'backing-off', label: 'Backing-off' },
           { value: 'suspended', label: 'Suspended' },

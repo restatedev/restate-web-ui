@@ -51,7 +51,7 @@ describe('invocationStatusHref', () => {
     );
     expect(JSON.parse(params.get('filter_status') ?? '')).toEqual({
       operation: 'IN',
-      value: ['pending', 'backing-off', 'paused', 'ready', 'yielded'],
+      value: ['new', 'backing-off', 'paused', 'ready', 'yielded'],
     });
     expect(params.get('filter_target_handler_name')).not.toBeNull();
     expect(params.get('sort_field')).toBe('created_at');

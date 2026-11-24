@@ -3666,7 +3666,7 @@ export interface components {
       | 'yielded'
       | 'suspended'
       | 'scheduled'
-      | 'pending'
+      | 'new'
       | 'ready'
       | 'paused'
       | 'backing-off';

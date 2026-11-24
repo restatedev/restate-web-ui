@@ -118,7 +118,7 @@ describe('invocation status presets', () => {
     });
     const heldUp = new URLSearchParams({
       filter_status: statusParam('IN', [
-        'pending',
+        'new',
         'ready',
         'yielded',
         'backing-off',

@@ -79,7 +79,7 @@ function getInboxInvocationFilters(
       field: 'status',
       type: 'STRING_LIST',
       operation: 'IN',
-      value: ['scheduled', 'pending', 'ready', 'yielded', 'backing-off'],
+      value: ['scheduled', 'new', 'ready', 'yielded', 'backing-off'],
     },
   ];
 }

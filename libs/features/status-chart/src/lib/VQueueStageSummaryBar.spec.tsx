@@ -9,7 +9,7 @@ const totalsByStage = [
     name: 'inbox',
     label: 'Inbox',
     count: 100,
-    statuses: ['pending'],
+    statuses: ['new'],
     breakdownIsPartial: false,
   },
   {
@@ -115,7 +115,7 @@ describe('VQueueStageSummaryBar', () => {
         name: 'inbox',
         label: 'Inbox',
         count: 55,
-        statuses: ['pending'],
+        statuses: ['new'],
         breakdownIsPartial: true,
       },
       {
@@ -182,7 +182,7 @@ describe('VQueueStageSummaryBar', () => {
         name: 'inbox',
         label: 'Inbox',
         count: 10,
-        statuses: ['pending'],
+        statuses: ['new'],
         breakdownIsPartial: true,
       },
       {
@@ -252,7 +252,7 @@ describe('VQueueStageSummaryBar', () => {
         name: 'inbox',
         label: 'Inbox',
         count: 50,
-        statuses: ['pending'],
+        statuses: ['new'],
         breakdownIsPartial: false,
       },
       {

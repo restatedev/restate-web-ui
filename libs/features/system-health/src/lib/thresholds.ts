@@ -39,11 +39,11 @@ export const SLA_THRESHOLDS: Record<string, SlaThreshold> = {
     lowLabel: 'More than 1% of inflight invocations are paused',
     highLabel: 'More than 5% of inflight invocations are paused',
   },
-  pending: {
+  new: {
     low: 0.01,
     high: 0.05,
-    lowLabel: 'More than 1% of inflight invocations are pending',
-    highLabel: 'More than 5% of inflight invocations are pending',
+    lowLabel: "More than 1% of inflight invocations haven't started yet",
+    highLabel: "More than 5% of inflight invocations haven't started yet",
   },
   ready: {
     low: 0.01,

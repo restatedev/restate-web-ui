@@ -14,7 +14,7 @@ const buckets: Pick<
   'statuses' | 'count'
 >[] = [
   {
-    statuses: ['pending', 'backing-off'],
+    statuses: ['new', 'backing-off'],
     count: 50,
   },
   {
@@ -26,31 +26,23 @@ const buckets: Pick<
 describe('countMatchingStatusBuckets', () => {
   it('counts filters aligned with complete buckets', () => {
     expect(
-      countMatchingStatusBuckets(
-        buckets,
-        ['pending', 'backing-off', 'succeeded'],
-        {
-          field: 'status',
-          type: 'STRING_LIST',
-          operation: 'NOT_IN',
-          value: ['succeeded'],
-        },
-      ),
+      countMatchingStatusBuckets(buckets, ['new', 'backing-off', 'succeeded'], {
+        field: 'status',
+        type: 'STRING_LIST',
+        operation: 'NOT_IN',
+        value: ['succeeded'],
+      }),
     ).toBe(50);
   });
 
   it('does not invent a count when a filter splits a grouped bucket', () => {
     expect(
-      countMatchingStatusBuckets(
-        buckets,
-        ['pending', 'backing-off', 'succeeded'],
-        {
-          field: 'status',
-          type: 'STRING_LIST',
-          operation: 'IN',
-          value: ['backing-off'],
-        },
-      ),
+      countMatchingStatusBuckets(buckets, ['new', 'backing-off', 'succeeded'], {
+        field: 'status',
+        type: 'STRING_LIST',
+        operation: 'IN',
+        value: ['backing-off'],
+      }),
     ).toBeUndefined();
   });
 });
@@ -186,12 +178,12 @@ describe('doInvocationCountsDisagree', () => {
 
 describe('filterInvocationSummaryByStatus', () => {
   const stages = [
-    { name: 'inbox', count: 100, statuses: ['pending', 'backing-off'] },
+    { name: 'inbox', count: 100, statuses: ['new', 'backing-off'] },
     { name: 'running', count: 5, statuses: ['running'] },
     { name: 'finished', count: 10, statuses: ['succeeded'] },
   ];
   const statuses = [
-    { name: 'pending', count: 90, statuses: ['pending'] },
+    { name: 'new', count: 90, statuses: ['new'] },
     { name: 'backing-off', count: 10, statuses: ['backing-off'] },
     { name: 'running', count: 5, statuses: ['running'] },
     { name: 'succeeded', count: 10, statuses: ['succeeded'] },
@@ -215,7 +207,7 @@ describe('filterInvocationSummaryByStatus', () => {
       field: 'status',
       type: 'STRING_LIST',
       operation: 'IN',
-      value: ['pending', 'backing-off', 'running'],
+      value: ['new', 'backing-off', 'running'],
     });
 
     expect(result.byStage.map(({ count }) => count)).toEqual([100, 5, 0]);

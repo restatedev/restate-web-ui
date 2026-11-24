@@ -175,11 +175,11 @@ const STATUS_TIMELINE_COMPONENTS: Partial<
       tooltipTitle: 'Scheduled at',
     },
   ]),
-  pending: withStatusTimeline([
+  new: withStatusTimeline([
     {
       prefix: 'for',
       field: 'inboxed_at',
-      tooltipTitle: 'Pending since',
+      tooltipTitle: 'Waiting since',
     },
   ]),
   ready: undefined,

@@ -4,7 +4,10 @@ import type {
   VqueueEntryStage,
   VqueueSnapshot,
 } from '@restate/data-access-admin-api-spec';
-import { TERMINAL_INVOCATION_STATUSES } from '@restate/data-access-admin-api-spec';
+import {
+  getInvocationStatusFromVqueue,
+  TERMINAL_INVOCATION_STATUSES,
+} from '@restate/data-access-admin-api-spec';
 import {
   getVqueueHeadBlockSummary,
   getVqueueGateLabel,
@@ -146,7 +149,11 @@ function getCurrentStatus(
     if (invocation.status === 'yielded' || vqueue.status === 'yielded') {
       return 'yielded';
     }
-    return 'pending';
+    const isReady =
+      invocation.status === 'ready' ||
+      getInvocationStatusFromVqueue({ stage, status: vqueue.status }) ===
+        'ready';
+    return isReady ? 'ready' : 'new';
   }
   return undefined;
 }
@@ -323,10 +330,12 @@ export function useInvocationJourneyModel({
     reportedCurrentStatus === 'backing-off' && untilNext?.isPast === false;
   const isEligibleAfterBackoff =
     reportedCurrentStatus === 'backing-off' && untilNext?.isPast === true;
-  const currentStatus =
-    (reportedCurrentStatus === 'scheduled' && !isFutureScheduled) ||
-    isEligibleAfterBackoff
-      ? 'pending'
+  const isDueScheduled =
+    reportedCurrentStatus === 'scheduled' && !isFutureScheduled;
+  const currentStatus = isDueScheduled
+    ? 'new'
+    : isEligibleAfterBackoff
+      ? 'ready'
       : reportedCurrentStatus;
   const attempts =
     data?.focusEntry?.attempts ??
@@ -534,7 +543,7 @@ export function useInvocationJourneyModel({
   const runnableIn = isFutureScheduled ? formatDurations(untilNext) : undefined;
   const inboxState =
     !pendingAttempt && stage === 'inbox' && !isFutureScheduled
-      ? currentStatus === 'pending' && reportedCurrentStatus !== 'pending'
+      ? isDueScheduled || isEligibleAfterBackoff
         ? 'queued'
         : 'pending'
       : undefined;
@@ -549,7 +558,9 @@ export function useInvocationJourneyModel({
     ? vqueueDurationPartsMilliseconds(currentInboxDuration)
     : undefined;
   const inbox =
-    stage === 'inbox' && currentStatus === 'pending' && currentInboxDuration
+    stage === 'inbox' &&
+    (currentStatus === 'new' || currentStatus === 'ready') &&
+    currentInboxDuration
       ? {
           position: data?.focusEntry?.position,
           total: data?.counts.inbox ?? 0,

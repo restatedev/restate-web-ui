@@ -63,11 +63,13 @@ function statusClause(status: string, source: InvocationFilterSource): string {
   }
 
   if (source.type === 'invocation') {
-    return `${source.alias}.status = '${status}'`;
+    return status === 'new'
+      ? `${source.alias}.status IN (${sqlStringList(['pending', 'new'])})`
+      : `${source.alias}.status = '${status}'`;
   }
 
   switch (status) {
-    case 'pending':
+    case 'new':
       return `${source.alias}.status = 'inboxed'`;
     case 'running':
       return `${source.alias}.status = 'invoked' AND ${source.stateAlias}.in_flight`;

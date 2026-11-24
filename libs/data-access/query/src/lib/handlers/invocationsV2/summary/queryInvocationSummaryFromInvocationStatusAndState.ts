@@ -31,7 +31,7 @@ type CountRow = {
 
 function statusExpression(statusAlias: string, stateAlias: string) {
   return `CASE
-          WHEN ${statusAlias}.status = 'inboxed' THEN 'pending'
+          WHEN ${statusAlias}.status = 'inboxed' THEN 'new'
           WHEN ${statusAlias}.status = 'invoked' AND ${stateAlias}.in_flight IS TRUE THEN 'running'
           WHEN ${statusAlias}.status = 'invoked' THEN 'ready-yielded-backing-off'
           WHEN ${statusAlias}.status = 'completed' AND ${statusAlias}.completion_result = 'success' THEN 'succeeded'
@@ -224,7 +224,7 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
     },
   ];
   const definitions: Omit<InvocationStatusSummaryBucket, 'count'>[] = [
-    ...(['scheduled', 'pending'] as const).map(
+    ...(['scheduled', 'new'] as const).map(
       (status) => statusDefinitions[status],
     ),
     ...waitingDefinitions,
@@ -272,9 +272,9 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
       {
         key: 'inbox',
         label: 'Inbox',
-        statuses: ['pending', 'scheduled', 'ready', 'yielded', 'backing-off'],
+        statuses: ['new', 'scheduled', 'ready', 'yielded', 'backing-off'],
         count:
-          (statusCounts.get('pending') ?? 0) +
+          (statusCounts.get('new') ?? 0) +
           (statusCounts.get('scheduled') ?? 0) +
           waitingCount,
         breakdownIsPartial: isPartial,

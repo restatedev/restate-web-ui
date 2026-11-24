@@ -162,7 +162,7 @@ describe('POST /query/v2/invocations/summary', () => {
           "SELECT
                 ss.target_service_name AS service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -178,7 +178,7 @@ describe('POST /query/v2/invocations/summary', () => {
               GROUP BY
                 ss.target_service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -455,7 +455,7 @@ describe('POST /query/v2/invocations/summary', () => {
           "SELECT
                 ss.target_service_name AS service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -472,7 +472,7 @@ describe('POST /query/v2/invocations/summary', () => {
               GROUP BY
                 ss.target_service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -543,7 +543,7 @@ describe('POST /query/v2/invocations/summary', () => {
       ]);
       expect(body.statusBuckets).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ key: 'pending', count: 5 }),
+          expect.objectContaining({ key: 'new', count: 5 }),
           expect.objectContaining({ key: 'backing-off', count: 1 }),
           expect.objectContaining({ key: 'succeeded', count: 7 }),
           expect.objectContaining({ key: 'failed', count: 1 }),
@@ -676,13 +676,7 @@ describe('POST /query/v2/invocations/summary', () => {
             {
               key: 'inbox',
               label: 'Inbox',
-              statuses: [
-                'scheduled',
-                'pending',
-                'yielded',
-                'ready',
-                'backing-off',
-              ],
+              statuses: ['scheduled', 'new', 'yielded', 'ready', 'backing-off'],
               count: 5,
               isIncluded: true,
             },
@@ -724,13 +718,7 @@ describe('POST /query/v2/invocations/summary', () => {
             {
               key: 'inbox',
               label: 'Inbox',
-              statuses: [
-                'scheduled',
-                'pending',
-                'yielded',
-                'ready',
-                'backing-off',
-              ],
+              statuses: ['scheduled', 'new', 'yielded', 'ready', 'backing-off'],
               count: 1,
               isIncluded: true,
             },
@@ -1010,7 +998,7 @@ describe('POST /query/v2/invocations/summary', () => {
       ]);
       expect(body.statusBuckets).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ key: 'pending', count: 50 }),
+          expect.objectContaining({ key: 'new', count: 50 }),
           expect.objectContaining({ key: 'backing-off', count: 50 }),
           expect.objectContaining({ key: 'running', count: 10 }),
           expect.objectContaining({ key: 'suspended', count: 20 }),
@@ -1057,7 +1045,7 @@ describe('POST /query/v2/invocations/summary', () => {
   describe('filtered invocation status and state', () => {
     it('applies a service filter to the status and state breakdown query', async () => {
       setResponder(() => [
-        { service_name: 'Checkout', bucket: 'pending', count: 5 },
+        { service_name: 'Checkout', bucket: 'new', count: 5 },
         { service_name: 'Checkout', bucket: 'running', count: 2 },
       ]);
 
@@ -1080,7 +1068,7 @@ describe('POST /query/v2/invocations/summary', () => {
           "SELECT
                 ss.target_service_name AS service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -1094,7 +1082,7 @@ describe('POST /query/v2/invocations/summary', () => {
               GROUP BY
                 ss.target_service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -1161,7 +1149,7 @@ describe('POST /query/v2/invocations/summary', () => {
           "SELECT
                 ss.target_service_name AS service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -1175,7 +1163,7 @@ describe('POST /query/v2/invocations/summary', () => {
               GROUP BY
                 ss.target_service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -1260,7 +1248,7 @@ describe('POST /query/v2/invocations/summary', () => {
           "SELECT
                 sampled_invocations.target_service_name AS service_name,
                 CASE
-                  WHEN sampled_invocations.status = 'inboxed' THEN 'pending'
+                  WHEN sampled_invocations.status = 'inboxed' THEN 'new'
                   WHEN sampled_invocations.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN sampled_invocations.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN sampled_invocations.status = 'completed' AND sampled_invocations.completion_result = 'success' THEN 'succeeded'
@@ -1279,7 +1267,7 @@ describe('POST /query/v2/invocations/summary', () => {
               GROUP BY
                 sampled_invocations.target_service_name,
                 CASE
-                  WHEN sampled_invocations.status = 'inboxed' THEN 'pending'
+                  WHEN sampled_invocations.status = 'inboxed' THEN 'new'
                   WHEN sampled_invocations.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN sampled_invocations.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN sampled_invocations.status = 'completed' AND sampled_invocations.completion_result = 'success' THEN 'succeeded'
@@ -1294,7 +1282,7 @@ describe('POST /query/v2/invocations/summary', () => {
 
     it('filters exact breakdowns by stage with status predicates', async () => {
       setResponder(() => [
-        { service_name: 'Checkout', bucket: 'pending', count: 5 },
+        { service_name: 'Checkout', bucket: 'new', count: 5 },
         { service_name: 'Checkout', bucket: 'running', count: 2 },
       ]);
 
@@ -1317,7 +1305,7 @@ describe('POST /query/v2/invocations/summary', () => {
           "SELECT
                 ss.target_service_name AS service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -1331,7 +1319,7 @@ describe('POST /query/v2/invocations/summary', () => {
               GROUP BY
                 ss.target_service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -1359,7 +1347,7 @@ describe('POST /query/v2/invocations/summary', () => {
           "SELECT
                 ss.target_service_name AS service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -1373,7 +1361,7 @@ describe('POST /query/v2/invocations/summary', () => {
               GROUP BY
                 ss.target_service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -1386,7 +1374,7 @@ describe('POST /query/v2/invocations/summary', () => {
 
     it('returns exact legacy stages and breakdowns from one status scan', async () => {
       setResponder(() => [
-        { service_name: 'Checkout', bucket: 'pending', count: 5 },
+        { service_name: 'Checkout', bucket: 'new', count: 5 },
         {
           service_name: 'Checkout',
           bucket: 'ready-yielded-backing-off',
@@ -1415,7 +1403,7 @@ describe('POST /query/v2/invocations/summary', () => {
           "SELECT
                 ss.target_service_name AS service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -1429,7 +1417,7 @@ describe('POST /query/v2/invocations/summary', () => {
               GROUP BY
                 ss.target_service_name,
                 CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'inboxed' THEN 'new'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -1459,7 +1447,7 @@ describe('POST /query/v2/invocations/summary', () => {
       ]);
       expect(body.statusBuckets).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ key: 'pending', count: 5 }),
+          expect.objectContaining({ key: 'new', count: 5 }),
           expect.objectContaining({
             key: 'ready-yielded-backing-off',
             count: 7,
@@ -1474,7 +1462,7 @@ describe('POST /query/v2/invocations/summary', () => {
       setResponder(() => [
         {
           service_name: 'Checkout',
-          bucket: 'pending',
+          bucket: 'new',
           count: 1,
         },
         {
@@ -1503,7 +1491,7 @@ describe('POST /query/v2/invocations/summary', () => {
           "SELECT
                 sampled_invocations.target_service_name AS service_name,
                 CASE
-                  WHEN sampled_invocations.status = 'inboxed' THEN 'pending'
+                  WHEN sampled_invocations.status = 'inboxed' THEN 'new'
                   WHEN sampled_invocations.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN sampled_invocations.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN sampled_invocations.status = 'completed' AND sampled_invocations.completion_result = 'success' THEN 'succeeded'
@@ -1522,7 +1510,7 @@ describe('POST /query/v2/invocations/summary', () => {
               GROUP BY
                 sampled_invocations.target_service_name,
                 CASE
-                  WHEN sampled_invocations.status = 'inboxed' THEN 'pending'
+                  WHEN sampled_invocations.status = 'inboxed' THEN 'new'
                   WHEN sampled_invocations.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                   WHEN sampled_invocations.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN sampled_invocations.status = 'completed' AND sampled_invocations.completion_result = 'success' THEN 'succeeded'

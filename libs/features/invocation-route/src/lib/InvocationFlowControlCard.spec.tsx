@@ -25,7 +25,7 @@ function invocation(
     modified_at: '2026-01-01T00:01:00.000Z',
     scheduled_at: '2026-01-01T00:00:00.000Z',
     invoked_by: 'ingress',
-    status: 'pending',
+    status: 'new',
     target: 'ExampleService/run',
     target_handler_name: 'run',
     target_service_name: 'ExampleService',
@@ -258,7 +258,7 @@ describe('InvocationFlowControlCard', () => {
     expect(
       screen.getByTitle('Blocked duration: 18s; 3× historical average'),
     ).toBeTruthy();
-    expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText('New')).toBeNull();
     expect(screen.queryByText('Backing-off')).toBeNull();
   });
 
@@ -524,7 +524,7 @@ describe('InvocationFlowControlCard', () => {
     );
     expect(screen.queryByText('Queueing')).toBeNull();
     expect(screen.getByText('Next attempt')).toBeTruthy();
-    expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText('New')).toBeNull();
     expect(screen.getByText('50s')).toBeTruthy();
     expect(screen.queryByText('Becomes runnable')).toBeNull();
     expect(screen.queryByText('Next transition')).toBeNull();
@@ -721,7 +721,7 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.getAllByRole('button', { name: '#2' })).toHaveLength(2);
   });
 
-  it('shows queue position without relabeling an eligible back-off as Pending', () => {
+  it('shows queue position without relabeling an eligible back-off as New', () => {
     renderCard(
       invocation(
         {
@@ -762,7 +762,7 @@ describe('InvocationFlowControlCard', () => {
     );
 
     expect(screen.queryByText('Backing-off')).toBeNull();
-    expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText('New')).toBeNull();
     expect(screen.getByText('2 entries')).toBeTruthy();
     const nextAttempt = screen.getByText('Next attempt').parentElement;
     expect(nextAttempt?.textContent).toContain(
@@ -818,7 +818,7 @@ describe('InvocationFlowControlCard', () => {
     expect(nextAttempt?.textContent).not.toContain('behind');
     expect(nextAttempt?.className).toContain('whitespace-nowrap');
     expect(screen.queryByText('Backing-off')).toBeNull();
-    expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText('New')).toBeNull();
     expect(screen.queryByText('queued for')).toBeNull();
     expect(
       screen.queryByRole('img', { name: '0.5× historical average' }),
@@ -880,7 +880,7 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.getByText('Queued')).toBeTruthy();
     expect(screen.queryByText('Became runnable')).toBeNull();
     expect(screen.queryByText('Backing-off')).toBeNull();
-    expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText('New')).toBeNull();
     expect(screen.queryByText(/entries/)).toBeNull();
   });
 

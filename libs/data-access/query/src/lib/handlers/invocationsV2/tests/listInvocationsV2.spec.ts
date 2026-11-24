@@ -67,6 +67,36 @@ describe('POST /query/v2/invocations', () => {
             field: 'status',
             type: 'STRING',
             operation: 'EQUALS',
+            value: 'new',
+          },
+          {
+            field: 'target_service_name',
+            type: 'STRING_LIST',
+            operation: 'IN',
+            value: ['myService'],
+          },
+        ],
+      });
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                ss.id AS id
+              FROM sys_invocation_status ss
+              WHERE ss.status = 'inboxed'
+                AND ss.target_service_name IN ('myService')
+              LIMIT 250",
+        ]
+      `);
+    });
+
+    it('still accepts the old pending status name', async () => {
+      await post('/v2/invocations', {
+        filters: [
+          {
+            field: 'status',
+            type: 'STRING',
+            operation: 'EQUALS',
             value: 'pending',
           },
           {
@@ -160,7 +190,7 @@ describe('POST /query/v2/invocations', () => {
             field: 'status',
             type: 'STRING_LIST',
             operation: 'IN',
-            value: ['pending', 'backing-off', 'paused', 'ready', 'yielded'],
+            value: ['new', 'backing-off', 'paused', 'ready', 'yielded'],
           },
         ],
         sort: { field: 'transitioned_at', order: 'ASC' },
@@ -261,7 +291,7 @@ describe('POST /query/v2/invocations', () => {
             field: 'status',
             type: 'STRING_LIST',
             operation: 'IN',
-            value: ['pending', 'backing-off', 'paused', 'ready'],
+            value: ['new', 'backing-off', 'paused', 'ready'],
           },
           {
             field: 'target_service_name',
@@ -633,7 +663,7 @@ describe('POST /query/v2/invocations', () => {
             field: 'status',
             type: 'STRING_LIST',
             operation: 'IN',
-            value: ['succeeded', 'pending', 'backing-off'],
+            value: ['succeeded', 'new', 'backing-off'],
           },
         ],
         sort: { field: 'created_at', order: 'DESC' },
@@ -695,7 +725,7 @@ describe('POST /query/v2/invocations', () => {
             field: 'status',
             type: 'STRING',
             operation: 'EQUALS',
-            value: 'pending',
+            value: 'new',
           },
           {
             field: 'status',

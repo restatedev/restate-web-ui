@@ -47,7 +47,7 @@ function getBadgeVariant(
   switch (status) {
     case 'succeeded':
       return 'success';
-    case 'pending':
+    case 'new':
     case 'paused':
       return 'warning';
     case 'running':
@@ -71,8 +71,7 @@ const styles = tv({
       info: '',
     },
     status: {
-      pending:
-        'border-dashed border-pending bg-transparent text-pending-strong',
+      new: 'border-dashed border-pending bg-transparent text-pending-strong',
       scheduled: 'border-dashed border-neutral/60 bg-transparent',
       ready: 'border-dashed border-strong bg-transparent text-muted',
       yielded: 'border-dashed border-strong bg-transparent text-muted',
@@ -125,7 +124,7 @@ const secondaryStyles = tv({
 });
 
 const STATUS_LABEL: Record<InvocationComputedStatus2, string> = {
-  pending: 'Pending',
+  new: 'New',
   scheduled: 'Scheduled',
   ready: 'Ready',
   yielded: 'Yielded',

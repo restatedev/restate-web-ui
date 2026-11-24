@@ -142,6 +142,8 @@ import {
   VqueueEntryCell,
 } from '@restate/features-invocation-ui';
 import { InvocationQuickOpen } from './InvocationQuickOpen';
+import { renameLegacyStatusFilterParam } from './statusFilter';
+import { showInfoNotification } from '@restate/ui-notification';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: INVOCATION_TABLE_COLUMN_CONFIG.id.defaultWidth,
@@ -1188,6 +1190,15 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
           }
         });
     }
+  }
+
+  const statusFilterKey = `${FILTER_QUERY_PREFIX}status`;
+  const renamedStatusFilter = renameLegacyStatusFilterParam(
+    params.get(statusFilterKey),
+  );
+  if (renamedStatusFilter) {
+    params.set(statusFilterKey, renamedStatusFilter);
+    showInfoNotification('Pending is now called New');
   }
 
   if (!isSortValid(params, canSortByTransition) && !isNoSort(params)) {
