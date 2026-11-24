@@ -1856,7 +1856,7 @@
       "get": {
         "tags": ["version"],
         "summary": "Get version information",
-        "description": "Returns the server version, supported Admin API versions, and the advertised ingress endpoint.",
+        "description": "Returns the server version, supported Admin API versions, the advertised ingress endpoint, and\nwhat the query engine offers.",
         "operationId": "version",
         "responses": {
           "200": {
@@ -2853,6 +2853,21 @@
         "type": "string",
         "enum": ["RequestResponse", "BidiStream"]
       },
+      "QueryEngineInformation": {
+        "type": "object",
+        "description": "What the SQL query engine offers. New fields can be added; clients ignore the ones\nthey don't know.",
+        "required": ["default_engine", "stats_tables"],
+        "properties": {
+          "default_engine": {
+            "type": "string",
+            "description": "# Default query engine\n\nThe engine that runs a query unless the request selects another: `v1` or `v2`."
+          },
+          "stats_tables": {
+            "type": "boolean",
+            "description": "# Statistics tables\n\nWhether the statistics tables (`sys_service_stats`, `sys_deployment_stats` and\n`sys_virtual_object_stats`) answer queries. `false` while queries don't read indexes,\nbecause the tables aren't shown then. Otherwise `true`, from the admin node's start, unless\nits last check found a partition whose leader answered and lacks a complete status gauge.\nPartitions without a known leader, leaders that are down or don't answer, and leaders whose\npartition store isn't open (no registry rows) don't count. The admin node checks every\n`admin.query-engine.index-catalog-refresh-interval`."
+          }
+        }
+      },
       "QueryErrorBody": {
         "type": "object",
         "description": "Error response for query endpoint.",
@@ -3516,6 +3531,17 @@
             "format": "int32",
             "description": "# Min admin API version\n\nMinimum supported admin API version by the admin server",
             "minimum": 0
+          },
+          "query_engine": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/QueryEngineInformation",
+                "description": "# Query engine\n\nWhat the SQL query engine offers. Absent on servers older than v1.8.2."
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "version": {
             "type": "string",
