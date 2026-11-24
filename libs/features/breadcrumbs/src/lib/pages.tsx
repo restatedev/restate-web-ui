@@ -19,16 +19,19 @@ import {
 
 export type CrumbFragment = Omit<PageDefinition, 'pattern'>;
 
+function CurrentCopy({ crumb }: BreadcrumbComponentProps) {
+  return (
+    crumb.isCurrent && (
+      <Copy copyText={crumb.label} size="xs" className="text-muted" />
+    )
+  );
+}
+
 function InvocationCrumbContent({ crumb }: BreadcrumbComponentProps) {
   return (
     <>
       <CrumbContent crumb={crumb} />
-      {crumb.isCurrent && (
-        <Copy
-          copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-        />
-      )}
+      <CurrentCopy crumb={crumb} />
     </>
   );
 }
@@ -38,12 +41,7 @@ function DeploymentCrumbContent({ crumb }: BreadcrumbComponentProps) {
   return (
     <>
       <CrumbContent crumb={{ ...crumb, label: label ?? crumb.label, icon }} />
-      {crumb.isCurrent && (
-        <Copy
-          copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-        />
-      )}
+      <CurrentCopy crumb={crumb} />
     </>
   );
 }
@@ -59,12 +57,7 @@ function VQueueCrumbContent({ crumb }: BreadcrumbComponentProps) {
       <span data-crumb-label className="min-w-0 truncate">
         {crumb.label}
       </span>
-      {crumb.isCurrent && (
-        <Copy
-          copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-        />
-      )}
+      <CurrentCopy crumb={crumb} />
     </>
   );
 }
@@ -99,12 +92,7 @@ function VirtualObjectInstanceCrumbContent({
           {crumb.params['key'] ?? ''}
         </span>
       </span>
-      {crumb.isCurrent && (
-        <Copy
-          copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-        />
-      )}
+      <CurrentCopy crumb={crumb} />
     </>
   );
 }
@@ -138,12 +126,7 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
           {crumb.params['workflowId'] ?? ''}
         </span>
       </span>
-      {crumb.isCurrent && (
-        <Copy
-          copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-        />
-      )}
+      <CurrentCopy crumb={crumb} />
     </>
   );
 }
