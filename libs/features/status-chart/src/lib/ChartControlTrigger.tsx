@@ -76,7 +76,8 @@ export function ChartContextTrigger({ children }: { children: ReactNode }) {
       {children}
       <Icon
         name={IconName.ChevronsUpDown}
-        className="h-2.5 w-2.5 self-center text-muted transition-colors group-hover/chart-context:text-tertiary"
+        size="2xs"
+        className="self-center text-muted transition-colors group-hover/chart-context:text-tertiary"
       />
     </Button>
   );

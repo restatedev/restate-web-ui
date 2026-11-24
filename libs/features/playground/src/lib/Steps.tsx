@@ -68,7 +68,7 @@ function StepIcon({ entry }: { entry: JournalEntryV2 }) {
                 ? IconName.X
                 : IconName.Retry
           }
-          className="h-2.5 w-2.5"
+          size="2xs"
         />
       )}
     </span>

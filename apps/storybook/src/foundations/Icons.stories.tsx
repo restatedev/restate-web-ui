@@ -45,7 +45,7 @@ export const FollowsFontSize: Story = {
 export const Sizes: Story = {
   render: (args) => (
     <div className="flex items-end gap-6 text-primary">
-      {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
+      {(['2xs', 'xs', 'sm', 'md', 'lg'] as const).map((size) => (
         <span key={size} className="flex flex-col items-center gap-2">
           <Icon {...args} size={size} />
           <code className="font-mono text-2xs text-tertiary">{size}</code>

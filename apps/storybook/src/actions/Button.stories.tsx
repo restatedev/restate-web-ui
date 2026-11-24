@@ -12,7 +12,7 @@ const meta = {
       control: 'inline-radio',
       options: ['primary', 'secondary', 'destructive', 'icon'],
     },
-    size: { control: 'inline-radio', options: ['xs', 'sm', 'md'] },
+    size: { control: 'inline-radio', options: ['2xs', 'xs', 'sm', 'md'] },
     disabled: { control: 'boolean' },
   },
 } satisfies Meta<typeof Button>;
@@ -68,10 +68,13 @@ export const Sizes: Story = {
         ))}
       </div>
       <div className="flex items-end gap-4">
-        {(['xs', 'sm', 'md'] as const).map((size) => (
+        {(['2xs', 'xs', 'sm', 'md'] as const).map((size) => (
           <span key={size} className="flex flex-col items-center gap-2">
             <Button {...args} variant="icon" size={size} aria-label="Refresh">
-              <Icon name={IconName.Retry} size="sm" />
+              <Icon
+                name={IconName.Retry}
+                size={size === '2xs' ? '2xs' : 'sm'}
+              />
             </Button>
             <code className="font-mono text-2xs text-tertiary">{size}</code>
           </span>

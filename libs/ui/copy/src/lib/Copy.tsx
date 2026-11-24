@@ -3,7 +3,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { PropsWithChildren, useState } from 'react';
 import { tv } from '@restate/util-styles';
 
-export type CopySize = 'xs' | 'sm' | 'md';
+export type CopySize = '2xs' | 'xs' | 'sm' | 'md';
 
 interface CopyProps {
   className?: string;

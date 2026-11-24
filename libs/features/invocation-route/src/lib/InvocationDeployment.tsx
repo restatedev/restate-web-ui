@@ -26,10 +26,7 @@ function DeploymentId({ deploymentId }: { deploymentId: string }) {
       >
         <span className="block truncate">{deploymentId}</span>
       </TruncateWithTooltip>
-      <Copy
-        copyText={deploymentId}
-        className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
-      />
+      <Copy copyText={deploymentId} size="2xs" className="ml-1" />
     </Badge>
   );
 }

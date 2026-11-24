@@ -204,7 +204,8 @@ function ActivityHistoryButton({
           <span>{visibleCount}</span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-2.5 w-2.5 shrink-0 text-muted opacity-70"
+            size="2xs"
+            className="text-muted opacity-70"
           />
         </Button>
       </PopoverTrigger>

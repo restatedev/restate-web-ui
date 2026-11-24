@@ -284,7 +284,7 @@ export const enum IconName {
   Moon = 'Moon',
   Monitor = 'Monitor',
 }
-export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
+export type IconSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg';
 
 export interface IconsProps {
   name: IconName;
@@ -445,6 +445,7 @@ const styles = tv({
   base: 'h-[1.5em] w-[1.5em] text-current',
   variants: {
     size: {
+      '2xs': 'h-2.5 w-2.5 shrink-0',
       xs: 'h-3 w-3 shrink-0',
       sm: 'h-3.5 w-3.5 shrink-0',
       md: 'h-4 w-4 shrink-0',

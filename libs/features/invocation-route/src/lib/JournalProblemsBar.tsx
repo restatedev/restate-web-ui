@@ -176,7 +176,8 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
               <>
                 <Icon
                   name={IconName.TriangleAlert}
-                  className="h-2.5 w-2.5 shrink-0 text-warning-subtle"
+                  size="2xs"
+                  className="text-warning-subtle"
                 />
                 <span className="sr-only">Child check incomplete</span>
               </>

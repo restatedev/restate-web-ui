@@ -25,7 +25,7 @@ export interface ButtonProps {
   slot?: string;
 }
 
-export type ButtonSize = 'xs' | 'sm' | 'md';
+export type ButtonSize = '2xs' | 'xs' | 'sm' | 'md';
 
 export const buttonStyles = tv({
   extend: focusRing,
@@ -41,6 +41,7 @@ export const buttonStyles = tv({
       icon: 'flex items-center justify-center border-0 p-1 text-tertiary shadow-none hover:bg-tint disabled:bg-transparent pressed:bg-tint-strong',
     },
     size: {
+      '2xs': '',
       xs: '',
       sm: '',
       md: '',
@@ -59,6 +60,11 @@ export const buttonStyles = tv({
       variant: ['primary', 'secondary', 'destructive'],
       size: 'sm',
       className: 'rounded-lg px-3 py-1.5 text-sm',
+    },
+    {
+      variant: 'icon',
+      size: '2xs',
+      className: 'h-4.5 w-4.5 shrink-0 rounded-md p-0',
     },
     {
       variant: 'icon',

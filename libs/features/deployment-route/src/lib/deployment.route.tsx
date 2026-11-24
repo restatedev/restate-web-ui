@@ -91,10 +91,7 @@ function EndpointChip({
                 <>
                   <TruncateTooltipTrigger>{endpoint}</TruncateTooltipTrigger>
                   {endpoint && (
-                    <Copy
-                      copyText={endpoint}
-                      className="ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
-                    />
+                    <Copy copyText={endpoint} size="2xs" className="ml-0.5" />
                   )}
                 </>
               )}

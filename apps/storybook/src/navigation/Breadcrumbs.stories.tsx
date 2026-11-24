@@ -29,7 +29,7 @@ type Story = StoryObj<typeof meta>;
 function CurrentCopy({ crumb }: BreadcrumbComponentProps) {
   return (
     crumb.isCurrent && (
-      <Copy copyText={crumb.label} size="xs" className="text-muted" />
+      <Copy copyText={crumb.label} size="2xs" className="text-muted" />
     )
   );
 }

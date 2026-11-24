@@ -1278,7 +1278,7 @@ function ReturnToLiveButton({
         onClick={() => setIsLive(true)}
       >
         <div className="">Live</div>
-        <Icon name={IconName.Play} className="mb-px h-2.5 w-2.5 fill-current" />
+        <Icon name={IconName.Play} size="2xs" className="mb-px fill-current" />
       </Button>
     );
   }

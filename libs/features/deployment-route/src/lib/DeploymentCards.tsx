@@ -42,10 +42,7 @@ function CopyValue({ value }: { value: string }) {
   return (
     <Badge size="sm" className="ml-1 min-w-0 py-0 pr-0 align-middle font-mono">
       <span className="truncate">{value}</span>
-      <Copy
-        copyText={value}
-        className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
-      />
+      <Copy copyText={value} size="2xs" className="ml-1" />
     </Badge>
   );
 }
