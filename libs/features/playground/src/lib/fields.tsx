@@ -295,6 +295,7 @@ function ResetInput({ run }: { run: OperationRun }) {
     <Button
       variant="ghost"
       size="xs"
+      className="-my-0.5"
       onClick={() =>
         runner.setDraft((previous) => ({
           ...previous,
