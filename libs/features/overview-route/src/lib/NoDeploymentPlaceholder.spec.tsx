@@ -56,12 +56,12 @@ describe('NoDeploymentPlaceholder', () => {
   it('opens the connect guide when the host has one', () => {
     context.tunnel = {
       isEnabled: true,
-      configureSdkHref: '/env/overview/add-service#configure-sdk',
+      configureSdkHref: '/env/overview/register-services#configure-sdk',
     };
     render(<NoDeploymentPlaceholder />);
 
     expect(connectLink()?.getAttribute('href')).toBe(
-      '/env/overview/add-service#configure-sdk',
+      '/env/overview/register-services#configure-sdk',
     );
     expect(
       screen
