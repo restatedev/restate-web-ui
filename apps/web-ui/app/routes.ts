@@ -43,6 +43,7 @@ export default [
   route('features', 'routes/features.tsx'),
   route('feature-flags/:flag', 'routes/feature-flags.tsx'),
   route('query-stats', 'routes/query-stats.tsx'),
+  route('attempts-preview', 'routes/attempts-preview.tsx'),
   ...(import.meta.env.DEV
     ? [route('design-system', 'routes/design-system.tsx')]
     : []),

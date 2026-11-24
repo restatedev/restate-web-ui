@@ -1,4 +1,7 @@
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
+import {
+  useGetInvocationJournalWithInvocationV2,
+  useInvocationAttemptEvents,
+} from '@restate/data-access-admin-api-hooks';
 import { ErrorBanner } from '@restate/ui-error';
 import { useParams, useSearchParams } from 'react-router';
 import {
@@ -40,6 +43,12 @@ import {
 import { useInvocationsRecent } from '@restate/util-sidebar-nav';
 import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { CardGrid } from '@restate/ui-card';
+import { Spinner } from '@restate/ui-loading';
+import { buildAttemptRecord, hasAttemptRecord } from './attempts/attemptRecord';
+import { AttemptRecordView } from './attempts/AttemptRecordView';
+import { HoverTooltip } from '@restate/ui-tooltip';
+
+const INVOCATION_VIEW_PARAM = 'view';
 
 const lastFailureContainer = tv({
   base: 'z-20 min-w-0 origin-bottom-right rounded-2xl p-0',
@@ -90,6 +99,38 @@ function Component() {
     staleTime: 0,
     enabled: Boolean(id),
   });
+
+  const isInvocationCompleted = Boolean(journalAndInvocationData?.completed_at);
+  const attemptEvents = useInvocationAttemptEvents(String(id), {
+    enabled: Boolean(id),
+    refetchInterval: isInvocationCompleted ? false : 2000,
+  });
+  const hasAttempts = hasAttemptRecord(attemptEvents.data);
+  const attemptRecord = useMemo(
+    () =>
+      hasAttempts && attemptEvents.data
+        ? buildAttemptRecord(attemptEvents.data, {
+            now: attemptEvents.dataUpdatedAt,
+            createdAt: journalAndInvocationData?.created_at,
+            completedAt: journalAndInvocationData?.completed_at,
+            isCompleted: isInvocationCompleted,
+          })
+        : undefined,
+    [
+      hasAttempts,
+      attemptEvents.data,
+      attemptEvents.dataUpdatedAt,
+      journalAndInvocationData?.created_at,
+      journalAndInvocationData?.completed_at,
+      isInvocationCompleted,
+    ],
+  );
+  const requestedView = searchParams.get(INVOCATION_VIEW_PARAM);
+  const selectedView = attemptRecord
+    ? requestedView === 'waterfall' || requestedView === 'journal'
+      ? requestedView
+      : 'attempts'
+    : 'journal';
 
   const { baseUrl } = useRestateContext();
   const showFlowControl = Boolean(journalAndInvocationData?.vqueue);
@@ -343,6 +384,22 @@ function Component() {
           className="-mt-[calc(var(--cp-toolbar-tuck,0px)-1.5rem)]"
           tabs={{
             items: [
+              ...(attemptRecord
+                ? [
+                    {
+                      id: 'attempts',
+                      label: (
+                        <span className="inline-flex items-center gap-1.5">
+                          Attempts
+                          <span className="rounded-full bg-muted px-1.5 text-2xs text-tertiary tabular-nums">
+                            {attemptRecord.attempts.length}
+                          </span>
+                        </span>
+                      ),
+                    },
+                    { id: 'waterfall', label: 'Waterfall' },
+                  ]
+                : []),
               {
                 id: 'journal',
                 label: (
@@ -355,11 +412,37 @@ function Component() {
                 ),
               },
             ],
-            defaultId: 'journal',
+            defaultId: attemptRecord ? 'attempts' : 'journal',
+            queryParam: INVOCATION_VIEW_PARAM,
           }}
         >
           <ContentPanelBody>
-            <JournalV2 invocationId={String(id)} key={String(id)} />
+            {attemptEvents.isPending && !attemptEvents.isError ? (
+              <div className="flex items-center gap-1.5 p-4 text-sm text-muted">
+                <Spinner className="h-4 w-4" />
+                Loading…
+              </div>
+            ) : attemptRecord && selectedView !== 'journal' ? (
+              <AttemptRecordView
+                key={String(id)}
+                record={attemptRecord}
+                view={selectedView}
+                title={journalAndInvocationData?.target ?? String(id)}
+                toolbarExtra={
+                  <HoverTooltip content="Raw attempt events">
+                    <Link
+                      variant="icon"
+                      href={`${baseUrl}/introspection?query=SELECT appended_at, event_type, event_json FROM sys_journal_events WHERE id = '${id}' ORDER BY appended_at`}
+                      target="_blank"
+                    >
+                      <Icon name={IconName.ScanSearch} className="h-4 w-4" />
+                    </Link>
+                  </HoverTooltip>
+                }
+              />
+            ) : (
+              <JournalV2 invocationId={String(id)} key={String(id)} />
+            )}
           </ContentPanelBody>
         </ContentPanel>
       </div>

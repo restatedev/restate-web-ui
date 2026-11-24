@@ -19,3 +19,4 @@ export * from './lib/invocation.route';
 export * from './lib/InvocationJourneyCard';
 // Tenant view reuses the lifecycle card without the surrounding admin page.
 export { InvocationFlowControlCard as InvocationLifecycleCard } from './lib/InvocationFlowControlCard';
+export { attemptsPreview } from './lib/attempts/AttemptsPreview';

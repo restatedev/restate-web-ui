@@ -2619,3 +2619,47 @@ export function convertStateToObject<T>(state: { name: string; value: T }[]) {
     {} as Record<string, T>,
   );
 }
+
+export interface InvocationAttemptEventRow {
+  appended_at?: string | null;
+  event_type?: string | null;
+  event_json?: string | null;
+}
+
+const INVOCATION_ATTEMPT_EVENT_TYPES = [
+  'AttemptStarted',
+  'AttemptEnded',
+  'ActionRecorded',
+  'SpanStarted',
+  'SpanEnded',
+  'ResultDelivered',
+];
+
+function invocationAttemptEventsQuery(invocationId: string) {
+  const id = invocationId.replaceAll("'", "''");
+  const types = INVOCATION_ATTEMPT_EVENT_TYPES.map((ty) => `'${ty}'`).join(
+    ', ',
+  );
+  return `SELECT appended_at, event_type, event_json FROM sys_journal_events WHERE id = '${id}' AND event_type IN (${types}) ORDER BY appended_at`;
+}
+
+export function useInvocationAttemptEvents(
+  invocationId: string,
+  options?: { enabled?: boolean; refetchInterval?: number | false },
+) {
+  const apiEnabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query', 'post', {
+    baseUrl,
+    body: { query: invocationAttemptEventsQuery(invocationId) },
+    parameters: { query: { name: 'invocation-attempts' } },
+  });
+
+  return useQuery({
+    ...queryOptions,
+    select: (data) => (data?.rows ?? []) as InvocationAttemptEventRow[],
+    refetchInterval: options?.refetchInterval,
+    staleTime: 0,
+    enabled: Boolean(invocationId) && options?.enabled !== false && apiEnabled,
+  });
+}
