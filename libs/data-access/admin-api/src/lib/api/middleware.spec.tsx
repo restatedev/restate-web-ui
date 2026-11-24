@@ -98,6 +98,7 @@ describe('/query UI table flags', () => {
   async function handlerSql(
     serverFeatures: Record<string, boolean>,
     send: () => Promise<unknown>,
+    queryEngine?: Record<string, boolean>,
   ) {
     const statements: string[] = [];
     const fetch = vi.fn(async (request: Request) => {
@@ -107,7 +108,11 @@ describe('/query UI table flags', () => {
         statements.push(body.query);
       }
       return pathname === '/version'
-        ? Response.json({ version: '1.8.0', features: serverFeatures })
+        ? Response.json({
+            version: '1.8.0',
+            features: serverFeatures,
+            ...(queryEngine && { query_engine: queryEngine }),
+          })
         : Response.json({ rows: [] });
     });
     vi.stubGlobal('fetch', fetch);
@@ -167,6 +172,44 @@ describe('/query UI table flags', () => {
       ]
     `);
   });
+
+  it.each([
+    [
+      'track_status_gauges only',
+      { track_status_gauges: true },
+      undefined,
+      true,
+    ],
+    ['query_engine.stats_tables only', {}, { stats_tables: true }, true],
+    [
+      'both signals',
+      { track_status_gauges: true },
+      { stats_tables: true },
+      true,
+    ],
+    ['neither signal', {}, undefined, false],
+    [
+      'query_engine.stats_tables false without track_status_gauges',
+      {},
+      { stats_tables: false },
+      false,
+    ],
+    [
+      'query_engine.stats_tables false overrides track_status_gauges',
+      { track_status_gauges: true },
+      { stats_tables: false },
+      false,
+    ],
+  ])(
+    'picks the stats tables from the server signals: %s',
+    async (_, serverFeatures, queryEngine, usesStats) => {
+      const [sql] = await handlerSql(serverFeatures, drained, queryEngine);
+      expect(sql).toContain(
+        usesStats ? 'FROM sys_deployment_stats' : 'FROM sys_vqueues',
+      );
+      expect(sql?.includes('sys_deployment_stats')).toBe(usesStats);
+    },
+  );
 
   it('uses index tables only when the index flag is on', async () => {
     localStorage.setItem('FEATURE_INDEXES_V1', 'true');
