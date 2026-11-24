@@ -37,10 +37,7 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
-      "path": "../icons/tsconfig.lib.json"
-    },
-    {
-      "path": "../button/tsconfig.lib.json"
+      "path": "../disclosure/tsconfig.lib.json"
     },
     {
       "path": "../../util/styles/tsconfig.lib.json"

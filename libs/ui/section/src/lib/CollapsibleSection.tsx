@@ -1,8 +1,11 @@
 import { PropsWithChildren, ReactNode, useId } from 'react';
 import { tv } from '@restate/util-styles';
-import { Disclosure, DisclosurePanel, Heading } from 'react-aria-components';
-import { Button } from '@restate/ui-button';
-import { Icon, IconName } from '@restate/ui-icons';
+import { Heading } from 'react-aria-components';
+import {
+  Disclosure,
+  DisclosurePanel,
+  DisclosureTrigger,
+} from '@restate/ui-disclosure';
 
 interface SectionProps {
   className?: string;
@@ -22,8 +25,8 @@ export function CollapsibleSection({
   return (
     <Disclosure
       className={styles({ className })}
-      isExpanded={isExpanded}
-      onExpandedChange={onExpandedChange}
+      open={isExpanded}
+      onOpenChange={onExpandedChange}
     >
       {children}
     </Disclosure>
@@ -44,17 +47,7 @@ export function CollapsibleSectionTitle({
   const titleId = useId();
   return (
     <Heading id={titleId} className={stylesSectionTitle({ className })}>
-      <Button
-        variant="icon"
-        slot="trigger"
-        aria-labelledby={titleId}
-        className="absolute inset-0 justify-end rounded-[calc(0.75rem-0.175rem)] p-2 text-sm text-subtle hover:bg-tint-subtle pressed:bg-tint"
-      >
-        <Icon
-          name={IconName.ChevronDown}
-          className="group-expanded:rotate-180"
-        />
-      </Button>
+      <DisclosureTrigger variant="row" aria-labelledby={titleId} />
       {children}
     </Heading>
   );
@@ -72,10 +65,6 @@ const stylesSectionContent = tv({
     raised: true,
   },
 });
-const stylesSectionContentContainer = tv({
-  base: '',
-});
-
 export function CollapsibleSectionContent({
   children,
   className,
@@ -87,7 +76,7 @@ export function CollapsibleSectionContent({
   footer?: ReactNode;
 }>) {
   return (
-    <DisclosurePanel className={stylesSectionContentContainer({})}>
+    <DisclosurePanel>
       <div className={stylesSectionContent({ raised, className })}>
         {children}
       </div>

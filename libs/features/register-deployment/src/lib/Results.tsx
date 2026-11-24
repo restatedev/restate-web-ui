@@ -2,8 +2,11 @@ import * as adminApi from '@restate/data-access-admin-api-spec';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Callout } from '@restate/ui-callout';
 import { useRegisterDeploymentContext } from './Context';
-import { Disclosure, DisclosurePanel } from 'react-aria-components';
-import { Button } from '@restate/ui-button';
+import {
+  Disclosure,
+  DisclosurePanel,
+  DisclosureTrigger,
+} from '@restate/ui-disclosure';
 import { ServiceType, Handler } from '@restate/features-service';
 import { Link } from '@restate/ui-link';
 import { MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION } from '@restate/features-deployment';
@@ -70,21 +73,9 @@ function Service({
 }) {
   return (
     <div className="w-full rounded-xl border bg-inset p-0.5 shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
-      <Disclosure
-        defaultExpanded={defaultExpanded}
-        className={({ isExpanded }) =>
-          isExpanded ? '[&_.disclosure-icon]:rotate-180' : ''
-        }
-      >
+      <Disclosure defaultOpen={defaultExpanded}>
         <div className="relative flex w-full flex-row items-center rounded-[calc(0.75rem-0.125rem)] border bg-surface p-0 pr-2 text-sm shadow-xs">
-          <Button
-            variant="icon"
-            slot="trigger"
-            aria-label={service.name}
-            className="absolute inset-0 justify-end rounded-[calc(0.75rem-0.175rem)] p-2 text-sm text-subtle hover:bg-tint-subtle pressed:bg-tint"
-          >
-            <Icon name={IconName.ChevronDown} className="disclosure-icon" />
-          </Button>
+          <DisclosureTrigger variant="row" aria-label={service.name} />
           <div className="aspect-square h-12 p-1">
             <div className="flex h-full w-full items-center justify-center rounded-lg text-accent-subtle">
               <div className="h-8 w-8 p-1">

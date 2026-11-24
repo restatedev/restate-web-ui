@@ -22,6 +22,9 @@
       "path": "../../libs/ui/breadcrumbs/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/ui/disclosure/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/ui/header/tsconfig.lib.json"
     },
     {
@@ -59,9 +62,6 @@
     },
     {
       "path": "../../libs/ui/issue-banner/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/ui/callout/tsconfig.lib.json"
     },
     {
       "path": "../../libs/util/snapshot-time/tsconfig.lib.json"
@@ -128,6 +128,9 @@
     },
     {
       "path": "../../libs/ui/split-button/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/callout/tsconfig.lib.json"
     },
     {
       "path": "../../libs/ui/link/tsconfig.lib.json"
