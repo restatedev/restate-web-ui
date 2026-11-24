@@ -307,10 +307,10 @@ Interactive components handle rest, hover, pressed, focus-visible and disabled, 
 
 ### Gaps
 
-| Need              | Today                                                             | Planned                      |
-| ----------------- | ----------------------------------------------------------------- | ---------------------------- |
-| Segmented control | `Nav` used to pick a value (`SnippetTabs`, journal payload views) | `SegmentedControl` or `Tabs` |
-| Show more         | Three components plus native `<details>`                          | One `Disclosure`             |
+| Need              | Today                                                                                                  | Planned                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------- |
+| Segmented control | `SegmentedControl`; `SnippetTabs` and the journal payload views still pick a value with `Nav`          | Move them to `SegmentedControl` |
+| Show more         | `Disclosure`; `Details` (native `<details>`), `EditState` and `RestateServerError` still use their own | Move them to `Disclosure`       |
 
 ## Accessibility
 
@@ -371,7 +371,7 @@ axe on every story and on the main pages (November 2026) still reports these. Th
 5. A spec covers behavior (keyboard, states) with Testing Library.
 6. A story in `apps/storybook/src/<group>/<Name>.stories.tsx` shows its variants and states; overlays open in the story's `play` function.
 7. This file is updated: the catalog row, and the gaps table if you closed a gap.
-8. Breaking changes keep the old prop as an alias marked `/** @deprecated use … */`, and callers move in the same PR or the next. Other apps that use these libs pick the change up later, so keep the alias until they have moved.
+8. Breaking changes keep the old prop as an alias marked `/** @deprecated use … */` while another app still uses it: the Cloud console picks up these libs later, so search it for the old name first, and drop the alias once nothing there uses it. Callers in this repo move in the same PR or the next.
 9. The PR shows before and after screenshots.
 
 CI's Static Analyzis job summary counts the calls that restyle a shared component through `className` (`pnpm run design-system-report`). A change shouldn't raise it.
