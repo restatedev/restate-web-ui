@@ -101,34 +101,43 @@ export function getInvocationRetryKey(invocationId: string) {
   return `${invocationId}:invocation`;
 }
 
-export function isOwnPauseOrRetry(entry?: JournalEntryV2) {
+type PausedEntry = Extract<
+  JournalEntryV2,
+  { type?: 'Paused'; category?: 'event' }
+>;
+
+function hasJournalCommand(entries: JournalEntryV2[], commandIndex?: number) {
   return (
-    entry?.category === 'event' &&
-    ((entry.type === 'Paused' &&
-      entry.isPending === true &&
-      !(
-        'relatedCommandIndex' in entry &&
-        typeof entry.relatedCommandIndex === 'number'
-      )) ||
-      entry.type === 'Retrying')
+    typeof commandIndex === 'number' &&
+    entries.some(
+      (entry) =>
+        entry.category === 'command' && entry.commandIndex === commandIndex,
+    )
   );
 }
 
-export function findInvocationProblemRow(
-  rows: CombinedJournalEntry[],
-  invocationId: string,
+export function findOwnPauseOrRetry(
+  entries: JournalEntryV2[] | undefined,
+  failureCommandIndex?: number,
 ) {
-  for (let index = rows.length - 1; index >= 0; index--) {
-    const row = rows[index];
-    if (
-      row?.depth === 0 &&
-      row.invocationId === invocationId &&
-      isOwnPauseOrRetry(row.entry)
-    ) {
-      return index;
-    }
+  if (!entries || hasJournalCommand(entries, failureCommandIndex)) {
+    return undefined;
   }
-  return undefined;
+  return entries.findLast((entry) => {
+    if (entry.category !== 'event') {
+      return false;
+    }
+    if (entry.type === 'Retrying') {
+      return true;
+    }
+    const paused = entry as PausedEntry;
+    return (
+      entry.type === 'Paused' &&
+      paused.isPending === true &&
+      Boolean(paused.message || paused.code) &&
+      !hasJournalCommand(entries, paused.relatedCommandIndex)
+    );
+  });
 }
 
 export function getPastRetries(

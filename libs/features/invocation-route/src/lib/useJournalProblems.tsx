@@ -18,8 +18,8 @@ import { formatNumber } from '@restate/util-intl';
 import {
   addChildProblems,
   filterJournalRows,
-  findInvocationProblemRow,
   findJournalProblems,
+  findOwnPauseOrRetry,
   getChildIdsToCheck,
   getProblemRowKey,
   getProblemTone,
@@ -73,6 +73,7 @@ export function useJournalProblems({
   rows,
   inputEntry,
   showErrors,
+  failureCommandIndex,
 }: {
   enabled: boolean;
   invocationId: string;
@@ -80,6 +81,7 @@ export function useJournalProblems({
   rows: CombinedJournalEntry[];
   inputEntry?: JournalEntryV2;
   showErrors: boolean;
+  failureCommandIndex?: number;
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const isProblemsOnly =
@@ -190,28 +192,38 @@ export function useJournalProblems({
     [],
   );
 
+  const status = data[invocationId]?.status;
+  const ownFailureEntry = useMemo(
+    () =>
+      enabled && (status === 'paused' || status === 'backing-off')
+        ? findOwnPauseOrRetry(
+            data[invocationId]?.journal?.entries,
+            failureCommandIndex,
+          )
+        : undefined,
+    [enabled, status, data, invocationId, failureCommandIndex],
+  );
   const hasInputProblem =
     enabled &&
     Boolean(
       inputEntry?.isRetrying ||
-      journalProblems?.unmatchedRetryInvocations.has(invocationId),
+      journalProblems?.unmatchedRetryInvocations.has(invocationId) ||
+      ownFailureEntry,
     );
   const isInputRecovered =
-    hasInputProblem &&
-    !inputEntry?.isRetrying &&
-    !isChildProblemStatus(data[invocationId]?.status);
+    hasInputProblem && !inputEntry?.isRetrying && !isChildProblemStatus(status);
   const invocationTone: ProblemTone | undefined = hasInputProblem
     ? isInputRecovered
       ? 'neutral'
       : 'warning'
     : undefined;
-  const invocationProblemRow = useMemo(
-    () =>
-      hasInputProblem
-        ? findInvocationProblemRow(rows, invocationId)
-        : undefined,
-    [hasInputProblem, rows, invocationId],
-  );
+  const invocationProblemRow = useMemo(() => {
+    if (!ownFailureEntry) {
+      return undefined;
+    }
+    const index = rows.findLastIndex((row) => row.entry === ownFailureEntry);
+    return index === -1 ? undefined : index;
+  }, [ownFailureEntry, rows]);
 
   const [findText, setFindText] = useState('');
   const query = useDeferredValue(findText.trim().toLowerCase());
@@ -383,7 +395,7 @@ export function useJournalProblems({
     } else if (inputEntry?.isRetrying) {
       stats.retrying += 1;
     } else if (hasInputProblem) {
-      stats.stuckInputStatus = data[invocationId]?.status;
+      stats.stuckInputStatus = status;
     }
     return stats;
   }, [
@@ -394,10 +406,12 @@ export function useJournalProblems({
     hasInputProblem,
     isInputRecovered,
     inputEntry,
-    data,
-    invocationId,
+    status,
   ]);
-  const isInputActive = hasInputProblem && activeProblemKey === inputKey;
+  const isInputActive =
+    hasInputProblem &&
+    invocationProblemRow === undefined &&
+    activeProblemKey === inputKey;
   const activeProblemIndex = useMemo(
     () =>
       activeProblemKey && activeProblemKey !== inputKey
@@ -439,6 +453,7 @@ export function useJournalProblems({
     problemTotal: problems.rowIndexes.length + (hasInputProblem ? 1 : 0),
     problemStats,
     inputTone: invocationProblemRow === undefined ? invocationTone : undefined,
+    ownFailureEntry,
     isInputActive,
     problemTones,
     pastRetries: enabled && !showErrors ? retriedCommands : undefined,

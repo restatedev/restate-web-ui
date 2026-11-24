@@ -2,7 +2,7 @@ import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import {
   addChildProblems,
   filterJournalRows,
-  findInvocationProblemRow,
+  findOwnPauseOrRetry,
   findProblems,
   findJournalProblems,
   getChildIdsToCheck,
@@ -604,34 +604,45 @@ describe('paused invocations', () => {
   });
 });
 
-describe('findInvocationProblemRow', () => {
-  it('finds the current pause or the next retry of the invocation', () => {
-    const paused = [
-      row(lifecycle('Running')),
-      row(command(1)),
-      row(lifecycle('Paused', { index: 9, isPending: true })),
-    ];
-    const retrying = [row(command(1)), row(lifecycle('Retrying'))];
+describe('findOwnPauseOrRetry', () => {
+  const steps = [command(0, { type: 'Input' }), command(1)];
+  const pause = (fields: Record<string, unknown> = {}) =>
+    lifecycle('Paused', {
+      index: 9,
+      isPending: true,
+      message: 'connection refused',
+      ...fields,
+    });
 
-    expect(findInvocationProblemRow(paused, ROOT)).toBe(2);
-    expect(findInvocationProblemRow(retrying, ROOT)).toBe(1);
+  it('finds the current pause or next retry when no step failed', () => {
+    const paused = pause();
+    const retrying = lifecycle('Retrying');
+
+    expect(findOwnPauseOrRetry([...steps, paused])).toBe(paused);
+    expect(findOwnPauseOrRetry([...steps, retrying])).toBe(retrying);
   });
 
-  it('skips past pauses, pauses on a step and child invocations', () => {
-    const rows = [
-      row(command(1)),
-      row(lifecycle('Paused', { index: 8, isPending: false })),
-      row(
-        lifecycle('Paused', {
-          index: 9,
-          isPending: true,
-          relatedCommandIndex: 1,
-        }),
-      ),
-      row(lifecycle('Retrying'), { invocationId: 'inv_child', depth: 1 }),
-    ];
+  it('treats a failure on a command missing from the journal as its own', () => {
+    const paused = pause({ relatedCommandIndex: 7 });
+    const retrying = lifecycle('Retrying');
 
-    expect(findInvocationProblemRow(rows, ROOT)).toBeUndefined();
+    expect(findOwnPauseOrRetry([...steps, paused])).toBe(paused);
+    expect(findOwnPauseOrRetry([...steps, retrying], 7)).toBe(retrying);
+  });
+
+  it('leaves failures on a step or the input, past and manual pauses', () => {
+    const retrying = [...steps, lifecycle('Retrying')];
+
+    expect(findOwnPauseOrRetry(retrying, 1)).toBeUndefined();
+    expect(findOwnPauseOrRetry(retrying, 0)).toBeUndefined();
+    for (const fields of [
+      { relatedCommandIndex: 1 },
+      { relatedCommandIndex: 0 },
+      { isPending: false },
+      { message: undefined },
+    ]) {
+      expect(findOwnPauseOrRetry([...steps, pause(fields)])).toBeUndefined();
+    }
   });
 });
 

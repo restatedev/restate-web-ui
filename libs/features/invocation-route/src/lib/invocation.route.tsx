@@ -19,7 +19,7 @@ import { Section } from '@restate/ui-section';
 import { Actions } from './actions';
 import { JournalV2 } from './JournalV2';
 import { LAST_FAILURE_HASH } from './journalLineLinks';
-import { isOwnPauseOrRetry } from './problemRows';
+import { findOwnPauseOrRetry } from './problemRows';
 import { useRestateContext } from '@restate/features-restate-context';
 import { ServiceTarget } from '@restate/features-service-target';
 import { tv } from '@restate/util-styles';
@@ -130,18 +130,20 @@ function Component() {
   );
   const isHeldUp =
     isPaused || journalAndInvocationData?.status === 'backing-off';
-  const hasPauseOrRetryRow = useMemo(
+  const hasOwnFailureRow = useMemo(
     () =>
       isHeldUp &&
-      !relatedCommand &&
       Boolean(
-        journalAndInvocationData?.journal?.entries?.findLast(isOwnPauseOrRetry),
+        findOwnPauseOrRetry(
+          journalAndInvocationData?.journal?.entries,
+          relatedCommandIndex,
+        ),
       ),
-    [isHeldUp, relatedCommand, journalAndInvocationData],
+    [isHeldUp, journalAndInvocationData, relatedCommandIndex],
   );
   const failureLineHash = hasRelatedCommandRow
     ? `#command-${relatedCommandIndex}`
-    : hasPauseOrRetryRow
+    : hasOwnFailureRow
       ? LAST_FAILURE_HASH
       : undefined;
 

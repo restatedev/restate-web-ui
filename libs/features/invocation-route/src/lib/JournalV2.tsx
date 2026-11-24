@@ -125,7 +125,6 @@ import {
   useJournalSplit,
 } from './JournalSplit';
 import {
-  findInvocationProblemRow,
   getPastRetries,
   getProblemRowKey,
   getRetryKey,
@@ -415,6 +414,10 @@ export function JournalV2({
       )
     : 0;
 
+  const { commandIndex: failureCommandIndex } = useFailureRelatedCommandIndex(
+    journalAndInvocationData,
+    { enabled: withTimeline },
+  );
   const journalProblems = useJournalProblems({
     enabled: Boolean(withTimeline),
     invocationId,
@@ -422,6 +425,7 @@ export function JournalV2({
     rows: entriesWithoutInputUnfiltered,
     inputEntry,
     showErrors: Boolean(detail.errors),
+    failureCommandIndex,
   });
   const entriesWithoutInput = journalProblems.entries;
   const shownProblemRows = journalProblems.navigableRows;
@@ -472,21 +476,19 @@ export function JournalV2({
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
 
-  const { commandIndex: failureCommandIndex } = useFailureRelatedCommandIndex(
-    journalAndInvocationData,
-    { enabled: withTimeline },
-  );
-  const isHeldUp =
-    journalAndInvocationData?.status === 'paused' ||
-    journalAndInvocationData?.status === 'backing-off';
+  const { ownFailureEntry } = journalProblems;
   const failureRowIndex = useMemo(
     () =>
-      typeof failureCommandIndex === 'number'
-        ? findCommandRow(entriesWithoutInput, invocationId, failureCommandIndex)
-        : isHeldUp
-          ? (findInvocationProblemRow(entriesWithoutInput, invocationId) ?? -1)
-          : -1,
-    [entriesWithoutInput, invocationId, failureCommandIndex, isHeldUp],
+      ownFailureEntry
+        ? entriesWithoutInput.findLastIndex(
+            (row) => row.entry === ownFailureEntry,
+          )
+        : findCommandRow(
+            entriesWithoutInput,
+            invocationId,
+            failureCommandIndex,
+          ),
+    [entriesWithoutInput, invocationId, failureCommandIndex, ownFailureEntry],
   );
   const failureRow =
     failureRowIndex >= 0
