@@ -8,9 +8,12 @@ Run `nx test data-access-admin-api` to execute the unit tests via [Vitest](https
 
 ## Server meta and feature flags
 
-The server's `/version` response (version + `features`) is cached as the
-**meta** query (`['meta', baseUrl]`, `metaQueryOptions` in
-`src/lib/api/meta.ts`). Two consumers read it, at different times:
+The server's `/version` response (version, `features` and the optional
+`query_engine`) is cached as the **meta** query (`['meta', baseUrl]`,
+`metaQueryOptions` in `src/lib/api/meta.ts`). `getEnabledFeatures` turns it
+into the enabled feature names: every `features` entry that is `true`, plus
+`query_engine.stats_tables` when the server reports it `true`. Two consumers
+read it, at different times:
 
 | Consumer                                                                                     | When it reads meta                                                                                          | What it does with it                                                                                                                                                                                                                   |
 | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
