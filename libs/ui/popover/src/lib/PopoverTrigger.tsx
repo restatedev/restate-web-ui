@@ -258,6 +258,7 @@ export function PopoverHoverTrigger({
   const popoverContext = useContext(PopoverContext);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isArmedRef = useRef(false);
 
   const getTriggerEl = useCallback(
     () => getTriggerElement(popoverContext),
@@ -409,10 +410,15 @@ export function PopoverHoverTrigger({
 
   const handleTriggerMouseEnter = useCallback(() => {
     clearCloseTimeout();
+    isArmedRef.current = true;
   }, [clearCloseTimeout]);
 
   const handleTriggerMouseMove = useCallback(() => {
-    if (isOpen || isHoverDisabled || openTimeoutRef.current) {
+    if (!isArmedRef.current) {
+      return;
+    }
+    isArmedRef.current = false;
+    if (isOpen || isHoverDisabled) {
       return;
     }
     const isNested = isInsideActiveHoverPopover(getTriggerEl());
@@ -440,6 +446,7 @@ export function PopoverHoverTrigger({
   ]);
 
   const handleTriggerMouseLeave = useCallback(() => {
+    isArmedRef.current = false;
     clearOpenTimeout();
   }, [clearOpenTimeout]);
 

@@ -40,8 +40,19 @@ function hasSelectionIn(element: HTMLElement) {
 
 function hasOpenOverlay() {
   return (
-    Boolean(document.querySelector('[data-placement]:not([role="tooltip"])')) ||
-    getComputedStyle(document.documentElement).overflow === 'hidden'
+    Boolean(
+      document.querySelector(
+        '[data-placement]:not([role="tooltip"], [role="tooltip"] *)',
+      ),
+    ) || getComputedStyle(document.documentElement).overflow === 'hidden'
+  );
+}
+
+function isBusy(journal: HTMLElement, lastPointerMove: number) {
+  return (
+    performance.now() - lastPointerMove < POINTER_REST_MS ||
+    hasSelectionIn(journal) ||
+    hasOpenOverlay()
   );
 }
 
@@ -55,11 +66,13 @@ function canGlide(distance: number) {
 export function JournalFollow({
   journalRef,
   isEnabled,
+  isComplete,
   contentSize,
   entryCount,
 }: {
   journalRef: RefObject<HTMLElement | null>;
   isEnabled: boolean;
+  isComplete: boolean;
   contentSize: number;
   entryCount: number;
 }) {
@@ -99,33 +112,36 @@ export function JournalFollow({
     [stopGlide],
   );
 
-  const scrollToEnd = useCallback(() => {
-    const journal = journalRef.current;
-    if (!journal) {
-      return;
-    }
-    stopGlide();
-    const below = distanceBelowViewport(journal);
-    if (below <= 0) {
-      return;
-    }
-    const from = window.scrollY;
-    if (!canGlide(below)) {
-      window.scrollTo({ top: from + below, behavior: 'instant' });
-      return;
-    }
-    const start = performance.now();
-    function step() {
-      const progress = Math.min(1, (performance.now() - start) / GLIDE_MS);
-      window.scrollTo({
-        top: from + below * (1 - (1 - progress) ** 3),
-        behavior: 'instant',
-      });
-      glideFrame.current =
-        progress < 1 ? requestAnimationFrame(step) : undefined;
-    }
-    glideFrame.current = requestAnimationFrame(step);
-  }, [journalRef, stopGlide]);
+  const scrollToEnd = useCallback(
+    (shouldGlide: boolean) => {
+      const journal = journalRef.current;
+      if (!journal) {
+        return;
+      }
+      stopGlide();
+      const below = distanceBelowViewport(journal);
+      if (below <= 0) {
+        return;
+      }
+      const from = window.scrollY;
+      if (!shouldGlide || !canGlide(below)) {
+        window.scrollTo({ top: from + below, behavior: 'instant' });
+        return;
+      }
+      const start = performance.now();
+      function step() {
+        const progress = Math.min(1, (performance.now() - start) / GLIDE_MS);
+        window.scrollTo({
+          top: from + below * (1 - (1 - progress) ** 3),
+          behavior: 'instant',
+        });
+        glideFrame.current =
+          progress < 1 ? requestAnimationFrame(step) : undefined;
+      }
+      glideFrame.current = requestAnimationFrame(step);
+    },
+    [journalRef, stopGlide],
+  );
 
   const keepUp = useCallback(
     function keepUp() {
@@ -134,15 +150,11 @@ export function JournalFollow({
       if (!journal || !isFollowingRef.current) {
         return;
       }
-      if (
-        performance.now() - lastPointerMove.current < POINTER_REST_MS ||
-        hasSelectionIn(journal) ||
-        hasOpenOverlay()
-      ) {
+      if (isBusy(journal, lastPointerMove.current)) {
         retryTimer.current = setTimeout(keepUp, RETRY_MS);
         return;
       }
-      scrollToEnd();
+      scrollToEnd(true);
     },
     [journalRef, scrollToEnd],
   );
@@ -161,8 +173,21 @@ export function JournalFollow({
     }
     if (isEnabled) {
       keepUp();
+    } else if (isComplete && isFollowingRef.current) {
+      isFollowingRef.current = false;
+      if (!isBusy(journal, lastPointerMove.current)) {
+        scrollToEnd(false);
+      }
     }
-  }, [contentSize, entryCount, isEnabled, journalRef, keepUp]);
+  }, [
+    contentSize,
+    entryCount,
+    isComplete,
+    isEnabled,
+    journalRef,
+    keepUp,
+    scrollToEnd,
+  ]);
 
   useEffect(() => {
     const journal = journalRef.current;
@@ -236,7 +261,7 @@ export function JournalFollow({
         onClick={() => {
           setFollowing(true);
           setSeenCount(entryCount);
-          scrollToEnd();
+          scrollToEnd(true);
         }}
       >
         <Icon name={IconName.ArrowDown} className="h-3.5 w-3.5 shrink-0" />

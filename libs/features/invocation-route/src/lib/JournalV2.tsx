@@ -1154,6 +1154,7 @@ export function JournalV2({
                       !journalProblems.isProblemsOnly &&
                       !journalProblems.findText.trim()
                     }
+                    isComplete={areAllInvocationsCompleted}
                     contentSize={totalSize}
                     entryCount={rootCommandCount}
                   />

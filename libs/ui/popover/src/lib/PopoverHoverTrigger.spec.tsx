@@ -38,6 +38,36 @@ describe('PopoverHoverTrigger', () => {
     expect(screen.getByText('payload')).toBeTruthy();
   });
 
+  it('stays closed after it is dismissed until the pointer comes back', () => {
+    render(<HoverPopover />);
+    const trigger = screen.getByRole('button', { name: 'chip' });
+
+    fireEvent.mouseEnter(trigger);
+    fireEvent.mouseMove(trigger);
+    act(() => {
+      vi.advanceTimersByTime(350);
+    });
+    fireEvent.keyDown(screen.getByText('payload'), { key: 'Escape' });
+    act(() => {
+      vi.advanceTimersByTime(350);
+    });
+    expect(screen.queryByText('payload')).toBeNull();
+
+    fireEvent.mouseMove(trigger);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.queryByText('payload')).toBeNull();
+
+    fireEvent.mouseLeave(trigger);
+    fireEvent.mouseEnter(trigger);
+    fireEvent.mouseMove(trigger);
+    act(() => {
+      vi.advanceTimersByTime(350);
+    });
+    expect(screen.getByText('payload')).toBeTruthy();
+  });
+
   it('stays closed when content moves under a still pointer', () => {
     render(<HoverPopover />);
     const trigger = screen.getByRole('button', { name: 'chip' });
