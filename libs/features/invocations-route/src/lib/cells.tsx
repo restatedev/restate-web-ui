@@ -415,10 +415,7 @@ function JournalCell({ invocation }: CellProps) {
     <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-0.5">
       <Popover>
         <PopoverTrigger>
-          <Button
-            variant="icon"
-            className="gap-1 rounded-md px-1.5 py-0 text-2xs leading-6 text-muted"
-          >
+          <Button variant="ghost" size="xs">
             {invocation.journal_commands_size || invocation.journal_size}{' '}
             {formatPlurals(invocation.journal_size, {
               one: 'entry',

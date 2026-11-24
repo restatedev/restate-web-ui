@@ -18,7 +18,7 @@ export interface SubmitButtonProps {
   form?: string;
   disabled?: boolean;
   value?: string;
-  variant?: 'primary' | 'secondary' | 'destructive' | 'icon';
+  variant?: 'primary' | 'secondary' | 'destructive' | 'icon' | 'ghost';
   size?: ButtonSize;
   className?: string;
   autoFocus?: boolean;

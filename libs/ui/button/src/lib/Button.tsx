@@ -18,7 +18,7 @@ export interface ButtonProps {
   value?: string;
   disabled?: boolean;
   autoFocus?: boolean;
-  variant?: 'primary' | 'secondary' | 'destructive' | 'icon';
+  variant?: 'primary' | 'secondary' | 'destructive' | 'icon' | 'ghost';
   size?: ButtonSize;
   className?: string;
   form?: string;
@@ -39,6 +39,8 @@ export const buttonStyles = tv({
       destructive:
         'bg-linear-to-b from-danger/95 to-danger text-inverse shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/15%)] drop-shadow-xs hover:from-danger-hover hover:to-danger-hover hover:shadow-none pressed:from-danger-pressed pressed:to-danger-pressed pressed:shadow-none',
       icon: 'flex items-center justify-center border-0 p-1 text-tertiary shadow-none hover:bg-tint disabled:bg-transparent pressed:bg-tint-strong',
+      ghost:
+        'flex h-6 items-center gap-1 rounded-md border-0 px-1.5 py-0 text-xs text-muted shadow-none hover:bg-tint hover:text-secondary pressed:bg-tint-strong',
     },
     size: {
       '2xs': '',
@@ -51,6 +53,16 @@ export const buttonStyles = tv({
     },
   },
   compoundVariants: [
+    {
+      variant: 'ghost',
+      size: 'xs',
+      className: 'text-2xs',
+    },
+    {
+      variant: 'ghost',
+      isDisabled: true,
+      className: 'bg-transparent',
+    },
     {
       variant: ['primary', 'secondary', 'destructive'],
       size: 'xs',

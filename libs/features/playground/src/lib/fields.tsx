@@ -293,8 +293,8 @@ function ResetInput({ run }: { run: OperationRun }) {
   }
   return (
     <Button
-      variant="icon"
-      className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-2xs text-muted hover:text-secondary"
+      variant="ghost"
+      size="xs"
       onClick={() =>
         runner.setDraft((previous) => ({
           ...previous,

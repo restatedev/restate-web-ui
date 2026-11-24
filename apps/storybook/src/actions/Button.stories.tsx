@@ -10,7 +10,7 @@ const meta = {
   argTypes: {
     variant: {
       control: 'inline-radio',
-      options: ['primary', 'secondary', 'destructive', 'icon'],
+      options: ['primary', 'secondary', 'destructive', 'icon', 'ghost'],
     },
     size: { control: 'inline-radio', options: ['2xs', 'xs', 'sm', 'md'] },
     disabled: { control: 'boolean' },
@@ -47,7 +47,35 @@ export const Variants: Story = {
       <Button {...args} variant="icon" aria-label="Refresh">
         <Icon name={IconName.Retry} size="md" />
       </Button>
+      <Button {...args} variant="ghost">
+        Ghost
+      </Button>
       <Button {...args} variant="primary" disabled>
+        Disabled
+      </Button>
+    </div>
+  ),
+};
+
+export const Ghost: Story = {
+  render: (args) => (
+    <div className="flex flex-wrap items-center gap-3">
+      <Button {...args} variant="ghost">
+        Last result
+      </Button>
+      <Button {...args} variant="ghost">
+        <Icon name={IconName.Pencil} size="xs" />
+        Edit
+      </Button>
+      <Button {...args} variant="ghost" size="xs">
+        <Icon name={IconName.RetryNow} size="xs" />
+        Reset
+      </Button>
+      <Button {...args} variant="ghost" size="xs">
+        12 entries
+        <Icon name={IconName.ChevronsUpDown} size="xs" tone="muted" />
+      </Button>
+      <Button {...args} variant="ghost" disabled>
         Disabled
       </Button>
     </div>

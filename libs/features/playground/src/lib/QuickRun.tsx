@@ -176,8 +176,7 @@ function QuickRunBody({
             />
             {latest && (
               <Button
-                variant="icon"
-                className="rounded-md px-1.5 py-1 text-xs text-muted hover:text-secondary"
+                variant="ghost"
                 onClick={() => {
                   setDismissedRun(undefined);
                   focusSoon(RESULT_FOCUS);

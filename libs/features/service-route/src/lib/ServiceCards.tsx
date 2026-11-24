@@ -95,8 +95,8 @@ export function CardEditAction({
   const [, setSearchParams] = useSearchParams();
   return (
     <Button
-      variant="icon"
-      className="flex h-6 items-center gap-1 rounded-md px-1.5 text-2xs font-medium text-subtle hover:bg-transparent hover:text-tertiary"
+      variant="ghost"
+      size="xs"
       onClick={() =>
         setSearchParams(
           (old) => {
@@ -442,8 +442,8 @@ function ConfigPopover({
         <span className="text-sm font-semibold text-muted">{title}</span>
         {editParam && !isReadonly && (
           <Button
-            variant="icon"
-            className="-my-1 ml-auto flex h-6 shrink-0 items-center gap-1 rounded-md px-1.5 text-xs font-normal text-muted hover:text-secondary"
+            variant="ghost"
+            className="-my-1 ml-auto shrink-0"
             onClick={() => {
               close?.();
               setSearchParams(
