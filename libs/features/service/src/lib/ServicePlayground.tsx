@@ -329,7 +329,7 @@ function ServicePlaygroundComplementaryContent() {
               }}
               className="flex h-7 w-7 items-center justify-center rounded-full p-0"
             >
-              <Icon name={IconName.Maximize} size="sm" className="text-muted" />
+              <Icon name={IconName.Maximize} size="sm" tone="muted" />
             </Button>
           </TooltipTrigger>
           <TooltipContent size="sm">Open as sheet</TooltipContent>
@@ -390,7 +390,7 @@ function ServicePlaygroundComplementaryContent() {
                     <Icon
                       name={IconName.ChevronsUpDown}
                       size="md"
-                      className="text-muted"
+                      tone="muted"
                     />
                   </Button>
                 </DropdownTrigger>

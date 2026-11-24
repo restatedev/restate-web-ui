@@ -151,7 +151,8 @@ export function Failure({
           <Icon
             name={IconName.ChevronsUpDown}
             size="xs"
-            className="mr-1 text-muted"
+            tone="muted"
+            className="mr-1"
           />
         </Button>
       </PopoverTrigger>

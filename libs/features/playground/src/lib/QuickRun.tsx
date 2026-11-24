@@ -122,7 +122,7 @@ function QuickRunBody({
               size="md"
               onClick={onOpenFull}
             >
-              <Icon name={IconName.Maximize} size="sm" className="text-muted" />
+              <Icon name={IconName.Maximize} size="sm" tone="muted" />
             </Button>
           </HoverTooltip>
         </div>
@@ -237,11 +237,7 @@ function ResultPanel({
             'Cancel'
           ) : (
             <>
-              <Icon
-                name={IconName.ArrowLeft}
-                size="sm"
-                className="text-subtle"
-              />
+              <Icon name={IconName.ArrowLeft} size="sm" tone="subtle" />
               Back
             </>
           )}

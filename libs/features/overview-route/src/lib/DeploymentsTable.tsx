@@ -182,7 +182,7 @@ function DeploymentServices({
           variant="secondary"
           className="relative inline-flex items-center gap-1 rounded-lg py-1 pr-1 pl-2 text-xs font-medium tabular-nums"
         >
-          <Icon name={IconName.Box} size="sm" className="text-subtle" />
+          <Icon name={IconName.Box} size="sm" tone="subtle" />
           {formatNumber(services.length, true)}{' '}
           <span className="opacity-80">
             {formatPlurals(services.length, {
@@ -190,11 +190,7 @@ function DeploymentServices({
               other: 'services',
             })}
           </span>
-          <Icon
-            name={IconName.ChevronsUpDown}
-            size="sm"
-            className="text-subtle"
-          />
+          <Icon name={IconName.ChevronsUpDown} size="sm" tone="subtle" />
         </Button>
       </DropdownTrigger>
       <DropdownPopover placement="bottom end">

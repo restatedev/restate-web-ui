@@ -102,11 +102,7 @@ export function InvocationBatchActions({
                 : totalCountLabel}
             </Badge>
           )}
-          <Icon
-            name={IconName.ChevronsUpDown}
-            size="sm"
-            className="opacity-80"
-          />
+          <Icon name={IconName.ChevronsUpDown} size="sm" tone="dimmed" />
         </Button>
       </DropdownTrigger>
       <DropdownPopover>
@@ -142,7 +138,7 @@ export function InvocationBatchActions({
                   value={action.id}
                   destructive={action.destructive}
                 >
-                  <Icon name={action.icon} size="sm" className="opacity-80" />
+                  <Icon name={action.icon} size="sm" tone="dimmed" />
                   {action.label}…
                 </DropdownItem>
               );

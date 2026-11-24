@@ -142,11 +142,7 @@ export function JourneyInboxPosition({
             <span className="tabular-nums">
               {formatNumber(entriesAhead)} {entriesLabel}
             </span>
-            <Icon
-              name={IconName.ChevronsUpDown}
-              size="xs"
-              className="text-subtle"
-            />
+            <Icon name={IconName.ChevronsUpDown} size="xs" tone="subtle" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-fit max-w-[min(48rem,calc(100vw-2rem))] min-w-[min(22rem,calc(100vw-2rem))]">

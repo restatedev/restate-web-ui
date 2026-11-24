@@ -39,7 +39,7 @@ function Component() {
     <div className="mx-auto flex w-full max-w-3xl flex-col px-4 py-2 sm:px-6">
       <div className="mb-5 flex items-center gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border bg-surface shadow-xs">
-          <Icon name={IconName.Sparkles} size="lg" className="text-muted" />
+          <Icon name={IconName.Sparkles} size="lg" tone="muted" />
         </div>
         <div className="flex flex-col">
           <h1 className="text-xl font-semibold text-primary">

@@ -262,7 +262,7 @@ export function VQueueStageLegend({
                     <Icon
                       name={IconName.ChevronsUpDown}
                       size="sm"
-                      className="text-subtle"
+                      tone="subtle"
                     />
                   </Button>
                 </PopoverTrigger>

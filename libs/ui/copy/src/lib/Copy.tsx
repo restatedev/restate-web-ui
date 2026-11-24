@@ -1,5 +1,5 @@
 import { Button } from '@restate/ui-button';
-import { Icon, IconName } from '@restate/ui-icons';
+import { Icon, IconName, type IconTone } from '@restate/ui-icons';
 import { PropsWithChildren, useState } from 'react';
 import { tv } from '@restate/util-styles';
 
@@ -10,6 +10,7 @@ interface CopyProps {
   copyText: string;
   onClick?: VoidFunction;
   size?: CopySize;
+  tone?: IconTone;
 }
 
 const copyStyles = tv({
@@ -26,6 +27,7 @@ export function Copy({
   copyText,
   onClick,
   size,
+  tone,
 }: PropsWithChildren<CopyProps>) {
   const [isCopied, setIsCopied] = useState(false);
 
@@ -45,9 +47,9 @@ export function Copy({
       }}
     >
       {isCopied ? (
-        <Icon name={IconName.Check} size={size} />
+        <Icon name={IconName.Check} size={size} tone={tone} />
       ) : (
-        <Icon name={IconName.Copy} size={size} />
+        <Icon name={IconName.Copy} size={size} tone={tone} />
       )}
     </Button>
   );

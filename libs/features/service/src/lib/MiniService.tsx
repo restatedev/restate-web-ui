@@ -27,7 +27,7 @@ export function MiniService({
   return (
     <div className={styles({ className })}>
       <div className="h-6 w-6 shrink-0 rounded-md border bg-surface shadow-xs">
-        <Icon name={IconName.Box} className="h-full w-full p-1 text-subtle" />
+        <Icon name={IconName.Box} tone="subtle" className="h-full w-full p-1" />
       </div>
 
       <div className="flex flex-auto flex-row items-center gap-2 truncate text-0.5xs font-medium text-tertiary">
@@ -48,11 +48,7 @@ export function MiniService({
           href={serviceHref(baseUrl, { service: service.name })}
           className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-tint-subtle pressed:before:bg-tint"
         >
-          <Icon
-            name={IconName.ChevronRight}
-            size="md"
-            className="text-subtle"
-          />
+          <Icon name={IconName.ChevronRight} size="md" tone="subtle" />
         </Link>
       )}
     </div>

@@ -366,11 +366,7 @@ export function AwaitingOn({
           className={triggerStyles({ state, className })}
         >
           {label}
-          <Icon
-            name={IconName.ChevronsUpDown}
-            size="xs"
-            className="text-muted"
-          />
+          <Icon name={IconName.ChevronsUpDown} size="xs" tone="muted" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-2xl">

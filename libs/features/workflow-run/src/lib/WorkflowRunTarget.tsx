@@ -147,7 +147,8 @@ export function WorkflowRunTarget({
               <Icon
                 name={IconName.ChevronRight}
                 size="sm"
-                className="-mr-1 text-subtle"
+                tone="subtle"
+                className="-mr-1"
               />
             )}
           </ChipSegment>

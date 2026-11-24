@@ -55,7 +55,8 @@ export function Handler({
           >
             <Icon
               name={IconName.Function}
-              className="h-full w-full text-subtle"
+              tone="subtle"
+              className="h-full w-full"
             />
           </div>
         </div>
@@ -105,11 +106,7 @@ export function Handler({
                   })}
                   className={link()}
                 >
-                  <Icon
-                    name={IconName.ChevronRight}
-                    size="md"
-                    className="text-subtle"
-                  />
+                  <Icon name={IconName.ChevronRight} size="md" tone="subtle" />
                 </Link>
               )}
             </span>

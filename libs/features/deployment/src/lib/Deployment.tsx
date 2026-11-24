@@ -147,11 +147,7 @@ export function Deployment({
               href={deploymentHref(baseUrl, { deployment: deploymentId })}
               className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-tint-subtle pressed:before:bg-tint"
             >
-              <Icon
-                name={IconName.ChevronRight}
-                size="md"
-                className="text-subtle"
-              />
+              <Icon name={IconName.ChevronRight} size="md" tone="subtle" />
             </Link>
           )}
         </div>
@@ -262,11 +258,7 @@ export function Deployment({
           href={deploymentHref(baseUrl, { deployment: deployment.id })}
           className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-tint-subtle pressed:before:bg-tint"
         >
-          <Icon
-            name={IconName.ChevronRight}
-            size="md"
-            className="text-subtle"
-          />
+          <Icon name={IconName.ChevronRight} size="md" tone="subtle" />
         </Link>
       )}
     </div>

@@ -111,7 +111,8 @@ export function Expression({
               <Icon
                 name={IconName.Function}
                 size="md"
-                className="-ml-1 text-subtle"
+                tone="subtle"
+                className="-ml-1"
               />
             )}
             <TruncateWithTooltip copyText={name}>

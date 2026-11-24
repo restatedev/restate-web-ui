@@ -54,3 +54,31 @@ export const Sizes: Story = {
     </div>
   ),
 };
+
+export const Tones: Story = {
+  render: (args) => (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-end gap-6 text-primary">
+        {(['inherit', 'secondary', 'tertiary', 'muted', 'subtle'] as const).map(
+          (tone) => (
+            <span key={tone} className="flex flex-col items-center gap-2">
+              <Icon {...args} size="lg" tone={tone} />
+              <code className="font-mono text-2xs text-tertiary">{tone}</code>
+            </span>
+          ),
+        )}
+      </div>
+      <div className="flex items-center gap-4 text-sm">
+        <span className="flex items-center gap-1.5 text-primary">
+          <Icon name={IconName.Pause} size="sm" tone="dimmed" />
+          Pause…
+        </span>
+        <span className="flex items-center gap-1.5 text-danger">
+          <Icon name={IconName.Cancel} size="sm" tone="dimmed" />
+          Cancel…
+        </span>
+        <code className="font-mono text-2xs text-tertiary">dimmed</code>
+      </div>
+    </div>
+  ),
+};

@@ -631,7 +631,7 @@ export function AdvancedToggle({
       <Icon
         name={isOpen ? IconName.ChevronUp : IconName.ChevronDown}
         size="sm"
-        className="text-subtle"
+        tone="subtle"
       />
     </Button>
   );

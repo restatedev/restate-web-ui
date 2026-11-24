@@ -286,9 +286,18 @@ export const enum IconName {
 }
 export type IconSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg';
 
+export type IconTone =
+  | 'inherit'
+  | 'dimmed'
+  | 'secondary'
+  | 'tertiary'
+  | 'muted'
+  | 'subtle';
+
 export interface IconsProps {
   name: IconName;
   size?: IconSize;
+  tone?: IconTone;
   ['aria-hidden']?: boolean;
   className?: string;
 }
@@ -451,15 +460,24 @@ const styles = tv({
       md: 'h-4 w-4 shrink-0',
       lg: 'h-5 w-5 shrink-0',
     },
+    tone: {
+      inherit: '',
+      dimmed: 'opacity-80',
+      secondary: 'text-secondary',
+      tertiary: 'text-tertiary',
+      muted: 'text-muted',
+      subtle: 'text-subtle',
+    },
   },
+  defaultVariants: { tone: 'inherit' },
 });
 
-export function Icon({ name, size, className, ...props }: IconsProps) {
+export function Icon({ name, size, tone, className, ...props }: IconsProps) {
   const IconComponent = ICONS[name];
   return (
     <IconComponent
       {...props}
-      className={styles({ size, className })}
+      className={styles({ size, tone, className })}
       aria-hidden="true"
     />
   );

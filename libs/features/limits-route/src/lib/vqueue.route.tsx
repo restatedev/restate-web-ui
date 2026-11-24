@@ -212,11 +212,7 @@ function VQueueBatchActions({
           className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
         >
           Actions
-          <Icon
-            name={IconName.ChevronsUpDown}
-            size="sm"
-            className="opacity-80"
-          />
+          <Icon name={IconName.ChevronsUpDown} size="sm" tone="dimmed" />
         </Button>
       </DropdownTrigger>
       <DropdownPopover>
@@ -256,7 +252,7 @@ function VQueueBatchActions({
                   value={action}
                   destructive={config.destructive}
                 >
-                  <Icon name={config.icon} size="sm" className="opacity-80" />
+                  <Icon name={config.icon} size="sm" tone="dimmed" />
                   {config.label}
                 </DropdownItem>
               );

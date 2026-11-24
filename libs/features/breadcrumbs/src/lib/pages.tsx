@@ -21,9 +21,7 @@ export type CrumbFragment = Omit<PageDefinition, 'pattern'>;
 
 function CurrentCopy({ crumb }: BreadcrumbComponentProps) {
   return (
-    crumb.isCurrent && (
-      <Copy copyText={crumb.label} size="2xs" className="text-muted" />
-    )
+    crumb.isCurrent && <Copy copyText={crumb.label} size="2xs" tone="muted" />
   );
 }
 
@@ -53,7 +51,7 @@ function InvocationCrumbPopover({ crumb }: BreadcrumbComponentProps) {
 function VQueueCrumbContent({ crumb }: BreadcrumbComponentProps) {
   return (
     <>
-      <Icon name={crumb.icon} size="xs" className="rotate-90 text-subtle" />
+      <Icon name={crumb.icon} size="xs" tone="subtle" className="rotate-90" />
       <span data-crumb-label className="min-w-0 truncate">
         {crumb.label}
       </span>
@@ -117,7 +115,7 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
             showLabel={false}
           />
         )}
-        <Icon name={IconName.Workflow} size="xs" className="text-subtle" />
+        <Icon name={IconName.Workflow} size="xs" tone="subtle" />
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
         </span>

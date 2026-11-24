@@ -380,11 +380,11 @@ function QueryActions({
       }}
       menus={[
         <DropdownItem key="standard" value="standard" isDisabled={isDisabled}>
-          <Icon name={IconName.ScanSearch} size="sm" className="opacity-80" />
+          <Icon name={IconName.ScanSearch} size="sm" tone="dimmed" />
           Explain analyze
         </DropdownItem>,
         <DropdownItem key="verbose" value="verbose" isDisabled={isDisabled}>
-          <Icon name={IconName.Code} size="sm" className="opacity-80" />
+          <Icon name={IconName.Code} size="sm" tone="dimmed" />
           Explain analyze verbose
         </DropdownItem>,
       ]}
@@ -399,7 +399,8 @@ function QueryActions({
           >
             <Icon
               name={IconName.ScanSearch}
-              className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
+              tone="dimmed"
+              className="h-[0.9em] w-[0.9em] shrink-0"
             />
             {isRunning ? 'Running…' : 'Explain analyze'}
           </Button>
@@ -708,11 +709,7 @@ function Component() {
                   </div>
                 )}
                 inputPrefix={
-                  <Icon
-                    name={IconName.Search}
-                    size="md"
-                    className="text-subtle"
-                  />
+                  <Icon name={IconName.Search} size="md" tone="subtle" />
                 }
                 tagsPlacement="outside"
                 maxVisibleChips="auto"

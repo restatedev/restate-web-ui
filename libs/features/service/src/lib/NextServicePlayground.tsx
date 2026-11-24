@@ -118,7 +118,7 @@ export function HeaderButton({
           aria-label={label}
           className="flex h-7 w-7 items-center justify-center rounded-full p-0"
         >
-          <Icon name={icon} size="sm" className="text-muted" />
+          <Icon name={icon} size="sm" tone="muted" />
         </Button>
       </TooltipTrigger>
       <TooltipContent size="sm">{label}</TooltipContent>

@@ -191,11 +191,7 @@ function InboxBatchActions({
                 {formatNumber(inboxCount, true)}
               </Badge>
             )}
-            <Icon
-              name={IconName.ChevronsUpDown}
-              size="sm"
-              className="opacity-80"
-            />
+            <Icon name={IconName.ChevronsUpDown} size="sm" tone="dimmed" />
           </Button>
         </DropdownTrigger>
         <DropdownPopover>
@@ -211,11 +207,11 @@ function InboxBatchActions({
               }}
             >
               <DropdownItem value="cancel" destructive>
-                <Icon name={IconName.Cancel} size="sm" className="opacity-80" />
+                <Icon name={IconName.Cancel} size="sm" tone="dimmed" />
                 Cancel…
               </DropdownItem>
               <DropdownItem value="kill" destructive>
-                <Icon name={IconName.Kill} size="sm" className="opacity-80" />
+                <Icon name={IconName.Kill} size="sm" tone="dimmed" />
                 Kill…
               </DropdownItem>
             </DropdownMenu>

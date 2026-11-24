@@ -234,7 +234,8 @@ function CounterSummaryCell({
       <Icon
         name={IconName.ChevronRight}
         size="xs"
-        className="mr-1 text-subtle"
+        tone="subtle"
+        className="mr-1"
       />
     </Link>
   );
@@ -280,16 +281,16 @@ export function RuleActions({
             <Icon
               name={enabled ? IconName.Pause : IconName.Play}
               size="sm"
-              className="opacity-80"
+              tone="dimmed"
             />
             {enabled ? 'Disable rule' : 'Enable rule'}
           </DropdownItem>,
           <DropdownItem key="edit" value="edit">
-            <Icon name={IconName.Pencil} size="sm" className="opacity-80" />
+            <Icon name={IconName.Pencil} size="sm" tone="dimmed" />
             Edit…
           </DropdownItem>,
           <DropdownItem key="delete" value="delete" destructive>
-            <Icon name={IconName.Trash} size="sm" className="opacity-80" />
+            <Icon name={IconName.Trash} size="sm" tone="dimmed" />
             Delete…
           </DropdownItem>,
         ]}
@@ -631,7 +632,7 @@ function Component() {
             title="Rule filters"
             onItemRemove={scheduleSubmit}
             inputPrefix={
-              <Icon name={IconName.Search} size="md" className="text-subtle" />
+              <Icon name={IconName.Search} size="md" tone="subtle" />
             }
             tagsPlacement="outside"
             maxVisibleChips="auto"

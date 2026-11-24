@@ -162,15 +162,12 @@ export function InvocationHandler({
             <Icon
               name={IconName.Function}
               size="md"
-              className="-mr-0.5 text-subtle"
+              tone="subtle"
+              className="-mr-0.5"
             />
             <TruncateTooltipTrigger>{handler}</TruncateTooltipTrigger>
             {service && (
-              <Icon
-                name={IconName.ChevronRight}
-                size="sm"
-                className="text-subtle"
-              />
+              <Icon name={IconName.ChevronRight} size="sm" tone="subtle" />
             )}
           </ChipSegment>
         </Chip>

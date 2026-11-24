@@ -1678,7 +1678,7 @@ const TimelineRow = memo(function TimelineRow({
 function JournalPurgedMessage() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-12 text-center">
-      <Icon name={IconName.Trash} size="lg" className="text-subtle" />
+      <Icon name={IconName.Trash} size="lg" tone="subtle" />
       <div className="text-sm font-medium text-secondary">
         Journal was purged
       </div>
@@ -1739,7 +1739,7 @@ function HiddenEntriesChip({
       }
     >
       <span className={hiddenEntriesChipStyles()}>
-        <Icon name={IconName.EyeOff} size="xs" className="text-subtle" />
+        <Icon name={IconName.EyeOff} size="xs" tone="subtle" />
         {count}
       </span>
     </HoverTooltip>

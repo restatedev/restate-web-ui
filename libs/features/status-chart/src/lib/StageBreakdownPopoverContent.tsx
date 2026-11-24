@@ -125,11 +125,7 @@ export function StageBreakdownPopoverContent({
                   {percentage}
                 </span>
               )}
-              <Icon
-                name={IconName.ChevronRight}
-                size="sm"
-                className="text-subtle"
-              />
+              <Icon name={IconName.ChevronRight} size="sm" tone="subtle" />
             </Link>
           );
         })}

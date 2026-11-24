@@ -109,7 +109,8 @@ function ResumeInvocationContent() {
                   <div className="h-6 w-6 shrink-0 rounded-md border bg-surface shadow-xs">
                     <Icon
                       name={icon}
-                      className="h-full w-full p-1 text-subtle"
+                      tone="subtle"
+                      className="h-full w-full p-1"
                     />
                   </div>
                   {isTunnel && (

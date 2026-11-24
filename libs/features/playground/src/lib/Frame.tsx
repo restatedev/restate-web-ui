@@ -164,7 +164,8 @@ export function HandlerSwitcher({
               <Icon
                 name={IconName.Function}
                 size="lg"
-                className="-mr-1 text-subtle"
+                tone="subtle"
+                className="-mr-1"
               />
             )}
             <span
@@ -172,11 +173,7 @@ export function HandlerSwitcher({
             >
               {label}
             </span>
-            <Icon
-              name={IconName.ChevronsUpDown}
-              size="sm"
-              className="text-subtle"
-            />
+            <Icon name={IconName.ChevronsUpDown} size="sm" tone="subtle" />
           </Button>
         </DropdownTrigger>
         <DropdownPopover placement="bottom start" className="w-72">

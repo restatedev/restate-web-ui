@@ -52,14 +52,12 @@ export function DeploymentActions({
         <>
           <DropdownItem href={updateHref}>
             {isHeader && (
-              <Icon name={IconName.Pencil} size="sm" className="opacity-80" />
+              <Icon name={IconName.Pencil} size="sm" tone="dimmed" />
             )}
             Update
           </DropdownItem>
           <DropdownItem href={deleteHref} destructive>
-            {isHeader && (
-              <Icon name={IconName.Trash} size="sm" className="opacity-80" />
-            )}
+            {isHeader && <Icon name={IconName.Trash} size="sm" tone="dimmed" />}
             Delete
           </DropdownItem>
         </>
@@ -76,7 +74,8 @@ export function DeploymentActions({
         {isHeader && (
           <Icon
             name={primaryAction.icon}
-            className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
+            tone="dimmed"
+            className="h-[0.9em] w-[0.9em] shrink-0"
           />
         )}
         {primaryAction.label}

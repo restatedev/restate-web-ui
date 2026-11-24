@@ -352,11 +352,7 @@ export function StateStorageBreakdown() {
                 className={legendItem({ class: legendItemLink() })}
               >
                 {content}
-                <Icon
-                  name={IconName.ChevronRight}
-                  size="sm"
-                  className="text-subtle"
-                />
+                <Icon name={IconName.ChevronRight} size="sm" tone="subtle" />
               </Link>
             );
           }
@@ -377,7 +373,7 @@ export function StateStorageBreakdown() {
                     <Icon
                       name={IconName.ChevronsUpDown}
                       size="sm"
-                      className="text-subtle"
+                      tone="subtle"
                     />
                   </Button>
                 </PopoverTrigger>

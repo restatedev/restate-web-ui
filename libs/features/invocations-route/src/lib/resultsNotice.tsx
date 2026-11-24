@@ -8,7 +8,7 @@ export function ResultsNotice({ message }: { message: string }) {
       role="status"
       className="flex min-h-9 w-full shrink-0 items-center gap-2 rounded-xl border border-default bg-subtle px-2.5 py-2 text-xs text-tertiary"
     >
-      <Icon name={IconName.Info} size="sm" className="text-subtle" />
+      <Icon name={IconName.Info} size="sm" tone="subtle" />
       <span>{message}</span>
     </div>
   );

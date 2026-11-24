@@ -53,7 +53,8 @@ export function Input({ entry, invocation, className }: InputProps) {
           <Icon
             name={IconName.Function}
             size="lg"
-            className="mr-0.5 text-subtle"
+            tone="subtle"
+            className="mr-0.5"
           />
           <EntryExpression
             entry={entry}
@@ -78,7 +79,8 @@ export function Input({ entry, invocation, className }: InputProps) {
           <Icon
             name={IconName.Function}
             size="lg"
-            className="mr-0.5 text-subtle"
+            tone="subtle"
+            className="mr-0.5"
           />
           {invocation?.target_handler_name}
         </div>

@@ -64,7 +64,8 @@ export function VQueueIdDisplay({
       <span className={icon()}>
         <Icon
           name={IconName.Layers}
-          className="h-full w-full rotate-90 p-1 text-muted"
+          tone="muted"
+          className="h-full w-full rotate-90 p-1"
         />
       </span>
       {!isIcon && (

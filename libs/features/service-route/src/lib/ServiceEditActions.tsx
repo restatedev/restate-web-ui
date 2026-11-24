@@ -84,7 +84,7 @@ export function ServiceEditActions({
           >
             {EDIT_ACTIONS.map((action) => (
               <DropdownItem key={action.key} value={action.key}>
-                <Icon name={action.icon} size="sm" className="opacity-80" />
+                <Icon name={action.icon} size="sm" tone="dimmed" />
                 {action.label}
               </DropdownItem>
             ))}

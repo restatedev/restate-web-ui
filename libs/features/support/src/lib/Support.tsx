@@ -29,7 +29,8 @@ export function Support({ children }: PropsWithChildren) {
             >
               <Icon
                 name={IconName.Docs}
-                className="h-[1.25em] w-[1.25em] text-secondary"
+                tone="secondary"
+                className="h-[1.25em] w-[1.25em]"
               />
               Read documentation…
             </Link>
@@ -42,7 +43,8 @@ export function Support({ children }: PropsWithChildren) {
             >
               <Icon
                 name={IconName.Discord}
-                className="h-[1.25em] w-[1.25em] text-secondary"
+                tone="secondary"
+                className="h-[1.25em] w-[1.25em]"
               />
               Join Discord…
             </Link>
@@ -55,7 +57,8 @@ export function Support({ children }: PropsWithChildren) {
             >
               <Icon
                 name={IconName.Slack}
-                className="h-[1.25em] w-[1.25em] text-secondary"
+                tone="secondary"
+                className="h-[1.25em] w-[1.25em]"
               />
               Join Slack…
             </Link>
@@ -68,7 +71,8 @@ export function Support({ children }: PropsWithChildren) {
             >
               <Icon
                 name={IconName.Github}
-                className="h-[1.25em] w-[1.25em] text-secondary"
+                tone="secondary"
+                className="h-[1.25em] w-[1.25em]"
               />
               Open Github issue…
             </Link>

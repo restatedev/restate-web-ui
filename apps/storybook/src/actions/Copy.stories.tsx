@@ -7,6 +7,10 @@ const meta = {
   args: { copyText: 'inv_1gQNFQQ1HLWM7jo57gxCUiOlQ5nBYztfXV', size: 'xs' },
   argTypes: {
     size: { control: 'inline-radio', options: ['2xs', 'xs', 'sm', 'md'] },
+    tone: {
+      control: 'inline-radio',
+      options: ['inherit', 'secondary', 'tertiary', 'muted', 'subtle'],
+    },
   },
 } satisfies Meta<typeof Copy>;
 

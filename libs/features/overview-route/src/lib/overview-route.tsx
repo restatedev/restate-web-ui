@@ -826,7 +826,8 @@ function OverviewContent() {
             <Icon
               name={IconName.Search}
               size="md"
-              className="ml-1.5 text-subtle"
+              tone="subtle"
+              className="ml-1.5"
             />
             <AriaInput
               ref={filterRef}
