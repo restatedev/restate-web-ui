@@ -24,7 +24,7 @@ const BUILT_IN_LABELS: Partial<Record<ServiceGroupBy, string>> = {
 };
 
 export function ServicesGroupBy() {
-  const { servicesMap } = useOverviewContext();
+  const { servicesMap, isServiceDetailsPending } = useOverviewContext();
   const [groupBy, setGroupBy] = useServiceGroupBy();
   const keys = useMemo(
     () => getMetadataKeys(servicesMap?.values() ?? []),
@@ -75,7 +75,7 @@ export function ServicesGroupBy() {
             ))}
           </DropdownMenu>
         </DropdownSection>
-        {keys.length === 0 && (
+        {!isServiceDetailsPending && keys.length === 0 && (
           <p className="max-w-64 px-4 pt-1 pb-3 text-0.5xs text-muted">
             Add metadata to your services, such as a team or a domain, to group
             by it.

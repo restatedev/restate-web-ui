@@ -55,7 +55,11 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
 import { sortServices, type OverviewService } from './sortServices';
-import { groupServices, useServiceGroupBy } from './serviceGroups';
+import {
+  getMetadataGroupKey,
+  groupServices,
+  useServiceGroupBy,
+} from './serviceGroups';
 import {
   isServiceGroupRow,
   renderServiceGroupCell,
@@ -150,6 +154,15 @@ const tableStyles = tv({
       'h-full w-full justify-start rounded-none border-none bg-transparent px-2 py-2 text-subtle shadow-none hover:bg-tint-subtle hover:text-muted',
     handlerInvocationIcon: 'h-4 w-4',
     handlerInvocationBar: 'ml-auto min-w-3',
+  },
+  variants: {
+    isGrouped: {
+      true: {
+        serviceIdentity: 'pl-7',
+        handlerIdentity: 'pl-14',
+      },
+      false: {},
+    },
   },
 });
 
@@ -289,12 +302,14 @@ function ServiceIdentity({
   row,
   isOnboarding,
   OnboardingGuide,
+  isGrouped,
 }: {
   row: OverviewServiceTableRow;
   isOnboarding: boolean;
   OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
+  isGrouped: boolean;
 }) {
-  const styles = tableStyles();
+  const styles = tableStyles({ isGrouped });
   const { baseUrl } = useRestateContext();
   const publicHandlers = row.handlers?.filter((handler) =>
     isPublicHandler(row, handler),
@@ -355,11 +370,13 @@ function ServiceIdentity({
 function HandlerIdentity({
   service,
   handler,
+  isGrouped,
 }: {
   service: OverviewService;
   handler: Handler;
+  isGrouped: boolean;
 }) {
-  const styles = tableStyles();
+  const styles = tableStyles({ isGrouped });
   return (
     <div className={styles.handlerIdentity()}>
       <ServiceHandler
@@ -394,6 +411,7 @@ function renderHandlerCell({
   baseUrl,
   linkParams,
   handlerInvocations,
+  isGrouped,
 }: {
   service: OverviewService;
   row: OverviewHandlerTableRow;
@@ -401,12 +419,17 @@ function renderHandlerCell({
   baseUrl: string;
   linkParams?: URLSearchParams;
   handlerInvocations: HandlerInvocations;
+  isGrouped: boolean;
 }) {
   const styles = tableStyles();
   if (column.id === 'name') {
     return (
       <Cell className={styles.identityCell()}>
-        <HandlerIdentity service={service} handler={row.handler} />
+        <HandlerIdentity
+          service={service}
+          handler={row.handler}
+          isGrouped={isGrouped}
+        />
       </Cell>
     );
   }
@@ -486,12 +509,14 @@ function HandlerRows({
   baseUrl,
   linkParams,
   handlerInvocations,
+  isGrouped,
 }: {
   service: OverviewServiceTableRow;
   columns: PanelTableColumn[];
   baseUrl: string;
   linkParams?: URLSearchParams;
   handlerInvocations: HandlerInvocations;
+  isGrouped: boolean;
 }) {
   const styles = tableStyles();
   const handlers = service.visibleHandlers.map((handler) => ({
@@ -502,7 +527,13 @@ function HandlerRows({
   return (
     <Collection
       items={handlers}
-      dependencies={[columns, baseUrl, linkParams, handlerInvocations]}
+      dependencies={[
+        columns,
+        baseUrl,
+        linkParams,
+        handlerInvocations,
+        isGrouped,
+      ]}
     >
       {(row) => (
         <Row
@@ -520,6 +551,7 @@ function HandlerRows({
               baseUrl,
               linkParams,
               handlerInvocations,
+              isGrouped,
             })
           }
         </Row>
@@ -543,6 +575,7 @@ export function ServicesTable() {
     isServiceSummaryLoading,
     isDeploymentsFetching,
     isServicesPending,
+    isServiceDetailsPending,
     baseUrl,
     linkParams,
     resolvedServiceSortDescriptor,
@@ -633,6 +666,9 @@ export function ServicesTable() {
   );
   const styles = tableStyles();
   const [groupBy] = useServiceGroupBy();
+  const isGrouped = groupBy !== 'none';
+  const isGroupMetadataPending =
+    getMetadataGroupKey(groupBy) !== undefined && isServiceDetailsPending;
   const [collapsed, setCollapsed] = useState(() => ({
     groupBy,
     ids: NO_COLLAPSED_GROUPS,
@@ -649,7 +685,7 @@ export function ServicesTable() {
     setCollapsed({ groupBy, ids: next });
   };
   const items = useMemo<OverviewTableRow[]>(() => {
-    if (groupBy === 'none') return rows;
+    if (!isGrouped) return rows;
     return groupServices(
       rows,
       groupBy,
@@ -659,14 +695,16 @@ export function ServicesTable() {
       { id: group.id, kind: 'group' as const, group },
       ...(collapsedGroups.has(group.id) ? [] : group.services),
     ]);
-  }, [collapsedGroups, deploymentsMap, groupBy, rows]);
+  }, [collapsedGroups, deploymentsMap, groupBy, isGrouped, rows]);
 
   return (
     <PanelTable<OverviewTableRow, ServiceColumn>
       aria-label="Services and handlers"
       columns={COLUMNS}
       items={items}
-      isLoading={isDeploymentsFetching || isServicesPending}
+      isLoading={
+        isDeploymentsFetching || isServicesPending || isGroupMetadataPending
+      }
       numOfRows={Math.max(items.length, 6)}
       treeColumn="name"
       expandedKeys={visibleExpandedKeys}
@@ -760,6 +798,7 @@ export function ServicesTable() {
                 row={row}
                 isOnboarding={isOnboarding}
                 OnboardingGuide={OnboardingGuide}
+                isGrouped={isGrouped}
               />
             </Cell>
           );
@@ -856,6 +895,7 @@ export function ServicesTable() {
             baseUrl={baseUrl}
             linkParams={linkParams}
             handlerInvocations={handlerInvocations}
+            isGrouped={isGrouped}
           />
         )
       }

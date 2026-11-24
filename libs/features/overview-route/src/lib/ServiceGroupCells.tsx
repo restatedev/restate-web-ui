@@ -43,10 +43,10 @@ const styles = tv({
 });
 
 const labelStyles = tv({
-  base: 'truncate text-sm font-semibold text-primary',
+  base: 'truncate text-sm font-medium text-secondary',
   variants: {
     isMissing: {
-      true: 'font-medium text-muted',
+      true: 'text-muted',
       false: '',
     },
   },

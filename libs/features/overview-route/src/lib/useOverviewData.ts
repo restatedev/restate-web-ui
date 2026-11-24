@@ -267,5 +267,6 @@ export function useOverviewData({
     error,
     isDeploymentsFetching: isFetching,
     isServicesPending,
+    isServiceDetailsPending: isHandlersPending,
   };
 }
