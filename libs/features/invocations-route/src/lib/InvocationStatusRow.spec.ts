@@ -8,12 +8,21 @@ function presetSearch(id: string) {
   return preset.search;
 }
 
-function hrefParams(current: Record<string, string | string[]>, id: string) {
+function hrefParams(
+  current: Record<string, string | string[]>,
+  id: string,
+  from?: string,
+) {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(current)) {
     for (const item of [value].flat()) params.append(key, item);
   }
-  const href = invocationStatusHref('/ui', params, presetSearch(id));
+  const href = invocationStatusHref(
+    '/ui',
+    params,
+    presetSearch(id),
+    from && presetSearch(from),
+  );
   return new URLSearchParams(href.split('?')[1]);
 }
 
@@ -76,6 +85,25 @@ describe('invocationStatusHref', () => {
       'target',
       'status',
       'scheduled_start_at',
+    ]);
+  });
+
+  it('drops the start time column when leaving Scheduled and keeps the others', () => {
+    const params = hrefParams(
+      {
+        filter_status: JSON.stringify({
+          operation: 'IN',
+          value: ['scheduled'],
+        }),
+        column: ['id', 'target', 'idempotency_key', 'scheduled_start_at'],
+      },
+      'processing',
+      'scheduled',
+    );
+    expect(params.getAll('column')).toEqual([
+      'id',
+      'target',
+      'idempotency_key',
     ]);
   });
 

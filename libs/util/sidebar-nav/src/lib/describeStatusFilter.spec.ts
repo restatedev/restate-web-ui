@@ -6,15 +6,38 @@ function status(operation: 'IN' | 'NOT_IN', value: string[]) {
 }
 
 describe('describeStatusFilter', () => {
-  it('names everything that is not finished', () => {
+  it('does not reuse a preset name for the same statuses written another way', () => {
     expect(
       describeStatusFilter(
-        status('NOT_IN', ['succeeded', 'failed', 'cancelled', 'killed']),
+        status('NOT_IN', [
+          'scheduled',
+          'pending',
+          'yielded',
+          'ready',
+          'backing-off',
+          'running',
+          'suspended',
+          'paused',
+        ]),
       ),
-    ).toBe('Not completed');
+    ).toBe('4 statuses');
+    expect(
+      describeStatusFilter(
+        status('IN', [
+          'scheduled',
+          'pending',
+          'yielded',
+          'ready',
+          'backing-off',
+          'running',
+          'suspended',
+          'paused',
+        ]),
+      ),
+    ).toBe('8 statuses');
   });
 
-  it('names a whole stage after the stage', () => {
+  it('names the inbox stage', () => {
     expect(
       describeStatusFilter(
         status('IN', [

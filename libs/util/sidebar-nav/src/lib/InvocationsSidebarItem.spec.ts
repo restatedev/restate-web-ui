@@ -107,6 +107,28 @@ describe('invocation status presets', () => {
     expect(getInvocationStatusPreset(params)).toBe('notcompleted');
   });
 
+  it('matches a preset whatever the order of its statuses', () => {
+    const completed = new URLSearchParams({
+      filter_status: statusParam('IN', [
+        'killed',
+        'succeeded',
+        'failed',
+        'cancelled',
+      ]),
+    });
+    const heldUp = new URLSearchParams({
+      filter_status: statusParam('IN', [
+        'pending',
+        'ready',
+        'yielded',
+        'backing-off',
+        'paused',
+      ]),
+    });
+    expect(getInvocationStatusPreset(completed)).toBe('completed');
+    expect(getInvocationStatusPreset(heldUp)).toBe('stuck');
+  });
+
   it('treats any other status filter as custom', () => {
     const params = new URLSearchParams({
       filter_status: statusParam('IN', ['paused', 'backing-off']),

@@ -47,6 +47,7 @@ export function invocationStatusHref(
   baseUrl: string,
   current: URLSearchParams,
   presetSearch: string,
+  activeSearch = '',
 ) {
   const params = new URLSearchParams(current);
   const preset = new URLSearchParams(presetSearch);
@@ -56,8 +57,23 @@ export function invocationStatusHref(
   } else {
     params.delete('filter_status');
   }
-  const selected = params.getAll(COLUMN_QUERY_PREFIX);
-  for (const column of preset.getAll(COLUMN_QUERY_PREFIX)) {
+  const presetColumns = preset.getAll(COLUMN_QUERY_PREFIX);
+  const leftColumns = new URLSearchParams(activeSearch)
+    .getAll(COLUMN_QUERY_PREFIX)
+    .filter(
+      (column) =>
+        !DEFAULT_COLUMNS.includes(column) && !presetColumns.includes(column),
+    );
+  const selected = params
+    .getAll(COLUMN_QUERY_PREFIX)
+    .filter((column) => !leftColumns.includes(column));
+  if (leftColumns.length > 0) {
+    params.delete(COLUMN_QUERY_PREFIX);
+    for (const column of selected) {
+      params.append(COLUMN_QUERY_PREFIX, column);
+    }
+  }
+  for (const column of presetColumns) {
     const isDefault = DEFAULT_COLUMNS.includes(column);
     if (!selected.includes(column) && (!isDefault || selected.length === 0)) {
       params.append(COLUMN_QUERY_PREFIX, column);
@@ -81,13 +97,15 @@ export function InvocationStatusRow({
   const search = searchParams.toString();
   const { row, more, active, custom } = useMemo(() => {
     const current = new URLSearchParams(search);
-    const items = listInvocationPresets().map((preset): StatusItem => ({
+    const presets = listInvocationPresets();
+    const active = getInvocationStatusPreset(current);
+    const activeSearch = presets.find(({ id }) => id === active)?.search;
+    const items = presets.map((preset): StatusItem => ({
       id: preset.id,
       label: preset.label,
       hint: preset.hint,
-      href: invocationStatusHref(baseUrl, current, preset.search),
+      href: invocationStatusHref(baseUrl, current, preset.search, activeSearch),
     }));
-    const active = getInvocationStatusPreset(current);
     const custom: StatusItem | undefined =
       active === 'custom'
         ? {

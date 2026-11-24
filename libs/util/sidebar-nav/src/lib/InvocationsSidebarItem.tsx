@@ -304,6 +304,10 @@ function isFilterParamEmpty(value: string | null): boolean {
 // the same way sort/column params are ignored.
 const SCOPING_FILTER_KEYS = new Set(['filter_created_at']);
 
+function sortedValue(value: unknown) {
+  return Array.isArray(value) ? [...value].sort() : value;
+}
+
 function urlMatchesShortcut(
   searchParams: URLSearchParams,
   s: InvocationShortcut,
@@ -332,7 +336,10 @@ function urlMatchesShortcut(
       if (f.value === undefined) return true;
       // JSON.stringify works as a deep-equality check for the flat shapes
       // we store (primitives + flat arrays). Don't extend without thinking.
-      return JSON.stringify(parsed.value) === JSON.stringify(f.value);
+      return (
+        JSON.stringify(sortedValue(parsed.value)) ===
+        JSON.stringify(sortedValue(f.value))
+      );
     } catch {
       return false;
     }
@@ -401,12 +408,6 @@ export function getInvocationPreset(
   return (preset?.id as InvocationPreset) ?? 'custom';
 }
 
-/**
- * Same as `getInvocationPreset`, but looks only at the status filter, so a
- * service or time-range filter on top of a preset still counts as that preset.
- * The sidebar and the status row on the page both use it, so they always
- * highlight the same item.
- */
 export function getInvocationStatusPreset(
   searchParams: URLSearchParams,
 ): InvocationPreset {

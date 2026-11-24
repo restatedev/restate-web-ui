@@ -1,13 +1,11 @@
-import { INVOCATION_STATUS_DEFINITIONS } from '@restate/data-access-admin-api-spec';
+import {
+  INBOX_INVOCATION_STATUSES,
+  INVOCATION_STATUS_DEFINITIONS,
+} from '@restate/data-access-admin-api-spec';
 
 const STATUS_LABELS = new Map<string, string>(
   INVOCATION_STATUS_DEFINITIONS.map(({ key, label }) => [key, label]),
 );
-
-const STAGE_NAMES: Record<string, string> = {
-  inbox: 'Inbox',
-  finished: 'Completed',
-};
 
 const FAILED_STATUSES = ['failed', 'cancelled', 'killed'];
 
@@ -23,7 +21,10 @@ function includedStatuses(raw: string) {
   );
 }
 
-function hasExactly(included: ReadonlyArray<{ key: string }>, keys: string[]) {
+function hasExactly(
+  included: ReadonlyArray<{ key: string }>,
+  keys: readonly string[],
+) {
   return (
     included.length === keys.length &&
     included.every(({ key }) => keys.includes(key))
@@ -35,16 +36,7 @@ export function describeStatusFilter(raw: string | null | undefined) {
   try {
     const included = includedStatuses(raw);
     if (included.length === 0) return undefined;
-    for (const [stage, name] of Object.entries(STAGE_NAMES)) {
-      const stageKeys = INVOCATION_STATUS_DEFINITIONS.filter(
-        (definition) => definition.stage === stage,
-      ).map(({ key }) => key);
-      if (hasExactly(included, stageKeys)) return name;
-    }
-    const notFinished = INVOCATION_STATUS_DEFINITIONS.filter(
-      ({ stage }) => stage !== 'finished',
-    ).map(({ key }) => key);
-    if (hasExactly(included, notFinished)) return 'Not completed';
+    if (hasExactly(included, INBOX_INVOCATION_STATUSES)) return 'Inbox';
     if (hasExactly(included, FAILED_STATUSES)) return 'Failed';
     if (included.length <= 2) {
       return included
