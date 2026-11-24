@@ -4,6 +4,7 @@ export { canSummarizeInvocationsFromStats } from './lib/handlers/invocationsV2/s
 export {
   INDEXES_V1_UI_FEATURE,
   STATS_SERVER_FEATURE,
+  STATS_TABLES_QUERY_ENGINE_FEATURE,
   UI_FEATURE_SERVER_FEATURES,
   UI_FEATURES_HEADER,
   usesIndexesV1,

@@ -4,6 +4,10 @@ import type {
   QueryClient,
   UseQueryOptions,
 } from '@tanstack/react-query';
+import {
+  STATS_SERVER_FEATURE,
+  STATS_TABLES_QUERY_ENGINE_FEATURE,
+} from '@restate/data-access-query';
 import { adminApi } from './adminApi';
 
 /**
@@ -15,6 +19,7 @@ export interface MetaSnapshot {
   version?: string;
   /** Raw flags; the middleware filters to enabled names when building the header. */
   features?: Record<string, boolean>;
+  query_engine?: { stats_tables?: boolean };
 }
 
 function resolveBaseUrl(baseUrl: string): string {
@@ -27,9 +32,15 @@ export const metaQueryKey = (baseUrl: string) =>
   ['meta', resolveBaseUrl(baseUrl)] as const;
 
 export function getEnabledFeatures(meta?: MetaSnapshot): string[] {
-  return Object.entries(meta?.features ?? {})
+  const statsTables = meta?.query_engine?.stats_tables;
+  const enabled = Object.entries(meta?.features ?? {})
     .filter(([, on]) => on)
     .map(([name]) => name);
+  if (typeof statsTables !== 'boolean') {
+    return enabled;
+  }
+  const others = enabled.filter((name) => name !== STATS_SERVER_FEATURE);
+  return statsTables ? [...others, STATS_TABLES_QUERY_ENGINE_FEATURE] : others;
 }
 
 const lastEnabledFeatures = new WeakMap<QueryClient, Map<string, string>>();
@@ -109,7 +120,11 @@ async function fetchMeta(baseUrl: string): Promise<MetaSnapshot> {
     const data = await getQueryClient().ensureQueryData(
       adminApi('query', '/version', 'get', { baseUrl }),
     );
-    return { version: data?.version, features: data?.features };
+    return {
+      version: data?.version,
+      features: data?.features,
+      query_engine: data?.query_engine ?? undefined,
+    };
   } catch {
     // Network/auth failure — degrade to fallback so callers always
     // get a valid snapshot.
