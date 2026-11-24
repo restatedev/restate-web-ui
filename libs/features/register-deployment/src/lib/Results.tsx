@@ -16,7 +16,7 @@ export function Warning({
   title,
   className,
   children,
-}: PropsWithChildren<{ title: string; className?: string }>) {
+}: PropsWithChildren<{ title?: string; className?: string }>) {
   return (
     <p className={warningStyles({ className })}>
       <Icon
@@ -24,7 +24,7 @@ export function Warning({
         name={IconName.TriangleAlert}
       />
       <span className="inline-block">
-        <span className="font-semibold">{title}: </span>
+        {title && <span className="font-semibold">{title}: </span>}
         {children}
       </span>
     </p>

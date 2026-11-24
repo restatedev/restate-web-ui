@@ -19,6 +19,7 @@ import { tv } from '@restate/util-styles';
 import { useRestateContext } from '@restate/features-restate-context';
 import { ONBOARDING_QUERY_PARAM } from '@restate/util-feature-flag';
 import { FixHttp1 } from './FixHttp1';
+import { ServiceNotConnected } from './ServiceNotConnected';
 import { useSearchParams } from 'react-router';
 import { useListDeployments } from '@restate/data-access-admin-api-hooks';
 import {
@@ -51,12 +52,22 @@ function RegisterDeploymentFooter({
     isHttp1Error,
     endpoint,
     isBreakingChangeError,
+    isServiceNotConnectedError,
+    tunnelName,
   } = useRegisterDeploymentContext();
   return (
     <DialogFooter>
       <div className="flex flex-col gap-2">
-        {error && !isHttp1Error && !isBreakingChangeError && (
-          <ErrorBanner error={error} />
+        {error &&
+          !isHttp1Error &&
+          !isBreakingChangeError &&
+          !isServiceNotConnectedError && <ErrorBanner error={error} />}
+        {error && isServiceNotConnectedError && (
+          <ServiceNotConnected
+            tunnelName={tunnelName}
+            submitLabel={isConfirm ? 'Confirm' : 'Next'}
+            error={error}
+          />
         )}
         {isHttp1Error && <FixHttp1 formId={formId} endpoint={endpoint} />}
         <div className="flex gap-2">
