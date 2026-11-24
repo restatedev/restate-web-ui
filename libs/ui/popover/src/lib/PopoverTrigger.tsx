@@ -409,7 +409,10 @@ export function PopoverHoverTrigger({
 
   const handleTriggerMouseEnter = useCallback(() => {
     clearCloseTimeout();
-    if (isOpen || isHoverDisabled) {
+  }, [clearCloseTimeout]);
+
+  const handleTriggerMouseMove = useCallback(() => {
+    if (isOpen || isHoverDisabled || openTimeoutRef.current) {
       return;
     }
     const isNested = isInsideActiveHoverPopover(getTriggerEl());
@@ -427,7 +430,6 @@ export function PopoverHoverTrigger({
       openTimeoutRef.current = setTimeout(open, delay);
     }
   }, [
-    clearCloseTimeout,
     clearOpenTimeout,
     getTriggerEl,
     handoffDelay,
@@ -444,10 +446,12 @@ export function PopoverHoverTrigger({
   useEffect(() => {
     const triggerEl = getTriggerEl();
     triggerEl?.addEventListener('mouseenter', handleTriggerMouseEnter);
+    triggerEl?.addEventListener('mousemove', handleTriggerMouseMove);
     triggerEl?.addEventListener('mouseleave', handleTriggerMouseLeave);
 
     return () => {
       triggerEl?.removeEventListener('mouseenter', handleTriggerMouseEnter);
+      triggerEl?.removeEventListener('mousemove', handleTriggerMouseMove);
       triggerEl?.removeEventListener('mouseleave', handleTriggerMouseLeave);
     };
   });

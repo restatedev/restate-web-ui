@@ -118,6 +118,7 @@ import {
   type JournalDetail,
 } from '@restate/features-invocation-ui';
 import { JournalDetailToggle } from './JournalDetailToggle';
+import { JournalFollow } from './JournalFollow';
 import { useHiddenEntryMatchers } from './hiddenEntries';
 import {
   JournalSplitSeparator,
@@ -452,6 +453,16 @@ export function JournalV2({
     () => getRowChunks(entriesWithoutInput),
     [entriesWithoutInput],
   );
+  const rootEntries = journalAndInvocationData?.journal?.entries;
+  const rootCommandCount = useMemo(
+    () =>
+      rootEntries?.reduce(
+        (count, entry) => (entry.category === 'command' ? count + 1 : count),
+        0,
+      ) ?? 0,
+    [rootEntries],
+  );
+  const journalEndRef = useRef<HTMLDivElement>(null);
   const entriesListRef = useRef<HTMLDivElement>(null);
   const [entriesListCallbackRef, scrollMargin] =
     useWindowScrollMargin(entriesListRef);
@@ -1005,7 +1016,10 @@ export function JournalV2({
                 </ContentPanelHeader>
               )}
               {withTimeline ? (
-                <div className="relative flex min-h-0 flex-1 flex-col">
+                <div
+                  ref={journalEndRef}
+                  className="relative flex min-h-0 flex-1 flex-col"
+                >
                   {isJournalEmpty ? (
                     <JournalPurgedMessage />
                   ) : (
@@ -1131,6 +1145,18 @@ export function JournalV2({
                     </div>
                   )}
                   <div data-last-failure-fallback aria-hidden className="h-0" />
+                  <JournalFollow
+                    journalRef={journalEndRef}
+                    isEnabled={
+                      isLive &&
+                      !areAllInvocationsCompleted &&
+                      !isJournalEmpty &&
+                      !journalProblems.isProblemsOnly &&
+                      !journalProblems.findText.trim()
+                    }
+                    contentSize={totalSize}
+                    entryCount={rootCommandCount}
+                  />
                 </div>
               ) : (
                 <div className={className}>
