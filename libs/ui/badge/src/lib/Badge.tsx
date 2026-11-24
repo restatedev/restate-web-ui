@@ -8,6 +8,8 @@ export interface BadgeProps {
   /** @deprecated Use `intent`; `default` is `neutral`. */
   variant?: Exclude<BadgeIntent, 'neutral'> | 'default';
   size?: 'xs' | 'sm' | 'md';
+  mono?: boolean;
+  borderless?: boolean;
   className?: string;
 }
 
@@ -26,6 +28,12 @@ const styles = tv({
       sm: 'rounded-md px-1.5 py-0.5 text-xs',
       md: 'rounded-lg px-2 py-1 text-xs',
     },
+    mono: {
+      true: 'font-mono',
+    },
+    borderless: {
+      true: 'border-0',
+    },
   },
   defaultVariants: {
     intent: 'neutral',
@@ -39,6 +47,8 @@ export function Badge({
   variant,
   className,
   size,
+  mono,
+  borderless,
   ...props
 }: PropsWithChildren<BadgeProps & ComponentPropsWithoutRef<'div'>>) {
   return (
@@ -48,6 +58,8 @@ export function Badge({
         className,
         intent: intent ?? (variant === 'default' ? 'neutral' : variant),
         size,
+        mono,
+        borderless,
       })}
     >
       {children}

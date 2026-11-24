@@ -17,7 +17,8 @@ function DeploymentId({ deploymentId }: { deploymentId: string }) {
   return (
     <Badge
       size="sm"
-      className="ml-1 max-w-48 min-w-0 py-0 pr-0 align-middle font-mono"
+      mono
+      className="ml-1 max-w-48 min-w-0 py-0 pr-0 align-middle"
     >
       <TruncateWithTooltip
         tooltipContent={deploymentId}

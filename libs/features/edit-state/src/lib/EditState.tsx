@@ -279,7 +279,8 @@ function EditStateInner({
               Update{' '}
               <Badge
                 size="sm"
-                className="align-middle font-mono text-base font-medium"
+                mono
+                className="align-middle text-base font-medium"
               >
                 {key}
               </Badge>
@@ -296,7 +297,8 @@ function EditStateInner({
               <span className="text-muted">in</span>
               <Badge
                 size="sm"
-                className="max-w-[20ch] min-w-0 align-middle font-mono"
+                mono
+                className="max-w-[20ch] min-w-0 align-middle"
               >
                 <TruncateWithTooltip copyText={service}>
                   {service}
@@ -310,7 +312,8 @@ function EditStateInner({
               <span className="text-muted">key</span>
               <Badge
                 size="sm"
-                className="max-w-[20ch] min-w-0 align-middle font-mono"
+                mono
+                className="max-w-[20ch] min-w-0 align-middle"
               >
                 <TruncateWithTooltip copyText={objectKey}>
                   {objectKey}
@@ -326,7 +329,8 @@ function EditStateInner({
                   <span className="text-muted">scope</span>
                   <Badge
                     size="sm"
-                    className="max-w-[20ch] min-w-0 align-middle font-mono"
+                    mono
+                    className="max-w-[20ch] min-w-0 align-middle"
                   >
                     <TruncateWithTooltip copyText={scope}>
                       {scope}

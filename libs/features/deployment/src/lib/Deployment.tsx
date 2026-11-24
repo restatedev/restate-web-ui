@@ -214,7 +214,8 @@ export function Deployment({
             >
               <Badge
                 size="xs"
-                className="relative z-[2] max-w-fit shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono text-[0.9em] leading-3 text-current"
+                mono
+                className="relative z-[2] max-w-fit shrink-0 translate-y-px cursor-default rounded-sm py-0.5 text-[0.9em] leading-3 text-current"
               >
                 <Icon name={IconName.AtSign} size="xs" className="mr-0.5" />
                 <div className="max-w-[20ch] truncate">{tunnelName}</div>

@@ -40,7 +40,7 @@ const captionStyles = tv({
 
 function CopyValue({ value }: { value: string }) {
   return (
-    <Badge size="sm" className="ml-1 min-w-0 py-0 pr-0 align-middle font-mono">
+    <Badge size="sm" mono className="ml-1 min-w-0 py-0 pr-0 align-middle">
       <span className="truncate">{value}</span>
       <Copy copyText={value} size="2xs" className="ml-1" />
     </Badge>

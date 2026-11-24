@@ -189,7 +189,7 @@ export function UpdateForm() {
               href="https://docs.restate.dev/services/versioning#deploying-new-service-versions"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-warning-strong"
+              intent="warning"
             >
               Learn more.
             </Link>

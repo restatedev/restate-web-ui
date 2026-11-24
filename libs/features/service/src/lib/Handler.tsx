@@ -67,7 +67,8 @@ export function Handler({
             showType && (
               <Badge
                 size="sm"
-                className="border-none bg-transparent px-0 py-0 text-xs font-medium text-subtle"
+                borderless
+                className="bg-transparent px-0 py-0 text-xs font-medium text-subtle"
               >
                 <HandlerTypeExplainer type={handler.ty} variant="inline-help">
                   {handler.ty}

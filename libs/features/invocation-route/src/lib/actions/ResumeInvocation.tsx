@@ -116,7 +116,8 @@ function ResumeInvocationContent() {
                   {isTunnel && (
                     <Badge
                       size="xs"
-                      className="max-w-fit min-w-0 grow basis-[12ch] rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
+                      mono
+                      className="max-w-fit min-w-0 grow basis-[12ch] rounded-sm py-0.5 text-2xs leading-3 font-medium"
                     >
                       <Icon
                         name={IconName.AtSign}

@@ -193,7 +193,7 @@ export function InvocationTableDate({
   const duration = formatDurations(parts);
 
   return (
-    <Badge className="w-full border-none bg-transparent pl-0">
+    <Badge borderless className="w-full bg-transparent pl-0">
       <span className="w-full truncate">
         <span className="font-normal text-muted">
           {isPast ? pastPrefix : 'in '}

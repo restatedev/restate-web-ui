@@ -105,7 +105,7 @@ export function DeleteDeployment() {
               rel="noopener noreferrer"
               target="_blank"
               href="https://docs.restate.dev/services/versioning#removing-a-service"
-              className="text-warning-strong decoration-warning-strong"
+              intent="warning"
             >
               Learn more…
             </Link>

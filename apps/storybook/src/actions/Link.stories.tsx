@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Link } from '@restate/ui-link';
 import { Icon, IconName } from '@restate/ui-icons';
+import { Callout } from '@restate/ui-callout';
 
 const meta: Meta<typeof Link> = {
   title: 'Actions/Link',
@@ -17,6 +18,10 @@ const meta: Meta<typeof Link> = {
         'destructive-button',
         'icon',
       ],
+    },
+    intent: {
+      control: 'inline-radio',
+      options: ['info', 'success', 'warning', 'danger'],
     },
     size: { control: 'inline-radio', options: ['xs', 'sm', 'md'] },
   },
@@ -83,4 +88,20 @@ export const External: Story = {
     rel: 'noopener noreferrer',
     children: 'Restate documentation',
   },
+};
+
+export const InCallouts: Story = {
+  render: () => (
+    <div className="flex max-w-lg flex-col gap-3">
+      {(['info', 'success', 'warning', 'danger'] as const).map((intent) => (
+        <Callout key={intent} intent={intent}>
+          Cancellation frees held resources and lets your handler roll back its
+          changes.{' '}
+          <Link href="https://docs.restate.dev" intent={intent} target="_blank">
+            Learn more…
+          </Link>
+        </Callout>
+      ))}
+    </div>
+  ),
 };

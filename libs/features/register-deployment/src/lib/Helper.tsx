@@ -175,8 +175,7 @@ export function Helper({
             <Link
               target="_blank"
               href="https://docs.restate.dev/cloud/connecting-services"
-              variant="secondary"
-              className="text-info"
+              intent="info"
             >
               Learn more…
             </Link>
@@ -205,8 +204,7 @@ export function Helper({
                 <Link
                   target="_blank"
                   href={gcpServiceAccount.url}
-                  variant="secondary"
-                  className="text-info"
+                  intent="info"
                 >
                   Learn more…
                 </Link>
@@ -296,12 +294,7 @@ export function Helper({
               <Icon name={IconName.ShieldCheck} size="md" />
               Secure your services.{' '}
               {identityKey.url && (
-                <Link
-                  target="_blank"
-                  href={identityKey.url}
-                  variant="secondary"
-                  className="text-info"
-                >
+                <Link target="_blank" href={identityKey.url} intent="info">
                   Learn more…
                 </Link>
               )}
@@ -335,12 +328,7 @@ export function Helper({
               <Icon name={IconName.ShieldCheck} size="md" />
               Secure your services.{' '}
               {awsRolePolicy.url && (
-                <Link
-                  target="_blank"
-                  href={awsRolePolicy.url}
-                  variant="secondary"
-                  className="text-info"
-                >
+                <Link target="_blank" href={awsRolePolicy.url} intent="info">
                   Learn more…
                 </Link>
               )}

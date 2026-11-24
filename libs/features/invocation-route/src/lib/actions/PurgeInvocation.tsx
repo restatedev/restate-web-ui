@@ -72,8 +72,7 @@ export const PurgeInvocation = withConfirmation({
       perform deduplication.{' '}
       <Link
         href="https://docs.restate.dev/services/invocation/managing-invocations#cancel"
-        variant="secondary"
-        className="text-accent"
+        intent="info"
         target="_blank"
         rel="noopener noreferrer"
       >

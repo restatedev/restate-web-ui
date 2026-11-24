@@ -64,10 +64,7 @@ function EndpointChip({
           }
           className="min-w-0 shrink-0"
         >
-          <Badge
-            size="sm"
-            className="max-w-40 cursor-default gap-0.5 font-mono"
-          >
+          <Badge size="sm" mono className="max-w-40 cursor-default gap-0.5">
             <Icon name={IconName.AtSign} size="sm" />
             <span className="truncate">{tunnelName}</span>
           </Badge>

@@ -29,7 +29,7 @@ export function InvocationDuration({ invocation }: InvocationDurationProps) {
     : undefined;
   const isCompleted = !!completedAt;
   return (
-    <Badge className="w-full border-none bg-transparent pl-0">
+    <Badge borderless className="w-full bg-transparent pl-0">
       <HoverTooltip
         className="mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-subtle decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-tint"
         content={

@@ -71,8 +71,7 @@ export const KillInvocation = withConfirmation({
       other fixes.{' '}
       <Link
         href="https://docs.restate.dev/services/invocation/managing-invocations#kill"
-        variant="secondary"
-        className="text-warning"
+        intent="warning"
         target="_blank"
         rel="noopener noreferrer"
       >
