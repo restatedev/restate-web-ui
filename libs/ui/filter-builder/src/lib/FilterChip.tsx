@@ -129,6 +129,7 @@ export function FilterChip({
         (queryClauseOperationRequiresValue(item.value.operation)
           ? (emptyValueLabel ?? '?')
           : '');
+  const hasValue = Boolean(valueContent);
 
   if (appearance === 'light') {
     const hasRemove = Boolean(showRemove && onRemove);
@@ -173,25 +174,34 @@ export function FilterChip({
               </span>
             </ChipSegment>
             {item.operationLabel && (
-              <ChipSegment className="bg-subtle px-1.5 font-mono text-subtle">
+              <ChipSegment className="gap-0.5 bg-subtle px-1.5 font-mono text-subtle">
                 {item.operationLabel}
+                {!hasValue && (
+                  <Icon
+                    name={IconName.ChevronDown}
+                    size="xs"
+                    className="text-subtle"
+                  />
+                )}
               </ChipSegment>
             )}
-            <ChipSegment className="gap-0.5 px-2.5">
-              <span
-                className={lightValueStyles({
-                  isRichValue: Boolean(renderValue),
-                  className: valueClassName,
-                })}
-              >
-                {valueContent}
-              </span>
-              <Icon
-                name={IconName.ChevronDown}
-                size="xs"
-                className="text-subtle"
-              />
-            </ChipSegment>
+            {(hasValue || !item.operationLabel) && (
+              <ChipSegment className="gap-0.5 px-2.5">
+                <span
+                  className={lightValueStyles({
+                    isRichValue: Boolean(renderValue),
+                    className: valueClassName,
+                  })}
+                >
+                  {valueContent}
+                </span>
+                <Icon
+                  name={IconName.ChevronDown}
+                  size="xs"
+                  className="text-subtle"
+                />
+              </ChipSegment>
+            )}
           </Chip>
         </EditFilterTrigger>
         {hasRemove && onRemove && (
@@ -246,9 +256,13 @@ export function FilterChip({
               {segment}
             </span>
           ))}
-          <span className={darkChipValueStyles({ className: valueClassName })}>
-            {valueContent}
-          </span>
+          {hasValue && (
+            <span
+              className={darkChipValueStyles({ className: valueClassName })}
+            >
+              {valueContent}
+            </span>
+          )}
           <Icon name={IconName.ChevronsUpDown} size="sm" className="ml-1" />
         </Button>
       </EditFilterTrigger>
