@@ -10,6 +10,7 @@ import {
 import { ServiceType, Handler } from '@restate/features-service';
 import { Link } from '@restate/ui-link';
 import { MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION } from '@restate/features-deployment';
+import { Heading } from '@restate/ui-heading';
 
 export function DeploymentProtocolCheck() {
   const { max_protocol_version } = useRegisterDeploymentContext();
@@ -44,7 +45,9 @@ export function RegisterDeploymentResults() {
   if (services.length === 0) {
     return (
       <div className="relative mt-6 flex w-full flex-col items-center justify-center gap-2 rounded-xl border bg-inset p-4 text-center shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
-        <h3 className="text-sm font-semibold text-tertiary">No services</h3>
+        <Heading level={3} size="sm" tone="tertiary">
+          No services
+        </Heading>
         <p className="max-w-md px-4 text-sm text-muted">
           This deployment does not expose any services.
         </p>

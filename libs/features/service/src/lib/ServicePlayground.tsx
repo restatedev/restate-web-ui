@@ -45,6 +45,7 @@ import {
   PrivatePlaygroundSheet,
   useIsPrivateService,
 } from './PrivatePlaygroundNote';
+import { Heading } from '@restate/ui-heading';
 
 const DEFAULT_CATEGORY = 'DEFAULT';
 export function ServicePlayground() {
@@ -365,7 +366,7 @@ function ServicePlaygroundComplementaryContent() {
         </Tooltip>
       </ComplementaryHeader>
       <div className="flex min-h-full flex-col [&_.sl-elements-api>*:first-child]:hidden! [&_.sl-elements-api>*:nth-child(2)]:px-2! [&_.sl-elements-api>*:nth-child(2)>*]:pt-2! [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse! [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0! [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full! [&_.sl-inverted_input]:text-secondary! [&_.sl-pt-8]:pt-2! [&_.sl-rounded-lg]:rounded-xl! [&_.sl-stack--5]:gap-2! [&_.sl-stack--8]:gap-6! [&_.sl-text-lg]:text-0.5xs! [&_[dir=ltr]>[dir=ltr]]:hidden! [&_elements-api_h2]:text-xl! [&_h1]:mb-2! [&_h1]:hidden! [&_h1]:text-2xl! [&_h3]:text-lg! [&_input]:text-sm! [&_p]:text-sm!">
-        <h2 className="mb-0.5 flex items-center gap-2 text-lg leading-6 font-medium text-primary">
+        <Heading level={2} size="lg" className="mb-0.5 flex items-center gap-2">
           <div className="h-10 w-10 shrink-0 text-accent-subtle">
             <Icon
               name={IconName.Function}
@@ -432,7 +433,7 @@ function ServicePlaygroundComplementaryContent() {
               </Dropdown>
             </div>
           </div>
-        </h2>
+        </Heading>
         {error && (
           <div className="mb-1">
             <ErrorBanner errors={[error]} />

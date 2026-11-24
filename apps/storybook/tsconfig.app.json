@@ -34,6 +34,9 @@
       "path": "../../libs/ui/nav/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/ui/heading/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/ui/listbox/tsconfig.lib.json"
     },
     {

@@ -8,6 +8,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { Link } from '@restate/ui-link';
 import { Spinner } from '@restate/ui-loading';
 import { ErrorPopoverPill } from './ErrorPopoverPill';
+import { Heading } from '@restate/ui-heading';
 
 export function NoDeploymentPlaceholder({
   error,
@@ -29,12 +30,12 @@ export function NoDeploymentPlaceholder({
         ) : error ? (
           <ErrorPopoverPill error={error} label="Could not load deployments" />
         ) : (
-          <h3 className="text-sm font-semibold text-tertiary">
+          <Heading level={3} size="sm" tone="tertiary">
             No{' '}
             <ServiceDeploymentExplainer>
               service deployments
             </ServiceDeploymentExplainer>
-          </h3>
+          </Heading>
         )}
       </div>
       <p className="max-w-md px-4 text-sm text-muted">

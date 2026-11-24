@@ -74,7 +74,7 @@
       "path": "../../ui/tooltip/tsconfig.lib.json"
     },
     {
-      "path": "../../ui/tabs/tsconfig.lib.json"
+      "path": "../../ui/heading/tsconfig.lib.json"
     },
     {
       "path": "../../ui/json-schema/tsconfig.lib.json"
@@ -90,6 +90,9 @@
     },
     {
       "path": "../../ui/button/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/tabs/tsconfig.lib.json"
     },
     {
       "path": "../../util/openapi/tsconfig.lib.json"

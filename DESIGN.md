@@ -73,20 +73,24 @@ Inter Variable is the default font (`font-sans`); JetBrains Mono Variable (`font
 
 Text roles in use today. Use the component where there is one; copy the classes where there isn't.
 
-| Role            | Today                                                                                                               |
-| --------------- | ------------------------------------------------------------------------------------------------------------------- |
-| List page title | `ListPageHeader`: `text-sm font-semibold` in an accent pill, description `text-sm text-muted`                       |
-| Dialog title    | `DialogTitle` from `@restate/ui-dialog` (`text-lg leading-6 font-medium text-primary`, wired to the dialog's label) |
-| Field label     | `FormFieldLabel` (or a field's `label` prop): `text-sm font-medium text-secondary`                                  |
-| Section title   | `SectionTitle`: `text-xs font-semibold uppercase text-subtle`                                                       |
-| Card title      | `CardHeader title`: `text-xs font-semibold`                                                                         |
-| Empty state     | `EmptyState`: title `text-base font-semibold`, description `text-sm text-muted`                                     |
-| Caption         | `text-xs text-muted`                                                                                                |
-| Code and IDs    | `font-mono` at the size of its context                                                                              |
-| Numbers         | add `tabular-nums` in columns, counters and durations                                                               |
+| Role                  | Today                                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| List page title       | `ListPageHeader`: `text-sm font-semibold` in an accent pill, description `text-sm text-muted`                       |
+| Page title            | `Heading level={1} size="xl"` (`text-xl font-semibold`)                                                             |
+| Panel title           | `Heading size="lg"`, the `DialogTitle` look for a side panel                                                        |
+| Panel or form heading | `Heading size="sm"` (`text-sm font-semibold`); `tone="tertiary"` above an empty panel's text                        |
+| Dialog title          | `DialogTitle` from `@restate/ui-dialog` (`text-lg leading-6 font-medium text-primary`, wired to the dialog's label) |
+| Field label           | `FormFieldLabel` (or a field's `label` prop): `text-sm font-medium text-secondary`                                  |
+| Section title         | `SectionTitle`: `text-xs font-semibold uppercase text-subtle`                                                       |
+| Card title            | `CardHeader title`: `text-xs font-semibold`                                                                         |
+| Empty state           | `EmptyState`: title `text-base font-semibold`, description `text-sm text-muted`                                     |
+| Caption               | `text-xs text-muted`                                                                                                |
+| Code and IDs          | `font-mono` at the size of its context                                                                              |
+| Numbers               | add `tabular-nums` in columns, counters and durations                                                               |
 
 - Don't add font sizes. `text-[…]` is for illustrations only: `text-[0.8125rem]` is `text-0.5xs`, and `text-[0.6875rem]` is `text-2xs`.
-- **Planned:** named text roles in util-styles (title, label, caption), so the role classes stop being copied.
+- `Heading level size tone` from `@restate/ui-heading` draws a heading: `level` picks `h1`–`h6`, `size` is `sm`, `md` (the default, the `EmptyState` title), `lg` or `xl`, and `tone` is `primary`, `secondary` or `tertiary`. Use it instead of styling an `h1`–`h6` with classes.
+- **Planned:** named text roles in util-styles (label, caption), so the remaining role classes stop being copied.
 
 ## Layout
 

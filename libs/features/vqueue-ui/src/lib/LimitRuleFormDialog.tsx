@@ -35,6 +35,7 @@ import {
 } from './limitRulePattern';
 import { RuleLevelBadge, RuleLevelExplainer } from './RuleLevel';
 import { RuleMatchPreview, RulePatternBuilder } from './RulePatternBuilder';
+import { Heading } from '@restate/ui-heading';
 
 export const CREATE_LIMIT_RULE_QUERY_PARAM = 'create-rule';
 
@@ -211,9 +212,9 @@ function RuleFormContent({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-1">
-                <h3 className="text-sm font-semibold text-primary">
+                <Heading level={3} size="sm">
                   Rule pattern
-                </h3>
+                </Heading>
                 <RuleLevelExplainer
                   label=""
                   activeLevel={ruleLevel}
