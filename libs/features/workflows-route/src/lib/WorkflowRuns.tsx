@@ -361,10 +361,7 @@ export function WorkflowRuns({
                     intent="danger"
                     title="Couldn’t load Workflows"
                   >
-                    <ErrorBanner
-                      error={error}
-                      className="w-full rounded-xl text-left"
-                    />
+                    <ErrorBanner error={error} className="w-full" />
                   </EmptyState>
                 ) : !hasServices ? (
                   <EmptyState

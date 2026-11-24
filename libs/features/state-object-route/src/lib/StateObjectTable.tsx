@@ -1110,10 +1110,7 @@ function StateValuePreview({
             </StaticCodecOptionsProvider>
           ) : valueQuery.error ? (
             <div className="py-3 pr-4">
-              <ErrorBanner
-                error={valueQuery.error}
-                className="w-full rounded-xl text-left"
-              />
+              <ErrorBanner error={valueQuery.error} className="w-full" />
             </div>
           ) : (
             <div className={valueStatus()}>

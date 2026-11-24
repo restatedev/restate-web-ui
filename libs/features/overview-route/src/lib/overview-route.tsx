@@ -546,7 +546,7 @@ function OverviewContent() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-sm">
-        <ErrorBanner error={summaryError} className="rounded-xl" />
+        <ErrorBanner error={summaryError} />
       </PopoverContent>
     </Popover>
   ) : null;
@@ -877,7 +877,7 @@ function OverviewContent() {
         <ContentPanelBody className="pb-20">
           <ContentPanelSection flush>
             {isError && !isDeploymentsFetching && error && (
-              <ErrorBanner error={error} className="mx-2 mb-3 rounded-xl" />
+              <ErrorBanner error={error} className="mx-2 mb-3" />
             )}
             {mode === 'services' ? <ServicesTable /> : <DeploymentsTable />}
           </ContentPanelSection>

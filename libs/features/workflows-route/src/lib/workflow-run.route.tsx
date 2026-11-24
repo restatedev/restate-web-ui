@@ -137,10 +137,7 @@ function Component() {
               intent="danger"
               title="Couldn’t load this Workflow"
             >
-              <ErrorBanner
-                error={serviceError}
-                className="w-full rounded-xl text-left"
-              />
+              <ErrorBanner error={serviceError} className="w-full" />
             </EmptyState>
           </div>
         ) : isUnavailable ? (
@@ -158,10 +155,7 @@ function Component() {
               intent="danger"
               title="Couldn’t load this Workflow run"
             >
-              <ErrorBanner
-                error={runError}
-                className="w-full rounded-xl text-left"
-              />
+              <ErrorBanner error={runError} className="w-full" />
             </EmptyState>
           </div>
         ) : (

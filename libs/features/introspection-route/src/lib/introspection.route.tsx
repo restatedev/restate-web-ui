@@ -150,10 +150,7 @@ function Component() {
                       intent="danger"
                       title="Couldn’t run query"
                     >
-                      <ErrorBanner
-                        error={error}
-                        className="w-full rounded-xl text-left"
-                      />
+                      <ErrorBanner error={error} className="w-full" />
                     </EmptyState>
                   ) : query ? (
                     <EmptyState

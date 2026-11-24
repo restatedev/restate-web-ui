@@ -111,10 +111,7 @@ function Component() {
               intent="danger"
               title="Couldn’t load this service"
             >
-              <ErrorBanner
-                error={error}
-                className="w-full rounded-xl text-left"
-              />
+              <ErrorBanner error={error} className="w-full" />
             </EmptyState>
           </div>
         ) : (

@@ -770,10 +770,7 @@ export function JournalV2({
     return (
       <ContentPanelSection>
         <div className="px-2">
-          <ErrorBanner
-            error={invocationApiError}
-            className="flex-none rounded-xl"
-          />
+          <ErrorBanner error={invocationApiError} className="flex-none" />
         </div>
       </ContentPanelSection>
     );

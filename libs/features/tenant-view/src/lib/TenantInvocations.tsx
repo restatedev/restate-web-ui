@@ -265,7 +265,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
             {(error || summary.error) && (
               <ErrorBanner
                 error={error ?? summary.error}
-                className="mx-4 mt-4 rounded-xl"
+                className="mx-4 mt-4"
               />
             )}
             <div className="border-b border-default/80 px-5 pt-8 pb-4">

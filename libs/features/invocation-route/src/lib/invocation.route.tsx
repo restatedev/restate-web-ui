@@ -314,9 +314,7 @@ function Component() {
               )}
             </div>
           )}
-          {error && journalAndInvocationData && (
-            <ErrorBanner error={error} className="rounded-xl" />
-          )}
+          {error && journalAndInvocationData && <ErrorBanner error={error} />}
         </div>
 
         <ContentPanel
@@ -384,9 +382,7 @@ function InvocationUnavailable({
           />
         </div>
       )}
-      {!isNotFound && (
-        <ErrorBanner error={error} className="w-full rounded-xl text-left" />
-      )}
+      {!isNotFound && <ErrorBanner error={error} className="w-full" />}
       <Link
         href={backHref}
         variant="button"

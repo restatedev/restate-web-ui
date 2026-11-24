@@ -455,7 +455,7 @@ export const LoadingFailed: Story = {
               'Failed to fetch http://localhost:9070/query/invocations: connection refused',
             )
           }
-          className="w-full rounded-xl text-left"
+          className="w-full"
         />
       </EmptyState>
     ),

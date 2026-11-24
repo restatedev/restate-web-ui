@@ -852,10 +852,7 @@ function Component() {
                       intent="danger"
                       title="Couldn’t load invocations"
                     >
-                      <ErrorBanner
-                        error={listError}
-                        className="w-full rounded-xl text-left"
-                      />
+                      <ErrorBanner error={listError} className="w-full" />
                     </EmptyState>
                   ) : countsDisagree ? (
                     <CountsDisagreeEmptyState />

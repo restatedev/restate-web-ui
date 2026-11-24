@@ -12,7 +12,7 @@ export interface ErrorProps {
 }
 
 const styles = tv({
-  base: 'rounded-xl bg-danger-muted p-3 text-sm',
+  base: 'rounded-xl bg-danger-muted p-3 text-left text-sm',
 });
 
 function SingleError({

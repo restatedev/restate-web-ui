@@ -448,10 +448,7 @@ function Component() {
               intent="danger"
               title="Couldn’t load this VQueue"
             >
-              <ErrorBanner
-                error={snapshot.error}
-                className="w-full rounded-xl text-left"
-              />
+              <ErrorBanner error={snapshot.error} className="w-full" />
             </EmptyState>
           </div>
         ) : snapshot.isPending && !data ? (

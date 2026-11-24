@@ -241,12 +241,7 @@ export function StateStorageBreakdown() {
   const segments = buildStorageSegments(services);
 
   if (query.error) {
-    return (
-      <ErrorBanner
-        error={query.error}
-        className="w-full rounded-xl text-left"
-      />
-    );
+    return <ErrorBanner error={query.error} className="w-full" />;
   }
 
   if (query.isPending) {

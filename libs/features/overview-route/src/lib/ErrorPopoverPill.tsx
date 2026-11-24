@@ -31,7 +31,7 @@ export function ErrorPopoverPill({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-sm">
-        <ErrorBanner error={error} className="rounded-xl" />
+        <ErrorBanner error={error} />
       </PopoverContent>
     </Popover>
   );

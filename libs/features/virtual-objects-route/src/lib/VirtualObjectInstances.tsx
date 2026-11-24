@@ -538,10 +538,7 @@ export function VirtualObjectInstances({
                     intent="danger"
                     title="Couldn’t load Virtual Objects"
                   >
-                    <ErrorBanner
-                      error={error}
-                      className="w-full rounded-xl text-left"
-                    />
+                    <ErrorBanner error={error} className="w-full" />
                   </EmptyState>
                 ) : !hasServices ? (
                   <EmptyState
