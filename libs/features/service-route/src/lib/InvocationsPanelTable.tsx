@@ -103,6 +103,7 @@ export function InvocationsPanelTable({
       <PanelTable
         aria-label={ariaLabel}
         columns={columns}
+        columnWidthsStorageKey="service-invocations-user-col-widths"
         items={rows}
         isLoading={isLoading}
         error={error}

@@ -326,6 +326,7 @@ export function WorkflowRuns({
               aria-label="Workflow runs"
               bodyHeadingHeight={0}
               columns={COLUMNS}
+              columnWidthsStorageKey="workflow-runs-user-col-widths"
               items={items}
               isLoading={isLoading}
               numOfRows={Math.max(items.length, 6)}

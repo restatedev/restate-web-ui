@@ -298,6 +298,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
               <PanelTable
                 aria-label="Tenant invocations"
                 columns={columns}
+                columnWidthsStorageKey="tenant-invocations-user-col-widths"
                 items={rows}
                 selectionMode="multiple"
                 selectedKeys={selectedInvocationIds}

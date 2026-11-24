@@ -58,6 +58,7 @@ export function WorkflowInvocationsTable({
       <PanelTable
         aria-label={ariaLabel}
         columns={WORKFLOW_INTERACTION_COLUMNS}
+        columnWidthsStorageKey="workflow-invocations-user-col-widths"
         items={rows}
         isLoading={isPending}
         error={error}

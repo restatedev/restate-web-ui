@@ -26,6 +26,11 @@ import { getNextSortDescriptor } from './sort';
 import { PanelTableLayout } from './PanelTableLayout';
 import { columnKey, fromColumnKey, tableBodyKeyProps } from './keys';
 import {
+  readColumnWidths,
+  saveColumnWidths,
+  type ColumnWidths,
+} from './columnWidthsStorage';
+import {
   keepIfSame,
   LEFT_SPACER_ID,
   measureColumnWidths,
@@ -65,7 +70,7 @@ export interface PanelTableProps<
 > {
   sortDescriptor?: SortDescriptor;
   onSortChange?: (descriptor: SortDescriptor | undefined) => void;
-  onColumnResizeEnd?: (widths: Map<TColId, number>) => void;
+  columnWidthsStorageKey?: string;
   columns: PanelTableColumn<TColId>[];
   items: T[];
   isLoading?: boolean;
@@ -159,7 +164,7 @@ export function PanelTable<
   onRowAction,
   sortDescriptor,
   onSortChange,
-  onColumnResizeEnd,
+  columnWidthsStorageKey,
   treeColumn,
   expandedKeys,
   defaultExpandedKeys,
@@ -199,6 +204,11 @@ export function PanelTable<
 
   const [columnWidths, setColumnWidths] = useState<Map<Key, number>>(
     () => new Map(),
+  );
+  const [savedWidths, setSavedWidths] = useState<ColumnWidths>(() =>
+    columnWidthsStorageKey
+      ? readColumnWidths(columnWidthsStorageKey)
+      : new Map(),
   );
   const isResizingRef = useRef(false);
   const [stickyHeaderScrollEl, setStickyHeaderScrollEl] =
@@ -288,8 +298,8 @@ export function PanelTable<
         const next = measureColumnWidths(stickyHeaderScrollEl);
         setColumnWidths((prev) => keepIfSame(prev, next));
       }
-      if (!onColumnResizeEnd) return;
-      const resizedWidths = new Map<TColId, number>();
+      if (!columnWidthsStorageKey) return;
+      const resizedWidths: ColumnWidths = new Map();
       toNumericWidths(widths).forEach((size, key) => {
         const columnId = fromColumnKey(key);
         const column = columns.find(({ id }) => id === columnId);
@@ -301,9 +311,11 @@ export function PanelTable<
           resizedWidths.set(column.id, size);
         }
       });
-      if (resizedWidths.size > 0) onColumnResizeEnd(resizedWidths);
+      if (resizedWidths.size > 0) {
+        setSavedWidths(saveColumnWidths(columnWidthsStorageKey, resizedWidths));
+      }
     },
-    [columns, onColumnResizeEnd, stickyHeaderScrollEl],
+    [columns, columnWidthsStorageKey, stickyHeaderScrollEl],
   );
 
   const selectableItems = useMemo(() => {
@@ -431,6 +443,8 @@ export function PanelTable<
   ) => {
     const lastFlexibleIndex = cols.findLastIndex(isFlexible);
     return cols.map((col, index) => {
+      const allowsResizing = index < lastFlexibleIndex;
+      const savedWidth = allowsResizing ? savedWidths.get(col.id) : undefined;
       const synced = columnWidths.get(columnKey(col.id));
       const isFixed = typeof col.width === 'number';
       const widthProps: Pick<
@@ -441,7 +455,7 @@ export function PanelTable<
         : variant === 'dataTable' && typeof synced === 'number'
           ? { width: synced, minWidth: col.minWidth, maxWidth: col.maxWidth }
           : {
-              defaultWidth: col.defaultWidth,
+              defaultWidth: savedWidth ?? col.defaultWidth,
               minWidth: col.minWidth,
               maxWidth: col.maxWidth,
             };
@@ -457,7 +471,7 @@ export function PanelTable<
             col.allowsSorting
           }
           {...widthProps}
-          allowsResizing={index < lastFlexibleIndex}
+          allowsResizing={allowsResizing}
           className={col.hideLabel ? 'opacity-0' : undefined}
         >
           {col.hideLabel ? (

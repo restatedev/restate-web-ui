@@ -731,6 +731,7 @@ function Component() {
               aria-label="Limit rules"
               bodyKey={ruleTableBodyKey}
               columns={RULE_COLUMNS}
+              columnWidthsStorageKey="limit-rules-user-col-widths"
               items={rows}
               isLoading={rules.isFetching}
               error={error as Error | null}

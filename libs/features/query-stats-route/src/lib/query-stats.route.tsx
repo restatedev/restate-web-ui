@@ -782,6 +782,7 @@ function Component() {
             <PanelTable
               aria-label="Query stats"
               columns={STATS_COLUMNS}
+              columnWidthsStorageKey="query-stats-user-col-widths"
               items={rows}
               numOfRows={Math.max(rows.length, 6)}
               sortDescriptor={sortDescriptor}

@@ -493,6 +493,7 @@ export function VirtualObjectInstances({
               aria-label="Virtual Object instances"
               bodyHeadingHeight={0}
               columns={visibleColumns}
+              columnWidthsStorageKey="virtual-object-instances-user-col-widths"
               items={items}
               isLoading={isLoading}
               numOfRows={Math.max(items.length, 6)}
