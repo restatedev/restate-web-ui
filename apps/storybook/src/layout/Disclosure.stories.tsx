@@ -57,6 +57,36 @@ export const Inline: Story = {
   ),
 };
 
+export const Nested: Story = {
+  render: () => (
+    <Disclosure defaultOpen className="flex max-w-md flex-col gap-2">
+      <DisclosureTrigger className="self-start">Deployment</DisclosureTrigger>
+      <DisclosurePanel className="flex flex-col gap-2">
+        <p className="text-sm text-secondary">
+          Registered 3 days ago from http://localhost:9080.
+        </p>
+        <Disclosure className="flex flex-col">
+          <DisclosureTrigger className="self-start">
+            Error details
+          </DisclosureTrigger>
+          <DisclosurePanel className="mt-2">
+            <ErrorBanner error={error} />
+          </DisclosurePanel>
+        </Disclosure>
+      </DisclosurePanel>
+    </Disclosure>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.getByRole('button', { name: 'Deployment' }),
+    ).toHaveAttribute('aria-expanded', 'true');
+    await expect(
+      canvas.getByRole('button', { name: 'Error details' }),
+    ).toHaveAttribute('aria-expanded', 'false');
+  },
+};
+
 export const Row: Story = {
   render: () => (
     <Disclosure

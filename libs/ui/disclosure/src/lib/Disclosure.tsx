@@ -15,7 +15,7 @@ export interface DisclosureProps {
 }
 
 const disclosureStyles = tv({
-  base: 'group/disclosure',
+  base: '',
 });
 
 export function Disclosure({
@@ -39,17 +39,23 @@ export function Disclosure({
 
 export type DisclosureTriggerVariant = 'ghost' | 'inline' | 'row';
 
-export interface DisclosureTriggerProps {
-  variant?: DisclosureTriggerVariant;
-  className?: string;
-  'aria-label'?: string;
-  'aria-labelledby'?: string;
-}
+type DisclosureTriggerName =
+  | { 'aria-label': string; 'aria-labelledby'?: string }
+  | { 'aria-label'?: string; 'aria-labelledby': string };
+
+export type DisclosureTriggerProps = { className?: string } & (
+  | {
+      variant?: Exclude<DisclosureTriggerVariant, 'row'>;
+      'aria-label'?: string;
+      'aria-labelledby'?: string;
+    }
+  | ({ variant: 'row' } & DisclosureTriggerName)
+);
 
 const triggerStyles = tv({
   slots: {
-    button: '',
-    chevron: 'transition-transform group-expanded/disclosure:rotate-180',
+    button: 'group/trigger',
+    chevron: 'transition-transform group-aria-expanded/trigger:rotate-180',
   },
   variants: {
     variant: {
