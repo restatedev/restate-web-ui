@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { Code, Snippet, SnippetCopy } from '@restate/ui-code';
+import { Code, Snippet, SnippetCopy, SnippetTabs } from '@restate/ui-code';
 import { Copy } from '@restate/ui-copy';
 import { SegmentedControl } from '@restate/ui-tabs';
 
@@ -76,4 +76,34 @@ function LanguageSamples() {
 
 export const Languages: Story = {
   render: () => <LanguageSamples />,
+};
+
+const publicKey = 'publickeyv1_2G8dYHvM3PqRk4mUjXz9TnCsWbA6eLfH5oJi7NxQrDtK';
+const identity = {
+  typescript: `restate.endpoint().bind(checkout).withIdentityV1("${publicKey}")`,
+  java: `Endpoint.bind(new Checkout()).withRequestIdentityVerifier(RequestIdentityVerifier.fromKey("${publicKey}"))`,
+  python: `restate.app(services=[checkout], identity_keys=["${publicKey}"])`,
+  go: `server.NewRestate().Bind(restate.Reflect(Checkout{})).WithIdentityV1("${publicKey}")`,
+  kotlin: `endpoint { bind(Checkout()); requestIdentityVerifier = RequestIdentityVerifier.fromKey("${publicKey}") }`,
+};
+
+export const LanguageTabs: Story = {
+  render: () => (
+    <SnippetTabs
+      languages={['typescript', 'java', 'python', 'go', 'kotlin']}
+      defaultLanguage="typescript"
+    >
+      {(language) => {
+        const code = identity[language as keyof typeof identity];
+        return (
+          <Code>
+            <Snippet language={language}>
+              {code}
+              <SnippetCopy copyText={code} size="xs" />
+            </Snippet>
+          </Code>
+        );
+      }}
+    </SnippetTabs>
+  ),
 };
