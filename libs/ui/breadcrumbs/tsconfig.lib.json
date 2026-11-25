@@ -43,22 +43,13 @@
       "path": "../../util/styles/tsconfig.lib.json"
     },
     {
-      "path": "../popover/tsconfig.lib.json"
-    },
-    {
       "path": "../link/tsconfig.lib.json"
     },
     {
       "path": "../icons/tsconfig.lib.json"
     },
     {
-      "path": "../dropdown/tsconfig.lib.json"
-    },
-    {
       "path": "../chip/tsconfig.lib.json"
-    },
-    {
-      "path": "../button/tsconfig.lib.json"
     }
   ]
 }

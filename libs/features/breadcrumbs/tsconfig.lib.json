@@ -53,9 +53,6 @@
       "path": "../vqueue-ui/tsconfig.lib.json"
     },
     {
-      "path": "../invocation-ui/tsconfig.lib.json"
-    },
-    {
       "path": "../deployment/tsconfig.lib.json"
     },
     {

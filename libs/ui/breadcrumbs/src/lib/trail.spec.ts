@@ -1,11 +1,6 @@
 import { IconName } from '@restate/ui-icons';
 import { registerTransientQueryParams } from '@restate/util-panel';
-import {
-  classify,
-  computeNextTrail,
-  MAX_TRAIL_LENGTH,
-  sanitizeCrumb,
-} from './trail';
+import { classify, computeTrail } from './trail';
 import type { Crumb, PageDefinition } from './types';
 
 const pages: PageDefinition[] = [
@@ -44,10 +39,26 @@ const pages: PageDefinition[] = [
     label: (params) => params['service'] ?? '',
     icon: IconName.Box,
   },
+  {
+    pattern: '/state/:virtualObject',
+    kind: 'detail',
+    resource: 'state',
+    label: (params) => params['virtualObject'] ?? '',
+    icon: IconName.Box,
+  },
 ];
 
-function visit(prevTrail: Crumb[] | undefined, pathname: string, search = '') {
-  return computeNextTrail({ pages, prevTrail, pathname, search });
+function visit(
+  pathname: string,
+  search = '',
+  listSearches: Record<string, string> = {},
+) {
+  return computeTrail({
+    pages,
+    pathname,
+    search,
+    getListSearch: (listPathname) => listSearches[listPathname],
+  });
 }
 
 function shape(trail: Crumb[]) {
@@ -67,108 +78,55 @@ describe('classify', () => {
   });
 });
 
-describe('computeNextTrail', () => {
-  it('should reset to the list itself on a list page', () => {
-    expect(shape(visit(undefined, '/invocations'))).toEqual([
-      'list:/invocations',
-    ]);
+describe('computeTrail', () => {
+  it('should show only the list itself on a list page', () => {
+    expect(shape(visit('/invocations'))).toEqual(['list:/invocations']);
   });
 
-  it('should chain list -> detail', () => {
-    const list = visit(undefined, '/invocations');
-    expect(shape(visit(list, '/invocations/inv-1'))).toEqual([
-      'list:/invocations',
-      'detail:/invocations/inv-1',
-    ]);
-  });
-
-  it('should chain detail -> detail -> detail', () => {
-    const list = visit(undefined, '/invocations');
-    const d1 = visit(list, '/invocations/inv-1');
-    const d2 = visit(d1, '/invocations/inv-2');
-    const d3 = visit(d2, '/invocations/inv-3');
-    expect(shape(d3)).toEqual([
-      'list:/invocations',
-      'detail:/invocations/inv-1',
-      'detail:/invocations/inv-2',
-      'detail:/invocations/inv-3',
-    ]);
-  });
-
-  it('should reset when going from detail to a list, then start fresh', () => {
-    const list = visit(undefined, '/invocations');
-    const d1 = visit(list, '/invocations/inv-1');
-    const d2 = visit(d1, '/invocations/inv-2');
-    const backToList = visit(d2, '/invocations');
-    expect(shape(backToList)).toEqual(['list:/invocations']);
-    expect(shape(visit(backToList, '/invocations/inv-4'))).toEqual([
-      'list:/invocations',
-      'detail:/invocations/inv-4',
-    ]);
-  });
-
-  it('should synthesize the resource list on direct entry to a detail page', () => {
-    const trail = visit(undefined, '/invocations/inv-1');
+  it('should put the list of its resource before a detail page', () => {
+    const trail = visit('/invocations/inv-1');
     expect(shape(trail)).toEqual([
       'list:/invocations',
       'detail:/invocations/inv-1',
     ]);
-    expect(trail[0]?.label).toBe('Invocations');
+    expect(trail[0]).toMatchObject({
+      label: 'Invocations',
+      href: '/invocations',
+    });
   });
 
-  it('should keep the origin list when hopping across resources', () => {
-    const list = visit(undefined, '/invocations');
-    const d1 = visit(list, '/invocations/inv-1');
-    const svc = visit(d1, '/services/greeter');
-    expect(shape(svc)).toEqual([
-      'list:/invocations',
-      'detail:/invocations/inv-1',
-      'detail:/services/greeter',
-    ]);
-  });
-
-  it('should truncate to the first occurrence on cycles', () => {
-    const list = visit(undefined, '/invocations');
-    const d1 = visit(list, '/invocations/inv-1');
-    const d2 = visit(d1, '/invocations/inv-2');
-    const backToD1 = visit(d2, '/invocations/inv-1', '?tab=journal');
-    expect(shape(backToD1)).toEqual([
-      'list:/invocations',
-      'detail:/invocations/inv-1',
-    ]);
-    expect(backToD1.at(-1)?.href).toBe('/invocations/inv-1?tab=journal');
-  });
-
-  it('should keep the trail on query-only navigation and refresh the current href', () => {
-    const list = visit(undefined, '/invocations');
-    const d1 = visit(list, '/invocations/inv-1');
-    const withQuery = visit(d1, '/invocations/inv-1', '?panel=service');
-    expect(shape(withQuery)).toEqual(shape(d1));
-    expect(withQuery.at(-1)?.href).toBe('/invocations/inv-1?panel=service');
-  });
-
-  it('should return an empty trail on unclassified pages and re-synthesize after them', () => {
-    const list = visit(undefined, '/invocations');
-    const d1 = visit(list, '/invocations/inv-1');
-    const unknown = visit(d1, '/features');
-    expect(unknown).toEqual([]);
-    expect(shape(visit(unknown, '/services/greeter'))).toEqual([
+  it('should use the own list of each resource', () => {
+    expect(shape(visit('/services/greeter'))).toEqual([
       'list:/services',
       'detail:/services/greeter',
     ]);
   });
 
-  it('should resolve labels and hrefs from the visit location', () => {
-    const list = visit(undefined, '/invocations');
-    const d1 = visit(list, '/invocations/inv-1', '?a=1');
-    expect(d1.at(-1)).toMatchObject({
+  it('should show a detail page alone when its resource has no list', () => {
+    expect(shape(visit('/state/Counter'))).toEqual(['detail:/state/Counter']);
+  });
+
+  it('should return an empty trail on unclassified pages', () => {
+    expect(visit('/features')).toEqual([]);
+  });
+
+  it('should resolve labels and hrefs from the location', () => {
+    expect(visit('/invocations/inv-1', '?a=1').at(-1)).toMatchObject({
       label: 'inv-1',
       href: '/invocations/inv-1?a=1',
       params: { id: 'inv-1' },
     });
   });
 
-  it('should materialize dynamic list patterns when synthesizing on direct entry', () => {
+  it('should link the list with the query it was last left with', () => {
+    const trail = visit('/invocations/inv-1', '', {
+      '/invocations': '?filter_status=running',
+      '/services': '?view=all',
+    });
+    expect(trail[0]?.href).toBe('/invocations?filter_status=running');
+  });
+
+  it('should materialize dynamic list patterns', () => {
     const cloudPages: PageDefinition[] = [
       {
         pattern: '/accounts/:accountId/environments/:environmentId/invocations',
@@ -186,60 +144,29 @@ describe('computeNextTrail', () => {
         icon: IconName.Invocation,
       },
     ];
-    const trail = computeNextTrail({
+    const trail = computeTrail({
       pages: cloudPages,
       pathname: '/accounts/a1/environments/env-9/invocations/inv-1',
+      getListSearch: (pathname) =>
+        pathname === '/accounts/a1/environments/env-9/invocations'
+          ? '?filter_status=failed'
+          : undefined,
     });
     expect(trail[0]).toMatchObject({
       kind: 'list',
       pathname: '/accounts/a1/environments/env-9/invocations',
-      href: '/accounts/a1/environments/env-9/invocations',
+      href: '/accounts/a1/environments/env-9/invocations?filter_status=failed',
       params: { accountId: 'a1', environmentId: 'env-9' },
     });
     expect(trail[1]?.label).toBe('inv-1');
   });
 
-  it('should cap the trail length while keeping the newest crumbs', () => {
-    let trail = visit(undefined, '/invocations');
-    for (let i = 0; i < MAX_TRAIL_LENGTH + 5; i++) {
-      trail = visit(trail, `/invocations/inv-${i}`);
-    }
-    expect(trail).toHaveLength(MAX_TRAIL_LENGTH);
-    expect(trail.at(-1)?.pathname).toBe(
-      `/invocations/inv-${MAX_TRAIL_LENGTH + 4}`,
-    );
-  });
-
   it('should exclude registered transient query params from crumb hrefs', () => {
     registerTransientQueryParams('test-dialog');
-    const list = visit(undefined, '/invocations');
-    const trail = visit(list, '/invocations/inv-1', '?a=1&test-dialog=inv-1');
-    expect(trail.at(-1)?.href).toBe('/invocations/inv-1?a=1');
-  });
-});
-
-describe('sanitizeCrumb', () => {
-  const crumb: Crumb = {
-    kind: 'detail',
-    resource: 'invocations',
-    pattern: '/invocations/:id',
-    pathname: '/invocations/inv-1',
-    href: '/invocations/inv-1?a=1&test-dialog=inv-1',
-    label: 'inv-1',
-    icon: IconName.Invocation,
-    params: { id: 'inv-1' },
-  };
-
-  it('should strip transient query params from stored hrefs', () => {
-    registerTransientQueryParams('test-dialog');
-    expect(sanitizeCrumb(crumb).href).toBe('/invocations/inv-1?a=1');
-  });
-
-  it('should return clean crumbs unchanged', () => {
-    registerTransientQueryParams('test-dialog');
-    const clean = { ...crumb, href: '/invocations/inv-1?a=1' };
-    expect(sanitizeCrumb(clean)).toBe(clean);
-    const noQuery = { ...crumb, href: '/invocations/inv-1' };
-    expect(sanitizeCrumb(noQuery)).toBe(noQuery);
+    const trail = visit('/invocations/inv-1', '?a=1&test-dialog=inv-1', {
+      '/invocations': '?b=2&test-dialog=inv-2',
+    });
+    expect(trail[0]?.href).toBe('/invocations?b=2');
+    expect(trail[1]?.href).toBe('/invocations/inv-1?a=1');
   });
 });

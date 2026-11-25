@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useEffect, useState, type PropsWithChildren } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { userEvent, within } from 'storybook/test';
 import {
   Breadcrumbs,
   BreadcrumbsProvider,
@@ -142,17 +141,8 @@ const pages: PageDefinition[] = [
 ];
 
 const invocationId = 'inv_1gQNFQQ1HLWM7jo57gxCUiOlQ5nBYztfXV';
-const deploymentId = 'dp_16SYzZL6LG4bkox94Wgq425';
 
 const invocationTrail = ['/invocations', `/invocations/${invocationId}`];
-
-const longTrail = [
-  '/virtual-objects',
-  '/virtual-objects/Cart/cart-1042',
-  `/invocations/${invocationId}`,
-  '/services/Checkout',
-  `/deployments/${deploymentId}`,
-];
 
 function Trail({ steps, children }: PropsWithChildren<{ steps: string[] }>) {
   const navigate = useNavigate();
@@ -210,35 +200,9 @@ export const Flat: Story = {
   ),
 };
 
-export const FlatCollapsed: Story = {
-  tags: ['!test'],
-  parameters: { docs: { story: { inline: false, height: '360px' } } },
-  render: () => (
-    <Trail steps={longTrail}>
-      <InvocationHeader />
-    </Trail>
-  ),
-  play: async ({ canvasElement }) => {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    await userEvent.click(
-      within(canvasElement).getByRole('button', { name: /more pages/ }),
-    );
-  },
-};
-
 export const Chips: Story = {
   render: () => (
     <Trail steps={invocationTrail}>
-      <div className="flex flex-col pt-4">
-        <Breadcrumbs className="mt-8 px-5 md:mt-0" />
-      </div>
-    </Trail>
-  ),
-};
-
-export const ChipsCollapsed: Story = {
-  render: () => (
-    <Trail steps={longTrail}>
       <div className="flex flex-col pt-4">
         <Breadcrumbs className="mt-8 px-5 md:mt-0" />
       </div>

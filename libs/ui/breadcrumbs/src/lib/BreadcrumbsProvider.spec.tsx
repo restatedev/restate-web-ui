@@ -85,7 +85,7 @@ describe('BreadcrumbsProvider', () => {
     window.sessionStorage.clear();
   });
 
-  it('should build the trail while navigating and mark the current crumb', async () => {
+  it('should show the list and the current page while navigating', async () => {
     const router = createTestRouter();
     render(<RouterProvider router={router} />);
     expect(trail()).toBe('Invocations*');
@@ -94,7 +94,14 @@ describe('BreadcrumbsProvider', () => {
     expect(trail()).toBe('Invocations / inv-1*');
 
     await navigate(router, '/invocations/inv-2');
-    expect(trail()).toBe('Invocations / inv-1 / inv-2*');
+    expect(trail()).toBe('Invocations / inv-2*');
+  });
+
+  it('should show the own list of a page, not the page it was opened from', async () => {
+    const router = createTestRouter('/services');
+    render(<RouterProvider router={router} />);
+    await navigate(router, '/invocations/inv-1');
+    expect(trail()).toBe('Invocations / inv-1*');
   });
 
   it('should reset on list pages', async () => {
@@ -105,50 +112,19 @@ describe('BreadcrumbsProvider', () => {
     expect(trail()).toBe('Services*');
   });
 
-  it('should restore each history entry on back/forward instead of recomputing', async () => {
+  it('should follow back and forward navigation', async () => {
     const router = createTestRouter();
     render(<RouterProvider router={router} />);
     await navigate(router, '/invocations/inv-1');
+    await navigate(router, '/invocations/inv-2');
     await navigate(router, '/services');
 
     await navigate(router, -1);
-    expect(trail()).toBe('Invocations / inv-1*');
-
-    await navigate(router, 1);
-    expect(trail()).toBe('Services*');
-  });
-
-  it('should restore deep trails when walking back through details', async () => {
-    const router = createTestRouter();
-    render(<RouterProvider router={router} />);
-    await navigate(router, '/invocations/inv-1');
-    await navigate(router, '/invocations/inv-2');
-    await navigate(router, '/invocations/inv-3');
-
-    await navigate(router, -1);
-    expect(trail()).toBe('Invocations / inv-1 / inv-2*');
+    expect(trail()).toBe('Invocations / inv-2*');
     await navigate(router, -1);
     expect(trail()).toBe('Invocations / inv-1*');
     await navigate(router, 1);
-    expect(trail()).toBe('Invocations / inv-1 / inv-2*');
-  });
-
-  it('should restore the pre-loop trail when going back after a cycle truncation', async () => {
-    const router = createTestRouter();
-    render(<RouterProvider router={router} />);
-    await navigate(router, '/invocations/inv-1');
-    await navigate(router, '/invocations/inv-2');
-    await navigate(router, '/invocations/inv-3');
-    expect(trail()).toBe('Invocations / inv-1 / inv-2 / inv-3*');
-
-    await navigate(router, '/invocations/inv-1');
-    expect(trail()).toBe('Invocations / inv-1*');
-
-    await navigate(router, -1);
-    expect(trail()).toBe('Invocations / inv-1 / inv-2 / inv-3*');
-
-    await navigate(router, 1);
-    expect(trail()).toBe('Invocations / inv-1*');
+    expect(trail()).toBe('Invocations / inv-2*');
   });
 
   it('should keep the query params the list was left with in the list crumb href', async () => {
@@ -164,6 +140,23 @@ describe('BreadcrumbsProvider', () => {
     expect(listLink.getAttribute('href')).toBe(
       '/invocations?filter_status=running&sort_field=modified_at',
     );
+  });
+
+  it('should keep the list query on other detail pages and after a reload', async () => {
+    const router = createTestRouter('/invocations?filter_status=running');
+    const { unmount } = render(<RouterProvider router={router} />);
+    await navigate(router, '/invocations/inv-1');
+    await navigate(router, '/services');
+    await navigate(router, '/invocations/inv-2');
+    expect(
+      screen.getByRole('link', { name: /Invocations/ }).getAttribute('href'),
+    ).toBe('/invocations?filter_status=running');
+    unmount();
+
+    render(<RouterProvider router={createTestRouter('/invocations/inv-3')} />);
+    expect(
+      screen.getByRole('link', { name: /Invocations/ }).getAttribute('href'),
+    ).toBe('/invocations?filter_status=running');
   });
 
   it('should render custom crumb content configured for a page type', async () => {
@@ -183,33 +176,10 @@ describe('BreadcrumbsProvider', () => {
     expect(screen.getByTestId('custom-crumb').textContent).toBe('inv-1!');
   });
 
-  it('should synthesize the list on direct entry to a detail page', () => {
+  it('should put the list before a detail page on direct entry', () => {
     const router = createTestRouter('/invocations/inv-9');
     render(<RouterProvider router={router} />);
     expect(trail()).toBe('Invocations / inv-9*');
-  });
-
-  it('should collapse long trails into edge crumbs plus dropdowns', async () => {
-    const router = createTestRouter();
-    render(<RouterProvider router={router} />);
-    for (let i = 1; i <= 5; i++) {
-      await navigate(router, `/invocations/inv-${i}`);
-    }
-    expect(trail()).toBe(
-      'Invocations / inv-1 / inv-2 / inv-3 / inv-4 / inv-5*',
-    );
-
-    expect(screen.getByRole('link', { name: 'Invocations' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'inv-1' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'inv-4' })).toBeTruthy();
-    expect(screen.queryByRole('link', { name: 'inv-2' })).toBeNull();
-    expect(screen.queryByRole('link', { name: 'inv-3' })).toBeNull();
-    expect(
-      screen.getByRole('button', { name: 'Show 2 more pages' }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole('button', { name: 'Show 4 more pages' }),
-    ).toBeTruthy();
   });
 
   it('should clear the trail on unclassified pages', async () => {
@@ -237,25 +207,5 @@ describe('Breadcrumbs flat variant', () => {
     const currentCrumb = currentLabel.closest('[aria-current="page"]');
     expect(currentCrumb).toBeTruthy();
     expect(currentCrumb?.querySelector('[data-chip]')).toBeTruthy();
-  });
-
-  it('should keep the collapse dropdowns in the flat variant', async () => {
-    const router = createTestRouter('/invocations', pages, 'flat');
-    render(<RouterProvider router={router} />);
-    for (let i = 1; i <= 5; i++) {
-      await navigate(router, `/invocations/inv-${i}`);
-    }
-
-    expect(screen.getByRole('link', { name: 'Invocations' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'inv-1' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'inv-4' })).toBeTruthy();
-    expect(screen.queryByRole('link', { name: 'inv-2' })).toBeNull();
-    expect(screen.queryByRole('link', { name: 'inv-3' })).toBeNull();
-    expect(
-      screen.getByRole('button', { name: 'Show 2 more pages' }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole('button', { name: 'Show 4 more pages' }),
-    ).toBeTruthy();
   });
 });

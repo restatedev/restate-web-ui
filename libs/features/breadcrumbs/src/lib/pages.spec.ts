@@ -1,40 +1,63 @@
-import { computeNextTrail } from '@restate/ui-breadcrumbs';
+import { computeTrail } from '@restate/ui-breadcrumbs';
 import { createBreadcrumbPages } from './pages';
 
-describe('breadcrumb pages', () => {
-  it('keeps VQueues as the origin when opening a virtual object instance', () => {
-    const pages = createBreadcrumbPages();
-    const vqueues = computeNextTrail({
-      pages,
-      pathname: '/flow-control/vqueues',
-    });
-    const instance = computeNextTrail({
-      pages,
-      prevTrail: vqueues,
-      pathname: '/virtual-objects/Counter/user-1',
-      search: '?scope=tenant-a',
-    });
+function labels(pathname: string, patternPrefix?: string, search?: string) {
+  return computeTrail({
+    pages: createBreadcrumbPages({ patternPrefix }),
+    pathname,
+    search,
+  }).map(({ label, href }) => ({ label, href }));
+}
 
-    expect(instance.map(({ label }) => label)).toEqual([
-      'VQueues',
-      'Scope tenant-a · Counter / user-1',
+describe('breadcrumb pages', () => {
+  it('puts Invocations above an invocation', () => {
+    expect(labels('/invocations/inv_1')).toEqual([
+      { label: 'Invocations', href: '/invocations' },
+      { label: 'inv_1', href: '/invocations/inv_1' },
     ]);
-    expect(instance[0]?.href).toBe('/flow-control/vqueues');
+  });
+
+  it('puts Virtual Objects above a virtual object instance', () => {
+    expect(
+      labels('/virtual-objects/Counter/user-1', undefined, '?scope=tenant-a'),
+    ).toEqual([
+      { label: 'Virtual Objects', href: '/virtual-objects' },
+      {
+        label: 'Scope tenant-a · Counter / user-1',
+        href: '/virtual-objects/Counter/user-1?scope=tenant-a',
+      },
+    ]);
   });
 
   it('keeps the VQueue list above a VQueue details page', () => {
-    const pages = createBreadcrumbPages();
-    const vqueues = computeNextTrail({
-      pages,
-      pathname: '/flow-control/vqueues',
-    });
-    const vqueue = computeNextTrail({
-      pages,
-      prevTrail: vqueues,
-      pathname: '/flow-control/vqueues/vq_orders',
-    });
+    expect(labels('/flow-control/vqueues/vq_orders')).toEqual([
+      { label: 'VQueues', href: '/flow-control/vqueues' },
+      { label: 'vq_orders', href: '/flow-control/vqueues/vq_orders' },
+    ]);
+  });
 
-    expect(vqueue.map(({ label }) => label)).toEqual(['VQueues', 'vq_orders']);
-    expect(vqueue[0]?.href).toBe('/flow-control/vqueues');
+  it('resolves the list inside a Cloud environment', () => {
+    expect(
+      labels(
+        '/accounts/acc_1/environments/env_1/services/Greeter',
+        '/accounts/:accountId/environments/:environmentId',
+      ),
+    ).toEqual([
+      {
+        label: 'Services',
+        href: '/accounts/acc_1/environments/env_1/services',
+      },
+      {
+        label: 'Greeter',
+        href: '/accounts/acc_1/environments/env_1/services/Greeter',
+      },
+    ]);
+  });
+
+  it('resolves the tenant invocation list', () => {
+    expect(labels('/tenants/acme/invocations/inv_1', '/tenants/acme')).toEqual([
+      { label: 'Invocations', href: '/tenants/acme/invocations' },
+      { label: 'inv_1', href: '/tenants/acme/invocations/inv_1' },
+    ]);
   });
 });
