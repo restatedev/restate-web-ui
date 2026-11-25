@@ -262,23 +262,11 @@ function CountersComponent() {
           canRemoveItem={(key) => key !== LIMIT_COUNTER_RULE_QUERY_PARAM}
         >
           <AddFilterTrigger
+            variant="toolbar"
             placeholder="Filter limit counters…"
             title="Limit counter filters"
             onItemRemove={scheduleSubmit}
             renderOption={renderFilterOption}
-            inputPrefix={
-              <Icon name={IconName.Search} size="md" tone="subtle" />
-            }
-            tagsPlacement="outside"
-            maxVisibleChips="auto"
-            chipOverflowStrategy="all"
-            tagGroupClassName="min-w-0 flex-nowrap"
-            showSectionTitle={false}
-            popoverPlacement="bottom start"
-            popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-surface/95 p-1"
-            optionClassName="gap-2 px-2.5 py-1.5 highlighted:bg-accent-subtle highlighted:text-accent-strong"
-            className="min-h-6.5 w-full justify-end text-primary"
-            inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-surface/70 shadow-xs hover:bg-surface [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-subtle"
           >
             {(props) => {
               const isRule = props.item.id === LIMIT_COUNTER_RULE_QUERY_PARAM;
