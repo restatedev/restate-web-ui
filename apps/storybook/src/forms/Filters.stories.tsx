@@ -65,7 +65,7 @@ const schema = [
     type: 'STRING_LIST',
     options: [
       { value: 'scheduled', label: 'Scheduled' },
-      { value: 'pending', label: 'Pending' },
+      { value: 'new', label: 'New' },
       { value: 'running', label: 'Running' },
       { value: 'backing-off', label: 'Backing-off' },
       { value: 'suspended', label: 'Suspended' },

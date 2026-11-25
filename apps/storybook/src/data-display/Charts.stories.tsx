@@ -30,7 +30,7 @@ const STYLE = {
     fill: 'var(--background-color-emphasis)',
     stroke: 'var(--background-color-neutral)',
   },
-  pending: {
+  new: {
     fill: 'var(--background-color-queued)',
     stroke: 'var(--border-color-queued)',
   },
@@ -77,10 +77,10 @@ const inFlight: Segment[] = [
     dashed: true,
   },
   {
-    name: 'pending',
-    label: 'Pending',
+    name: 'new',
+    label: 'New',
     count: 8,
-    ...STYLE.pending,
+    ...STYLE.new,
     dashed: true,
     hatch: true,
   },
