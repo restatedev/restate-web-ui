@@ -33,13 +33,13 @@ export function ServicesGroupBy() {
       <DropdownTrigger>
         <Button
           variant="secondary"
-          className="flex h-6.5 shrink-0 items-center gap-1.5 rounded-lg py-0.5 pr-2 pl-1.5 text-sm"
+          className="flex h-6.5 max-w-48 shrink-0 items-center gap-1.5 rounded-lg py-0.5 pr-2 pl-1.5 text-sm"
         >
           <Icon
             name={IconName.Rows3}
             className="h-3.5 w-3.5 shrink-0 opacity-70"
           />
-          <span className="max-sm:sr-only">
+          <span className="min-w-0 truncate max-sm:sr-only">
             {activeLabel ? (
               <>
                 Group: <span className="font-medium">{activeLabel}</span>

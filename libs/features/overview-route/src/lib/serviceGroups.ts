@@ -58,6 +58,26 @@ export function getMetadataKeys(services: Iterable<OverviewService>) {
     .map(([key]) => key);
 }
 
+export function getNextCollapsedGroups(
+  collapsed: ReadonlySet<string>,
+  visibleGroupIds: readonly string[],
+  expandedKeys: { has(key: string): boolean },
+): ReadonlySet<string> | undefined {
+  const changed = visibleGroupIds.filter(
+    (id) => collapsed.has(id) === expandedKeys.has(id),
+  );
+  if (changed.length === 0) return undefined;
+  const next = new Set(collapsed);
+  for (const id of changed) {
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+  }
+  return next;
+}
+
 function getGroupValue(service: OverviewService, groupBy: ServiceGroupBy) {
   if (groupBy === 'deployment') return service.deployment_id;
   const key = getMetadataGroupKey(groupBy);

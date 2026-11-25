@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   getMetadataKeys,
+  getNextCollapsedGroups,
   groupServices,
   parseServiceGroupBy,
   resolveServiceGroupBy,
@@ -99,6 +100,31 @@ describe('service groups', () => {
     );
 
     expect(groups[0]?.id.startsWith('\x00')).toBe(true);
+  });
+
+  it('keeps collapsed groups that are not on screen when another row toggles', () => {
+    const collapsed = new Set(['\x00group:billing', '\x00group:support']);
+    const visible = ['\x00group:support', '\x00group:growth'];
+
+    expect(
+      getNextCollapsedGroups(
+        collapsed,
+        visible,
+        new Set(['\x00group:growth', 'Cart']),
+      ),
+    ).toBeUndefined();
+    expect(
+      getNextCollapsedGroups(collapsed, visible, new Set(['Cart'])),
+    ).toEqual(
+      new Set(['\x00group:billing', '\x00group:support', '\x00group:growth']),
+    );
+    expect(
+      getNextCollapsedGroups(
+        collapsed,
+        visible,
+        new Set(['\x00group:support', '\x00group:growth']),
+      ),
+    ).toEqual(new Set(['\x00group:billing']));
   });
 
   it('groups by deployment and orders groups by their label', () => {

@@ -55,7 +55,11 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
 import { sortServices, type OverviewService } from './sortServices';
-import { getMetadataGroupKey, groupServices } from './serviceGroups';
+import {
+  getMetadataGroupKey,
+  getNextCollapsedGroups,
+  groupServices,
+} from './serviceGroups';
 import {
   isServiceGroupRow,
   renderServiceGroupCell,
@@ -837,14 +841,13 @@ export function ServicesTable() {
       expandedKeys={tableExpandedKeys}
       onExpandedChange={(nextExpandedKeys) => {
         if (isGrouped) {
-          const nextCollapsed = groupRows
-            .filter(({ id }) => !nextExpandedKeys.has(id))
-            .map(({ id }) => id);
-          if (
-            nextCollapsed.length !== collapsedGroups.size ||
-            nextCollapsed.some((id) => !collapsedGroups.has(id))
-          ) {
-            setCollapsedGroups(new Set(nextCollapsed));
+          const nextCollapsed = getNextCollapsedGroups(
+            collapsedGroups,
+            groupRows.map(({ id }) => id),
+            nextExpandedKeys,
+          );
+          if (nextCollapsed) {
+            setCollapsedGroups(nextCollapsed);
           }
         }
         setExpandedKeys((previous) => {
