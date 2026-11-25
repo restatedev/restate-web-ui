@@ -33,4 +33,17 @@ describe('Disclosure', () => {
     );
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
   });
+
+  it('keeps a disabled disclosure closed', () => {
+    render(
+      <Disclosure disabled>
+        <DisclosureTrigger>Error details</DisclosureTrigger>
+        <DisclosurePanel>Connection refused</DisclosurePanel>
+      </Disclosure>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Error details' });
+    expect(trigger.hasAttribute('disabled')).toBe(true);
+    act(() => trigger.click());
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+  });
 });

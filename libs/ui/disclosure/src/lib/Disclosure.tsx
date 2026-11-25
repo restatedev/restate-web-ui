@@ -11,6 +11,7 @@ export interface DisclosureProps {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  disabled?: boolean;
   className?: string;
 }
 
@@ -22,6 +23,7 @@ export function Disclosure({
   open,
   defaultOpen,
   onOpenChange,
+  disabled,
   className,
   children,
 }: PropsWithChildren<DisclosureProps>) {
@@ -30,6 +32,7 @@ export function Disclosure({
       isExpanded={open}
       defaultExpanded={defaultOpen}
       onExpandedChange={onOpenChange}
+      isDisabled={disabled}
       className={disclosureStyles({ className })}
     >
       {children}

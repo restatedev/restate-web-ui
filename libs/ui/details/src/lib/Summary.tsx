@@ -1,47 +1,25 @@
-import { Children, PropsWithChildren } from 'react';
-import { usePress } from 'react-aria';
-import { useFocusRing } from 'react-aria';
-import { focusRing } from '@restate/ui-focus';
+import { Children, PropsWithChildren, useId } from 'react';
+import { DisclosureTrigger } from '@restate/ui-disclosure';
 import { tv } from '@restate/util-styles';
-import { Icon, IconName } from '@restate/ui-icons';
 
 interface SummaryProps {
   className?: string;
 }
 
 const summaryStyles = tv({
-  extend: focusRing,
-  base: 'flex cursor-default list-none gap-2 rounded-[calc(.75rem-1px-.25rem)] px-3 py-2 pr-2.5 group-open:mb-2 hover:bg-muted pressed:bg-emphasis [&::-webkit-details-marker]:hidden',
+  base: 'relative py-2 pr-10 pl-3 group-data-expanded/details:mb-2',
 });
 
 export function Summary({
   children,
   className,
 }: PropsWithChildren<SummaryProps>) {
-  const { pressProps, isPressed } = usePress({
-    onPress: (event) => {
-      if (event.pointerType === 'keyboard') {
-        const details = event.target.closest('details');
-        if (details instanceof HTMLDetailsElement) {
-          details.open = !details.open;
-        }
-      }
-    },
-  });
-  const { isFocusVisible, focusProps } = useFocusRing();
+  const id = useId();
   return (
-    <summary
-      {...pressProps}
-      {...focusProps}
-      {...(isPressed && { 'data-pressed': isPressed })}
-      className={summaryStyles({ className, isFocusVisible })}
-    >
-      <div>{children}</div>
-      <Icon
-        name={IconName.ChevronDown}
-        className="ml-auto shrink-0 text-sm text-muted group-open:rotate-180"
-      />
-    </summary>
+    <div className={summaryStyles({ className })}>
+      <DisclosureTrigger variant="row" aria-labelledby={id} />
+      <div id={id}>{children}</div>
+    </div>
   );
 }
 

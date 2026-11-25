@@ -38,7 +38,7 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
-      "path": "../nav/tsconfig.lib.json"
+      "path": "../tabs/tsconfig.lib.json"
     },
     {
       "path": "../icons/tsconfig.lib.json"

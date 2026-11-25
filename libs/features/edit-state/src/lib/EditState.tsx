@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@restate/ui-dialog';
 import { Form } from 'react-router';
-import { Disclosure, DisclosurePanel } from 'react-aria-components';
+import { Disclosure, DisclosurePanel } from '@restate/ui-disclosure';
 import { Button, SubmitButton } from '@restate/ui-button';
 import { ErrorBanner } from '@restate/ui-error';
 import {
@@ -517,8 +517,8 @@ function StateFormRow({
 
   return (
     <Disclosure
-      isExpanded={isExpanded}
-      onExpandedChange={(expanded) => {
+      open={isExpanded}
+      onOpenChange={(expanded) => {
         setIsExpanded(expanded);
         if (expanded) {
           setHasMountedEditor(true);

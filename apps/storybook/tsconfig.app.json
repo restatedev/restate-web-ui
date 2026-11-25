@@ -67,6 +67,9 @@
       "path": "../../libs/ui/issue-banner/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/util/errors/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/util/snapshot-time/tsconfig.lib.json"
     },
     {

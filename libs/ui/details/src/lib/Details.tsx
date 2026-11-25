@@ -1,6 +1,6 @@
-import { Children, PropsWithChildren, useId } from 'react';
+import { Children, PropsWithChildren, useState } from 'react';
 import { tv } from '@restate/util-styles';
-import { DetailsProvider } from './DetailsContext';
+import { Disclosure, DisclosurePanel } from '@restate/ui-disclosure';
 import { isSummary } from './Summary';
 
 interface DetailsProps {
@@ -10,11 +10,17 @@ interface DetailsProps {
 }
 
 const styles = tv({
-  base: 'group rounded-xl border bg-surface p-1 text-primary shadow-xs has-[+details]:rounded-b-none has-[+details]:border-b-0 [&+details]:rounded-t-none [&+details>summary]:rounded-t-none [&:not([open]):has(+details)>summary]:rounded-b-none [&[open]>summary]:rounded-b-none',
+  slots: {
+    root: 'group/details details rounded-xl border bg-surface p-1 text-primary shadow-xs has-[+.details]:rounded-b-none has-[+.details]:border-b-0 [&+.details]:rounded-t-none',
+    content:
+      '-m-1 rounded-b-xl border-t bg-subtle px-4 py-6 group-has-[+.details]/details:rounded-b-none',
+  },
   variants: {
     isDisabled: {
       false: '',
-      true: 'cursor-not-allowed [&>summary]:pointer-events-none',
+      true: {
+        root: 'cursor-not-allowed [&_[data-disabled]]:cursor-not-allowed',
+      },
     },
   },
   defaultVariants: {
@@ -28,22 +34,28 @@ export function Details({
   className,
   disabled,
 }: PropsWithChildren<DetailsProps>) {
-  const id = useId();
+  const [isOpen, setIsOpen] = useState(Boolean(open));
+  const [openProp, setOpenProp] = useState(open);
+  if (open !== openProp) {
+    setOpenProp(open);
+    setIsOpen(Boolean(open));
+  }
   const childrenArray = Children.toArray(children);
   const summary = childrenArray.filter(isSummary);
   const detailChildren = childrenArray.filter((child) => !isSummary(child));
+  const { root, content } = styles({ isDisabled: Boolean(disabled) });
 
   return (
-    <DetailsProvider id={id}>
-      <details
-        className={styles({ className, isDisabled: Boolean(disabled) })}
-        open={open}
-      >
-        {summary}
-        <div className="-m-1 rounded-b-xl border-t bg-subtle px-4 py-6 [:where(.group):has(+details)_&]:rounded-b-none">
-          {detailChildren}
-        </div>
-      </details>
-    </DetailsProvider>
+    <Disclosure
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      disabled={disabled}
+      className={root({ className })}
+    >
+      {summary}
+      <DisclosurePanel>
+        <div className={content()}>{detailChildren}</div>
+      </DisclosurePanel>
+    </Disclosure>
   );
 }

@@ -9,12 +9,8 @@ import {
 import { Fragment, PropsWithChildren } from 'react';
 import Markdown from 'react-markdown';
 import { tv } from '@restate/util-styles';
-import {
-  Button as RACButton,
-  Disclosure,
-  DisclosurePanel,
-  Heading,
-} from 'react-aria-components';
+import { Button as RACButton, Heading } from 'react-aria-components';
+import { Disclosure, DisclosurePanel } from '@restate/ui-disclosure';
 
 const UI_CODES = new Set<string>(Object.values(UI_ERROR_CODES));
 
