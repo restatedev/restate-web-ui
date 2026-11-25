@@ -73,8 +73,9 @@ function storeCollapsedGroups(
 export function useServiceGroupBy() {
   const { metadataKeys, isServiceDetailsPending } = useOverviewContext();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [storedGroupBy] = useState(readStoredGroupBy);
   const requested = parseServiceGroupBy(
-    searchParams.get(SERVICE_GROUP_PARAM) ?? readStoredGroupBy(),
+    searchParams.get(SERVICE_GROUP_PARAM) ?? storedGroupBy,
   );
   const groupBy = isServiceDetailsPending
     ? requested
@@ -85,11 +86,7 @@ export function useServiceGroupBy() {
       setSearchParams(
         (previous) => {
           const params = new URLSearchParams(previous);
-          if (next === 'none') {
-            params.delete(SERVICE_GROUP_PARAM);
-          } else {
-            params.set(SERVICE_GROUP_PARAM, next);
-          }
+          params.set(SERVICE_GROUP_PARAM, next);
           return params;
         },
         { replace: true, preventScrollReset: true },
