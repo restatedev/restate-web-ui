@@ -86,6 +86,9 @@
       "path": "../../ui/button/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/disclosure/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/dialog/tsconfig.lib.json"
     }
   ]
