@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
 import {
   parseServiceGroupBy,
@@ -70,10 +70,22 @@ function storeCollapsedGroups(
   }
 }
 
+function useStoredGroupBy() {
+  const { key } = useLocation();
+  const [stored, setStored] = useState(() => ({
+    key,
+    value: readStoredGroupBy(),
+  }));
+  if (stored.key === key) return stored.value;
+  const next = { key, value: readStoredGroupBy() };
+  setStored(next);
+  return next.value;
+}
+
 export function useServiceGroupBy() {
   const { metadataKeys, isServiceDetailsPending } = useOverviewContext();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [storedGroupBy] = useState(readStoredGroupBy);
+  const storedGroupBy = useStoredGroupBy();
   const requested = parseServiceGroupBy(
     searchParams.get(SERVICE_GROUP_PARAM) ?? storedGroupBy,
   );
