@@ -53,6 +53,31 @@ describe('RestateServerError', () => {
     expect(screen.queryByText('Request failed with status 500.')).toBeNull();
   });
 
+  it('explains a rate-limited invocation instead of the generic summary', () => {
+    render(
+      <RestateServerError
+        error={
+          new RestateError(
+            "service is rate limited due to '503 Service Unavailable' (got retry-after header: 5 seconds)",
+            'RT0023',
+          )
+        }
+        isTransient
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        /Restate is being rate limited by the service deployment/,
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.queryByText(
+        'An error has occurred! Check the details below for more information:',
+      ),
+    ).toBeNull();
+  });
+
   it('names a Restate code it has no summary for', () => {
     render(
       <RestateServerError
