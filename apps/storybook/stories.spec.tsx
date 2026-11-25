@@ -30,17 +30,22 @@ const files = import.meta.glob<Parameters<typeof composeStories>[0]>(
   './src/**/*.stories.tsx',
   { eager: true },
 );
+const suites = Object.entries(files)
+  .map(([path, file]) => ({
+    path,
+    stories: Object.entries(
+      composeStories(file) as Record<string, ReturnType<typeof composeStory>>,
+    ).filter(([, Story]) => Story.tags.includes('test')),
+  }))
+  .filter(({ stories }) => stories.length > 0);
 
-describe.each(Object.entries(files))('%s', (path, file) => {
+describe.each(suites)('$path', ({ path, stories }) => {
   const rules = Object.fromEntries(
     [...PAGE_RULES, ...(OPEN_FINDINGS[path] ?? [])].map((id) => [
       id,
       { enabled: false },
     ]),
   );
-  const stories = Object.entries(
-    composeStories(file) as Record<string, ReturnType<typeof composeStory>>,
-  ).filter(([, Story]) => Story.tags.includes('test'));
   it.each(stories)('%s', async (_, Story) => {
     await Story.run();
     const { violations } = await axe.run(document.body, { rules });
