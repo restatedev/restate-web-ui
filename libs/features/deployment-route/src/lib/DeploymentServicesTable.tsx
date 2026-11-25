@@ -73,7 +73,7 @@ export function DeploymentServicesTable({
       renderCell={(row, column) => {
         if (column.id === 'service') {
           return (
-            <Cell className="[&&&]:overflow-visible">
+            <Cell overflow="visible">
               <div className="flex min-w-0 items-center gap-2">
                 <ServiceTarget
                   service={row.service.name}

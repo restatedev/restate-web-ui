@@ -319,7 +319,7 @@ function renderRuleCell(
   switch (column.id) {
     case 'pattern':
       return (
-        <Cell className="overflow-visible">
+        <Cell overflow="visible">
           <LimitRuleTarget
             pattern={row.pattern}
             href={row.href}
@@ -369,7 +369,7 @@ function renderRuleCell(
       );
     case 'actions':
       return (
-        <Cell className="[&&&]:overflow-visible">
+        <Cell overflow="visible">
           <RuleActions
             rule={row}
             onToggle={onToggle}

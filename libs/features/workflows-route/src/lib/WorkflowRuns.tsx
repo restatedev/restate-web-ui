@@ -403,7 +403,7 @@ export function WorkflowRuns({
                 }
                 if (column.id === 'invocation') {
                   return (
-                    <Cell className="overflow-visible">
+                    <Cell overflow="visible">
                       <InvocationId
                         id={invocation.id}
                         truncateInMiddle
@@ -424,14 +424,14 @@ export function WorkflowRuns({
                 }
                 if (column.id === 'actions') {
                   return (
-                    <Cell className="align-top [&&&]:overflow-visible">
+                    <Cell align="top" overflow="visible">
                       <Actions invocation={invocation} />
                     </Cell>
                   );
                 }
                 const identity = workflowIdentity(service, item);
                 return (
-                  <Cell className="overflow-visible">
+                  <Cell overflow="visible">
                     <WorkflowRunTarget
                       identity={identity}
                       href={workflowRunRouteHref(

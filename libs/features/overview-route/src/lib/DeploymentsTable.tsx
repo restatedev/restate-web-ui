@@ -418,7 +418,7 @@ export function DeploymentsTable() {
         renderCell={(deployment, column) => {
           if (column.id === 'deployment') {
             return (
-              <Cell className="min-w-0 overflow-hidden">
+              <Cell className="min-w-0">
                 <div className={styles.identity()}>
                   <Deployment
                     deploymentId={deployment.id}
@@ -453,7 +453,7 @@ export function DeploymentsTable() {
           }
           if (column.id === 'services') {
             return (
-              <Cell className="[&&&]:overflow-visible">
+              <Cell overflow="visible">
                 <DeploymentServices deployment={deployment} />
               </Cell>
             );
@@ -490,7 +490,7 @@ export function DeploymentsTable() {
           }
           if (column.id === 'actions') {
             return (
-              <Cell className="[&&&]:overflow-visible">
+              <Cell overflow="visible">
                 <DeploymentActions deploymentId={deployment.id} />
               </Cell>
             );

@@ -601,7 +601,7 @@ function renderStatsCell(
       );
     case 'actions':
       return (
-        <Cell className="[&&&]:overflow-visible">
+        <Cell overflow="visible">
           <div className="flex justify-end">
             <QueryActions stat={stat} explain={explain} />
           </div>

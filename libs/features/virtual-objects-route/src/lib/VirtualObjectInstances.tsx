@@ -578,7 +578,7 @@ export function VirtualObjectInstances({
                 }
                 if (column.id === 'lockHolder') {
                   return (
-                    <Cell className="overflow-visible">
+                    <Cell overflow="visible">
                       <LockHolderCell lockHolder={item.lockHolder} />
                     </Cell>
                   );
@@ -599,7 +599,7 @@ export function VirtualObjectInstances({
                 }
                 const identity = virtualObjectIdentity(service, item);
                 return (
-                  <Cell className="overflow-visible">
+                  <Cell overflow="visible">
                     <VirtualObjectInstanceTarget
                       identity={identity}
                       href={virtualObjectInstanceRouteHref(
