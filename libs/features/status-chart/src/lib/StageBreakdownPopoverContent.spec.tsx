@@ -12,12 +12,12 @@ describe('StageBreakdownPopoverContent', () => {
           count={100}
           items={[
             {
-              name: 'pending',
-              label: 'Pending',
+              name: 'new',
+              label: 'New',
               count: 90,
               fillLight: 'var(--background-color-surface)',
               stroke: 'var(--border-color-strong)',
-              href: '/invocations?status=pending',
+              href: '/invocations?status=new',
             },
             {
               name: 'backing-off',
@@ -34,13 +34,13 @@ describe('StageBreakdownPopoverContent', () => {
     );
 
     expect(screen.getByText('100 invocations')).toBeTruthy();
-    const pending = screen.getByRole('link', {
-      name: 'Pending: ~90% of Inbox',
+    const newInvocations = screen.getByRole('link', {
+      name: 'New: ~90% of Inbox',
     });
     const backingOff = screen.getByRole('link', {
       name: 'Backing off: ~10% of Inbox',
     });
-    expect(pending.textContent).toBe('Pending~90%');
+    expect(newInvocations.textContent).toBe('New~90%');
     expect(backingOff.textContent).toBe('Backing off~10%');
   });
 

@@ -25,7 +25,7 @@ function rawInvocation(overrides: Partial<RawInvocation> = {}): RawInvocation {
 
 describe('getInvocationStatusFromVqueue', () => {
   it.each<[VqueueStatus, string]>([
-    [{ stage: 'inbox', status: 'new' }, 'pending'],
+    [{ stage: 'inbox', status: 'new' }, 'new'],
     [{ stage: 'inbox', status: 'scheduled' }, 'scheduled'],
     [{ stage: 'inbox', status: 'backing-off' }, 'backing-off'],
     [{ stage: 'inbox', status: 'started' }, 'ready'],
@@ -57,6 +57,19 @@ describe('getInvocationStatusFromVqueue', () => {
       }),
     ).toBeUndefined();
   });
+});
+
+describe('convertInvocation status names', () => {
+  it.each(['pending', 'new'])(
+    'shows a stored %s invocation without a VQueue row as New',
+    (status) => {
+      expect(
+        convertInvocation(
+          rawInvocation({ status: status as RawInvocation['status'] }),
+        ).status,
+      ).toBe('new');
+    },
+  );
 });
 
 describe('convertInvocation VQueue overlay', () => {

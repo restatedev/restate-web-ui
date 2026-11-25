@@ -72,7 +72,7 @@ const ACTION_CONFIGS: ActionConfig[] = [
     key: 'pause',
     condition: (invocation) =>
       !invocation.completion_result &&
-      !['paused', 'ready', 'pending', 'scheduled'].includes(invocation.status),
+      !['paused', 'ready', 'new', 'scheduled'].includes(invocation.status),
     component: PauseInvocation,
     icon: IconName.Pause,
     label: 'Pause',

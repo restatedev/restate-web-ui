@@ -353,7 +353,7 @@ describe('invocation list from entry indexes', () => {
 
     await harness.post(
       '/v2/invocations',
-      { sort: SORT, filters: [statuses(['pending'])] },
+      { sort: SORT, filters: [statuses(['new'])] },
       INDEX_HEADERS,
     );
 

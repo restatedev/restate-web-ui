@@ -351,7 +351,7 @@ export function BatchOperationsProvider({
                       value: [
                         'paused',
                         'ready',
-                        'pending',
+                        'new',
                         'scheduled',
                         'completed',
                       ],

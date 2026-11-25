@@ -5,6 +5,7 @@ import {
 } from '@restate/data-access-admin-api-spec';
 import { isInvocationId, type QueryContext } from './shared.js';
 import { selectInvocationCandidatesV2 } from './invocationsV2/index.js';
+import { normalizeInvocationStatusFilters } from './invocationsV2/shared.js';
 
 const DEFAULT_PAGE_SIZE = 1000;
 
@@ -60,7 +61,7 @@ export async function getInvocationIds(
     : [];
 
   const allFilters = [
-    ...filters.map(toInvocationV2Filter),
+    ...normalizeInvocationStatusFilters(filters).map(toInvocationV2Filter),
     ...createdAfterFilter,
   ];
   if (pageSize <= 0) {

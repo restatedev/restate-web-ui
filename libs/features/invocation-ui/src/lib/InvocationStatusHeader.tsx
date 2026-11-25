@@ -16,7 +16,7 @@ export function getInvocationStatusIntent(
       return 'success';
     case 'failed':
       return 'danger';
-    case 'pending':
+    case 'new':
       return 'pending';
     case 'paused':
     case 'backing-off':

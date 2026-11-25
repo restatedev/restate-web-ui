@@ -1,6 +1,7 @@
 import {
   INVOCATION_STATUS_DEFINITIONS,
   INVOCATION_STATUSES,
+  normalizeInvocationStatus,
   TERMINAL_INVOCATION_STATUSES,
   type FilterItem,
 } from '@restate/data-access-admin-api-spec';
@@ -61,4 +62,24 @@ export function getSelectedFocusFromStatusFilter(
   if (hasAllCompleted && notCompleted === 0) return 'completed';
   if (hasAllNotCompleted && completed === 0) return 'not-completed';
   return null;
+}
+
+export function renameLegacyStatusFilterParam(param: string | null) {
+  if (!param) return undefined;
+  try {
+    const clause = JSON.parse(param) as { value?: unknown };
+    const values = Array.isArray(clause.value) ? clause.value : [clause.value];
+    const renamed = values.map((value) =>
+      typeof value === 'string' ? normalizeInvocationStatus(value) : value,
+    );
+    if (renamed.every((value, index) => value === values[index])) {
+      return undefined;
+    }
+    return JSON.stringify({
+      ...clause,
+      value: Array.isArray(clause.value) ? [...new Set(renamed)] : renamed[0],
+    });
+  } catch {
+    return undefined;
+  }
 }

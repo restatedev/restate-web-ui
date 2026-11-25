@@ -3,7 +3,11 @@ import type { QueryContext } from '../shared.js';
 import { enrichInvocationFlowControl } from './list/enrichInvocationFlowControl.js';
 import { loadVqueueInvocationsByIds } from './list/loadVqueueInvocationsByIds.js';
 import { selectInvocationCandidatesV2 } from './selectInvocationCandidatesV2.js';
-import { badRequest, INVOCATIONS_V2_LIMIT } from './shared.js';
+import {
+  badRequest,
+  INVOCATIONS_V2_LIMIT,
+  normalizeInvocationStatusFilters,
+} from './shared.js';
 
 export type ListInvocationsV2Args =
   components['schemas']['ListInvocationsV2RequestBody'];
@@ -17,12 +21,13 @@ type ListInvocationsV2Response =
 export async function listInvocationsV2(
   this: QueryContext,
   {
-    filters = [],
+    filters: requestedFilters = [],
     sort,
     mode: requestedMode,
     includeFlowControl = false,
   }: ListInvocationsV2Args,
 ): Promise<Response> {
+  const filters = normalizeInvocationStatusFilters(requestedFilters);
   const selected = await selectInvocationCandidatesV2(this, {
     filters,
     sort,

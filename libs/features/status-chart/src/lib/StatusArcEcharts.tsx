@@ -69,7 +69,7 @@ export function StatusArcEcharts({
                 shadowColor="color-mix(in oklab, var(--box-shadow-color-default) 15%, transparent)"
                 shadowOffsetY={1}
                 hatchColor={
-                  s.name === 'inbox' || s.name === 'pending'
+                  s.name === 'inbox' || s.name === 'new'
                     ? 'var(--background-color-hatch-pending)'
                     : undefined
                 }

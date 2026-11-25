@@ -9,7 +9,7 @@ const invocation: Invocation = {
   modified_at: '2026-01-01T00:00:00.000Z',
   scheduled_at: '2026-01-01T00:00:00.000Z',
   invoked_by: 'ingress',
-  status: 'pending',
+  status: 'new',
   target: 'ExampleService/run',
   target_handler_name: 'run',
   target_service_name: 'ExampleService',

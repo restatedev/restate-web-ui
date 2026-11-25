@@ -2,7 +2,10 @@ import type {
   FilterItem,
   components,
 } from '@restate/data-access-admin-api-spec';
-import { INVOCATION_SUMMARY_STAGES as SHARED_INVOCATION_SUMMARY_STAGES } from '@restate/data-access-admin-api-spec';
+import {
+  INVOCATION_SUMMARY_STAGES as SHARED_INVOCATION_SUMMARY_STAGES,
+  normalizeInvocationStatus,
+} from '@restate/data-access-admin-api-spec';
 import {
   INVOCATION_STATUSES,
   type InvocationStatus,
@@ -112,6 +115,22 @@ export function validateInvocationFiltersV2(
     }
   }
   return undefined;
+}
+
+export function normalizeInvocationStatusFilters<
+  Filter extends InvocationFilterV2 | FilterItem,
+>(filters: Filter[]): Filter[] {
+  return filters.map((filter) => {
+    const item = filter as FilterItem;
+    if (item.field !== 'status') return filter;
+    if (item.type === 'STRING_LIST') {
+      return { ...filter, value: item.value.map(normalizeInvocationStatus) };
+    }
+    if (item.type === 'STRING' && typeof item.value === 'string') {
+      return { ...filter, value: normalizeInvocationStatus(item.value) };
+    }
+    return filter;
+  });
 }
 
 export function validateInvocationSortV2(

@@ -388,7 +388,7 @@ export function VQueueStageSummaryBar({
                 segment.name === 'inbox'
                   ? `${INBOX_PATTERN}, ${INBOX_HIGHLIGHT}, ${INBOX_STAGE_GRADIENT}`
                   : isGrouped && isInboxStatus
-                    ? `${segment.name === 'pending' ? INBOX_PATTERN : NEUTRAL_HATCH_PATTERN}, ${backgroundGradient}`
+                    ? `${segment.name === 'new' ? INBOX_PATTERN : NEUTRAL_HATCH_PATTERN}, ${backgroundGradient}`
                     : backgroundGradient,
               borderColor: style.stroke,
               borderLeftWidth:

@@ -73,7 +73,7 @@ describe('invocation summary from sys_virtual_object_stats', () => {
             field: 'status',
             type: 'STRING_LIST',
             operation: 'IN',
-            value: ['scheduled', 'pending', 'ready', 'yielded', 'backing-off'],
+            value: ['scheduled', 'new', 'ready', 'yielded', 'backing-off'],
           },
         ],
       },

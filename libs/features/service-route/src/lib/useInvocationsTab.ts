@@ -2,7 +2,10 @@ import {
   useCanSortInvocationsByTransition,
   useListInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
-import type { components } from '@restate/data-access-admin-api-spec';
+import {
+  normalizeInvocationStatus,
+  type components,
+} from '@restate/data-access-admin-api-spec';
 import { entryTablesSupportFilters } from '@restate/data-access-query';
 import {
   deriveSortFromUrl,
@@ -53,7 +56,7 @@ function parseStatusFilter(value: string | null): StatusFilter {
         field: 'status',
         type: 'STRING_LIST',
         operation: parsed.operation,
-        value: parsed.value,
+        value: [...new Set(parsed.value.map(normalizeInvocationStatus))],
       } as StatusFilter;
     }
   } catch {

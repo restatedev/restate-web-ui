@@ -262,14 +262,14 @@ export function PendingTail({
             Next attempt
           </span>
           {inboxState === 'pending' && (
-            <InvocationStatusBadge status={currentStatus ?? 'pending'} />
+            <InvocationStatusBadge status={currentStatus ?? 'new'} />
           )}
           {currentStatus === 'backing-off' && currentStatusDuration && (
             <span className="shrink-0 text-muted tabular-nums">
               for {currentStatusDuration}
             </span>
           )}
-          {inbox && currentStatus === 'pending' && (
+          {inbox && (currentStatus === 'new' || currentStatus === 'ready') && (
             <JourneyInboxPosition scenario={scenario} inbox={inbox} />
           )}
         </div>

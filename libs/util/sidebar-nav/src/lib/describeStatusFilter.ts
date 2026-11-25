@@ -1,6 +1,7 @@
 import {
   INBOX_INVOCATION_STATUSES,
   INVOCATION_STATUS_DEFINITIONS,
+  normalizeInvocationStatus,
 } from '@restate/data-access-admin-api-spec';
 
 const STATUS_LABELS = new Map<string, string>(
@@ -15,7 +16,7 @@ function includedStatuses(raw: string) {
     value?: unknown;
   };
   if (!Array.isArray(value) || value.length === 0) return [];
-  const values = new Set(value as string[]);
+  const values = new Set((value as string[]).map(normalizeInvocationStatus));
   return INVOCATION_STATUS_DEFINITIONS.filter(({ key }) =>
     operation === 'NOT_IN' ? !values.has(key) : values.has(key),
   );

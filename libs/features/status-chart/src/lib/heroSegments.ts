@@ -31,7 +31,7 @@ export type ArcSegment = {
 const INFLIGHT_ORDER = [
   'inbox',
   'scheduled',
-  'pending',
+  'new',
   'ready',
   'yielded',
   'ready-yielded-backing-off',

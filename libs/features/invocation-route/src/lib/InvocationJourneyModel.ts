@@ -12,7 +12,8 @@ export type JourneyActivityKind =
   | 'suspensions';
 
 export type JourneyCurrentStatus =
-  | 'pending'
+  | 'new'
+  | 'ready'
   | 'scheduled'
   | 'yielded'
   | 'running'

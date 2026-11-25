@@ -104,8 +104,8 @@ export const INVOCATION_STATUS_DEFINITIONS = [
     vqueueStatuses: ['scheduled'],
   },
   {
-    key: 'pending',
-    label: 'Pending',
+    key: 'new',
+    label: 'New',
     stage: 'inbox',
     vqueueStatuses: ['new'],
   },
@@ -210,6 +210,15 @@ export function getInvocationStatusesForStage(stage: InvocationSummaryStage) {
 
 export function getInvocationStatusLabel(status: string) {
   return INVOCATION_STATUS_DEFINITIONS.find(({ key }) => key === status)?.label;
+}
+
+export const RENAMED_INVOCATION_STATUSES: ReadonlyMap<
+  string,
+  InvocationStatus
+> = new Map([['pending', 'new']]);
+
+export function normalizeInvocationStatus(status: string) {
+  return RENAMED_INVOCATION_STATUSES.get(status) ?? status;
 }
 
 export function getInvocationStatusFromVqueue(vqueue?: {

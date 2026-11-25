@@ -21,7 +21,7 @@ const SYS_INVOCATION_STATUS_DEFINITIONS: Record<
   InvocationStatus,
   Omit<InvocationStatusDefinition, 'vqueue'>
 > = {
-  pending: {
+  new: {
     sysInvocationStatus: 'inboxed',
   },
   scheduled: {
