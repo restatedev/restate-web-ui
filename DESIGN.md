@@ -374,4 +374,7 @@ axe on every story and on the main pages (November 2026) still reports these. Th
 8. Breaking changes keep the old prop as an alias marked `/** @deprecated use … */` while another app still uses it: the Cloud console picks up these libs later, so search it for the old name first, and drop the alias once nothing there uses it. Callers in this repo move in the same PR or the next.
 9. The PR shows before and after screenshots.
 
-CI's Static Analyzis job summary counts the calls that restyle a shared component through `className` (`pnpm run design-system-report`). A change shouldn't raise it.
+Two CI checks keep this file true:
+
+- **The restyle count can't go up.** The Static Analyzis job counts the calls that restyle a shared component through `className` (`pnpm run design-system-report`) and compares the total with the merge base. A change that raises it fails and names the components; add a prop or a variant instead. A change that removes as many restyles as it adds passes. Locally: `pnpm run design-system-report --base origin/main`.
+- **Every story renders.** The Unit tests job renders each story in jsdom, runs its `play` function and checks the result with axe (`pnpm nx test storybook`). jsdom has no layout: color contrast isn't checked, and a story whose `play` needs real sizes takes `tags: ['!test']`. The axe rules of the [open findings](#open-findings) are skipped (`OPEN_FINDINGS` in `apps/storybook/stories.spec.tsx`); when you close a finding, remove its rule there so it can't come back.

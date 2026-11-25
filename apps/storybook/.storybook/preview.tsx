@@ -1,8 +1,12 @@
 import type { Preview } from '@storybook/react-vite';
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { RouterProvider as AriaRouterProvider } from 'react-aria-components';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import {
+  createMemoryRouter,
+  RouterProvider,
+  useRouteError,
+} from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './storybook.css';
 
@@ -12,11 +16,35 @@ function StoryOutlet() {
   return useContext(StoryContext);
 }
 
-const router = createMemoryRouter([{ path: '*', element: <StoryOutlet /> }]);
+const renderErrors: unknown[] = [];
+
+function StoryRenderError() {
+  const error = useRouteError();
+  useEffect(() => {
+    renderErrors.push(error);
+  }, [error]);
+  return (
+    <p role="alert">
+      This story failed to render:{' '}
+      {error instanceof Error ? error.message : String(error)}
+    </p>
+  );
+}
+
+const router = createMemoryRouter([
+  { path: '*', element: <StoryOutlet />, ErrorBoundary: StoryRenderError },
+]);
 const queryClient = new QueryClient();
 
 const preview: Preview = {
   tags: ['autodocs'],
+  beforeEach: () => {
+    renderErrors.length = 0;
+  },
+  afterEach: () => {
+    const [error] = renderErrors;
+    if (error) throw error;
+  },
   parameters: {
     layout: 'centered',
     controls: { expanded: true },

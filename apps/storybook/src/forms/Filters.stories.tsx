@@ -343,6 +343,7 @@ export const NoFilters: Story = {
 };
 
 export const ValueTypes: Story = {
+  tags: ['!test'],
   decorators: onList,
   parameters: { filterClauses: valueTypeClauses },
   play: async ({ canvasElement }) => {

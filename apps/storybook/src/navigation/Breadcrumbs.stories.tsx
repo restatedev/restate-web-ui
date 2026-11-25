@@ -211,6 +211,7 @@ export const Flat: Story = {
 };
 
 export const FlatCollapsed: Story = {
+  tags: ['!test'],
   parameters: { docs: { story: { inline: false, height: '360px' } } },
   render: () => (
     <Trail steps={longTrail}>

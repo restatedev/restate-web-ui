@@ -42,7 +42,7 @@ jobs:
       - name: Check dependency licenses
         run: pnpm run check-licenses
       - name: Design system report
-        run: pnpm run --silent design-system-report >> "$GITHUB_STEP_SUMMARY"
+        run: pnpm run --silent design-system-report --base origin/main >> "$GITHUB_STEP_SUMMARY"
   e2e:
     runs-on: warp-ubuntu-latest-x64-4x
     container:
