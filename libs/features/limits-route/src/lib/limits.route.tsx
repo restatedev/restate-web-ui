@@ -319,7 +319,7 @@ function renderRuleCell(
   switch (column.id) {
     case 'pattern':
       return (
-        <Cell className="overflow-visible">
+        <Cell overflow="visible">
           <LimitRuleTarget
             pattern={row.pattern}
             href={row.href}
@@ -369,7 +369,7 @@ function renderRuleCell(
       );
     case 'actions':
       return (
-        <Cell className="[&&&]:overflow-visible">
+        <Cell overflow="visible">
           <RuleActions
             rule={row}
             onToggle={onToggle}
@@ -628,22 +628,10 @@ function Component() {
       >
         <FilterBuilder query={filterQuery} schema={[filterSchema]} multiple>
           <AddFilterTrigger
+            variant="toolbar"
             placeholder="Filter rules…"
             title="Rule filters"
             onItemRemove={scheduleSubmit}
-            inputPrefix={
-              <Icon name={IconName.Search} size="md" tone="subtle" />
-            }
-            tagsPlacement="outside"
-            maxVisibleChips="auto"
-            chipOverflowStrategy="all"
-            tagGroupClassName="min-w-0 flex-nowrap"
-            showSectionTitle={false}
-            popoverPlacement="bottom start"
-            popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-surface/95 p-1"
-            optionClassName="gap-2 px-2.5 py-1.5 highlighted:bg-accent-subtle highlighted:text-accent-strong"
-            className="min-h-6.5 w-full justify-end text-primary"
-            inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-surface/70 shadow-xs hover:bg-surface [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-subtle"
           >
             {(props) => (
               <FilterChip
@@ -719,7 +707,7 @@ function Component() {
       <FlowControlHeader />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'rules')}>
         <ContentPanelToolbar>{pageToolbar}</ContentPanelToolbar>
-        <ContentPanelBody className="pb-32">
+        <ContentPanelBody bottomSpace>
           <ContentPanelSection flush>
             <PanelTable
               aria-label="Limit rules"

@@ -219,7 +219,7 @@ function withCell(Component: ComponentType<CellProps>, id: ColumnKey) {
           : 'pinned_deployment_id'
         : undefined;
     return (
-      <Cell className="align-top">
+      <Cell align="top">
         {isVisible ? (
           <Component {...props} />
         ) : (
@@ -516,7 +516,7 @@ const CELLS: Record<
     'pinned_service_protocol_version',
   ),
   actions: ({ invocation }) => (
-    <Cell className="align-top [&&&]:overflow-visible">
+    <Cell align="top" overflow="visible">
       <Actions invocation={invocation} />
     </Cell>
   ),

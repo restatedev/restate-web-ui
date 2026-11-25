@@ -363,12 +363,7 @@ function SidebarOverflow({ items }: { items: SidebarSubItem[] }) {
     <Dropdown>
       <DropdownTrigger>
         <Button variant="secondary" className={s.overflowTrigger()}>
-          <Icon
-            name={IconName.Ellipsis}
-            size="md"
-            className="text-subtle"
-            aria-hidden
-          />
+          <Icon name={IconName.Ellipsis} size="md" tone="subtle" aria-hidden />
           <span className="min-w-0 flex-auto truncate">More</span>
         </Button>
       </DropdownTrigger>

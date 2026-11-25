@@ -293,7 +293,7 @@ function renderCounterCell(
   switch (column.id) {
     case 'counter':
       return (
-        <Cell className="overflow-visible">
+        <Cell overflow="visible">
           {row.identity ? (
             <LimitCounterTarget
               {...row.identity}
@@ -333,7 +333,7 @@ function renderCounterCell(
       );
     case 'pattern':
       return (
-        <Cell className="overflow-visible">
+        <Cell overflow="visible">
           {row.rule_pattern ? (
             <LimitRuleTarget
               pattern={row.rule_pattern}

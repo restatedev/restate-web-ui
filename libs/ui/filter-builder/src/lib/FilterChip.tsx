@@ -177,11 +177,7 @@ export function FilterChip({
               <ChipSegment className="gap-0.5 bg-subtle px-1.5 font-mono text-subtle">
                 {item.operationLabel}
                 {!hasValue && (
-                  <Icon
-                    name={IconName.ChevronDown}
-                    size="xs"
-                    className="text-subtle"
-                  />
+                  <Icon name={IconName.ChevronDown} size="xs" tone="subtle" />
                 )}
               </ChipSegment>
             )}
@@ -195,11 +191,7 @@ export function FilterChip({
                 >
                   {valueContent}
                 </span>
-                <Icon
-                  name={IconName.ChevronDown}
-                  size="xs"
-                  className="text-subtle"
-                />
+                <Icon name={IconName.ChevronDown} size="xs" tone="subtle" />
               </ChipSegment>
             )}
           </Chip>

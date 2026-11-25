@@ -47,7 +47,7 @@ export function PanelTableQuickOpen({
       }}
     >
       <span className="flex shrink-0 items-center gap-1.5 font-medium text-secondary">
-        <Icon name={iconName} size="sm" className="text-subtle" />
+        <Icon name={iconName} size="sm" tone="subtle" />
         {label}
       </span>
       <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-strong/80" />
@@ -87,7 +87,7 @@ export function PanelTableQuickOpen({
           containerClassName="min-w-48 max-w-80 flex-1 has-[input[data-focused=true]]:[--chip-border-color:var(--border-color-accent-strong)] has-[input[data-focus-visible=true]]:filter-[drop-shadow(0_0_2px_--theme(--border-color-accent-strong/35%))]"
         >
           <ChipSegment className="w-full bg-surface pr-0 pl-3">
-            <Icon name={iconName} size="sm" className="text-subtle" />
+            <Icon name={iconName} size="sm" tone="subtle" />
             <TextField
               className="flex min-w-0 flex-1 items-center"
               isDisabled={disabled}

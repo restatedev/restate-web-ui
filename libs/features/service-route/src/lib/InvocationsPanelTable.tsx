@@ -149,7 +149,7 @@ export function InvocationsPanelTable({
           isVqueueEntry(invocation) ? (
             <VqueueEntryCell entry={invocation} column={column.id} />
           ) : column.id === 'actions' ? (
-            <Cell className="align-top [&&&]:overflow-visible">
+            <Cell align="top" overflow="visible">
               <Actions invocation={invocation} />
             </Cell>
           ) : column.id in INVOCATION_TABLE_COLUMN_CONFIG ? (

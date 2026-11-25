@@ -336,11 +336,11 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
                   isVqueueEntry(row) ? (
                     <VqueueEntryCell entry={row} column={column.id} />
                   ) : column.id === 'actions' ? (
-                    <Cell className="align-top [&&&]:overflow-visible">
+                    <Cell align="top" overflow="visible">
                       <Actions invocation={row} />
                     </Cell>
                   ) : column.id === 'modified_at' ? (
-                    <Cell className="align-top">
+                    <Cell align="top">
                       <InvocationTableDate
                         value={row.modified_at}
                         tooltipTitle="Modified at"

@@ -498,7 +498,7 @@ function Component() {
                 <TooltipContent size="sm">Refresh VQueue</TooltipContent>
               </Tooltip>
             </ContentPanelToolbar>
-            <ContentPanelBody className="pb-32">
+            <ContentPanelBody bottomSpace>
               <ContentPanelSection flush>
                 <VQueueEntriesTable
                   stage={stage}

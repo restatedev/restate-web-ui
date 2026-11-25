@@ -787,7 +787,7 @@ export function ServicesTable() {
     if (column.id === 'health') {
       const issues = serviceIssuesMap.get(row.name) ?? [];
       return (
-        <Cell className="[&&&]:overflow-visible">
+        <Cell overflow="visible">
           {isServiceSummaryLoading ? (
             <Skeleton shape="pill" className="block h-5 w-16" />
           ) : issues.length > 0 ? (
@@ -817,7 +817,7 @@ export function ServicesTable() {
     }
     if (column.id === 'deployment') {
       return (
-        <Cell className="min-w-0 overflow-hidden">
+        <Cell className="min-w-0">
           <div className="flex min-w-0 items-center gap-1.5">
             <LatestRevisionDeployment serviceName={row.name} />
             <AllRevisions serviceName={row.name} />

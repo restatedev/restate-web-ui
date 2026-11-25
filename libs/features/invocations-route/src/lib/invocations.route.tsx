@@ -776,7 +776,7 @@ function Component() {
               onClick={() => void refetch()}
             />
           </ContentPanelToolbar>
-          <ContentPanelBody className="pb-32">
+          <ContentPanelBody bottomSpace>
             <div className="-mb-1 border-b border-default/80 px-1 pt-9 pb-1.5">
               {summaryContent}
             </div>
