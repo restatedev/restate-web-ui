@@ -11,10 +11,13 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { formatPlurals } from '@restate/util-intl';
 
 const END_SLACK_PX = 8;
+const HOVER_WAIT_MS = 1000;
 const IGNORE_SCROLL_MS = 150;
 const RETRY_MS = 500;
 const SPRING_RATE = 7;
 const UP_KEYS = new Set(['ArrowUp', 'PageUp', 'Home']);
+
+type PointedTrigger = { element: Element | null; movedAt: number };
 
 function distanceBelowViewport(element: HTMLElement) {
   return element.getBoundingClientRect().bottom - window.innerHeight;
@@ -51,8 +54,20 @@ function hasOpenOverlay() {
   );
 }
 
-function isBusy(journal: HTMLElement) {
-  return hasSelectionIn(journal) || hasOpenOverlay();
+function isPointingAtTrigger(journal: HTMLElement, pointed: PointedTrigger) {
+  return (
+    pointed.element !== null &&
+    performance.now() - pointed.movedAt < HOVER_WAIT_MS &&
+    journal.contains(pointed.element)
+  );
+}
+
+function isBusy(journal: HTMLElement, pointed: PointedTrigger) {
+  return (
+    hasSelectionIn(journal) ||
+    hasOpenOverlay() ||
+    isPointingAtTrigger(journal, pointed)
+  );
 }
 
 function canGlide(distance: number) {
@@ -92,6 +107,7 @@ export function JournalFollow({
   const retryTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const glideFrame = useRef<number>(undefined);
   const velocity = useRef(0);
+  const pointed = useRef<PointedTrigger>({ element: null, movedAt: 0 });
   const entryCountRef = useRef(entryCount);
 
   const stopGlide = useCallback(() => {
@@ -134,10 +150,13 @@ export function JournalFollow({
         return;
       }
       let last = 0;
+      let position: number | undefined;
+      let written = 0;
       const glide = () => {
-        if (isBusy(journal)) {
+        if (isBusy(journal, pointed.current)) {
           velocity.current = 0;
           last = 0;
+          position = undefined;
           glideFrame.current = undefined;
           retryTimer.current = setTimeout(() => {
             glideFrame.current = requestAnimationFrame(glide);
@@ -147,13 +166,13 @@ export function JournalFollow({
         const now = performance.now();
         const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
         last = now;
-        const remaining = distanceBelowViewport(journal);
+        const y = window.scrollY;
+        position = position === undefined ? y : position + y - written;
+        const target = y + distanceBelowViewport(journal);
+        const remaining = target - position;
         if (remaining <= 0.5) {
-          if (remaining > 0) {
-            window.scrollTo({
-              top: window.scrollY + remaining,
-              behavior: 'instant',
-            });
+          if (target > y) {
+            window.scrollTo({ top: target, behavior: 'instant' });
           }
           velocity.current = 0;
           glideFrame.current = undefined;
@@ -161,12 +180,10 @@ export function JournalFollow({
         }
         const decay = Math.exp(-SPRING_RATE * dt);
         const pull = velocity.current - SPRING_RATE * remaining;
-        const offset = (pull * dt - remaining) * decay;
         velocity.current = (velocity.current - SPRING_RATE * pull * dt) * decay;
-        window.scrollTo({
-          top: window.scrollY + offset + remaining,
-          behavior: 'instant',
-        });
+        position = target + (pull * dt - remaining) * decay;
+        window.scrollTo({ top: position, behavior: 'instant' });
+        written = window.scrollY;
         glideFrame.current = requestAnimationFrame(glide);
       };
       glideFrame.current = requestAnimationFrame(glide);
@@ -181,7 +198,7 @@ export function JournalFollow({
       if (!journal || !isFollowingRef.current) {
         return;
       }
-      if (isBusy(journal)) {
+      if (isBusy(journal, pointed.current)) {
         retryTimer.current = setTimeout(keepUp, RETRY_MS);
         return;
       }
@@ -206,7 +223,7 @@ export function JournalFollow({
       keepUp();
     } else if (isComplete && isFollowingRef.current) {
       setFollowing(false);
-      if (!isBusy(journal)) {
+      if (!isBusy(journal, pointed.current)) {
         scrollToEnd(false);
       }
     }
@@ -268,17 +285,35 @@ export function JournalFollow({
         setFollowing(false);
       }
     };
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType === 'touch') {
+        return;
+      }
+      const wasPointing = isPointingAtTrigger(journal, pointed.current);
+      pointed.current = {
+        element:
+          event.target instanceof Element
+            ? event.target.closest('[aria-expanded]')
+            : null,
+        movedAt: performance.now(),
+      };
+      if (wasPointing && !isPointingAtTrigger(journal, pointed.current)) {
+        keepUp();
+      }
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('wheel', onWheel, { passive: true });
     window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
     return () => {
       setFollowing(false);
       clearTimeout(retryTimer.current);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('pointermove', onPointerMove);
     };
-  }, [isEnabled, journalRef, setFollowing]);
+  }, [isEnabled, journalRef, keepUp, setFollowing]);
 
   if (!isEnabled || isFollowing || isEndInView) {
     return null;
