@@ -97,7 +97,12 @@ export function groupServices<T extends OverviewService>(
   const groups = new Map<string | null, T[]>();
   for (const service of services) {
     const value = getGroupValue(service, groupBy);
-    groups.set(value, [...(groups.get(value) ?? []), service]);
+    const group = groups.get(value);
+    if (group) {
+      group.push(service);
+    } else {
+      groups.set(value, [service]);
+    }
   }
   const label = (value: string) =>
     groupBy === 'deployment' ? (getDeploymentLabel?.(value) ?? value) : value;
