@@ -151,6 +151,35 @@ Lambda endpoints do not support the bidirectional protocol mode and should be
 configured to announce themselves as being in request-response mode upon
 discovery.`,
   },
+  META0016: {
+    summary:
+      'Cannot update the provided deployment with the discovered metadata, because the new metadata is insufficiently similar to the old.',
+    help: `Cannot update the provided deployment with the discovered metadata, because the new metadata is insufficiently similar to the old.
+
+When updating a deployment, make sure that:
+
+* All services have the same type as they did in the previous deployment.
+* All services contain at least all the handlers that they did in the previous deployment.
+* The updated deployment contains at least all the services that it previously did.
+* The updated deployment has exactly the same supported protocol versions, which generally means you want to use the same SDK minor version.
+
+See the [versioning documentation](https://docs.restate.dev/services/versioning) for more information.`,
+  },
+  META0017: {
+    summary:
+      'Cannot force-add the provided URI/ARN as a new deployment, because two or more existing deployments use this URI.',
+    help: `Cannot force-add the provided URI/ARN as a new deployment, because two or more existing deployments use this URI.
+
+Generally Restate enforces that there is only one deployment for a given destination (a HTTP URI or Lambda ARN). This means
+that rediscovering the same destination requires a \`force\` flag. Adding a deployment in force mode instructs Restate to replace the existing deployment
+with that destination, with the discovered metadata. This relies on there being an unambiguous deployment to replace.
+
+When using the \`PUT /deployments/{deployment_id}\` API to update a deployment in place, it is possible to create two deployments that have the same destination.
+This is intended to be a temporary measure to fix failing invocations on a draining deployment. While in this state, it is not possible to force deploy that same destination.
+Instead, one of the two deployments must be deleted (\`DELETE /deployments/{deployment_id}\`) so that there is an unambiguous deployment to replace.
+
+See the [versioning documentation](https://docs.restate.dev/services/versioning) for more information.`,
+  },
   RT0001: {
     summary:
       'The invocation response stream was aborted due to the timeout configured in `worker.invoker.abort_timeout`.',
@@ -300,5 +329,79 @@ Make sure the service/handler is registered:
 
 * If the service/handler is correctly registered, you can ignore this error as it's a transient error, due to internal propagation of the cluster metadata.
 * If the service/handler is not registered, you must register it in order for this invocation to progress.`,
+  },
+  RT0019: {
+    summary: 'The service replied with Content Too Large/Payload Too Large.',
+    help: `The service replied with Content Too Large/Payload Too Large.
+If you deploy on a serverless platform like Vercel, this might indicate that you're hitting the payload size limit imposed by service providers.
+
+Suggestions:
+
+* Check in your code whether there is a case where a very large message can be generated, such as a state being too large, a \`ctx.run\` result being too large, etc.
+* Ask the service provider to increase the limits, if possible.`,
+  },
+  RT0020: {
+    summary: `The requested service is exposed by a deployment using a deprecated service protocol version. New requests won't be accepted.`,
+    help: `The requested service is exposed by a deployment using a deprecated service protocol version. New requests won't be accepted.
+Upgrade the SDK in your service code and register it as a new deployment to continue accepting requests to the requested service.`,
+  },
+  RT0021: {
+    summary:
+      'The `inactivity_timeout` option is ignored when the deployment serving the services/handlers is using Request/Response mode, such as when deploying on Lambda or using HTTP/1.1',
+    help: `The \`inactivity_timeout\` option is ignored when the deployment serving the services/handlers is using Request/Response mode, such as when deploying on Lambda or using HTTP/1.1`,
+  },
+  RT0022: {
+    summary: `The configured \`journal_retention\` valued was clamped, because it's higher than the maximum value configured for the server.`,
+    help: `The configured \`journal_retention\` valued was clamped, because it's higher than the maximum value configured for the server.`,
+  },
+  RT0023: {
+    summary:
+      'Restate is being rate limited by the service deployment, meaning the service deployment, or the network infrastructure in front of it, returned status code `429 Too Many Requests` or `503 Service Unavailable`.',
+    help: `Restate is being rate limited by the service deployment, meaning the service deployment, or the network infrastructure in front of it, returned status code \`429 Too Many Requests\` or \`503 Service Unavailable\`.
+
+This might indicate that:
+* Restate retry policy is too aggressive for this service deployment.
+* The network infrastructure in front of the service, such as gateway or load balancer, is misconfigured.
+* When using a cloud provider for your service deployment, such as Cloud Run or Vercel, the provider might be applying rate limiting due to quota restrictions of your account.
+
+Usually no action is needed, as Restate will dynamically re-adjust its retry policy following the \`Retry-After\` header.`,
+  },
+  RT0024: {
+    summary: 'Invalid usage of flow control APIs.',
+    help: `Invalid usage of flow control APIs.
+
+Scope and limit key can be used only when the flow control experimental feature is enabled.
+Check the documentation for more details: https://docs.restate.dev/services/flow-control
+
+The scope MUST be a valid UTF-8 string, containing only \`[a-zA-Z0-9_.-]\` characters with maximum length of 36 characters.
+
+The limit key MUST be a valid UTF-8 string and can be of these two shapes:
+* Only one hierarchical \`{level1}\`, for example \`foo\`
+* Two hierarchical levels \`{level1}/{level2}\`, for example \`foo/bar\`
+
+Each level must be contain only \`[a-zA-Z0-9_.-]\` characters with maximum length of 36 characters.
+
+Limit key can be used only in combination with scope.`,
+  },
+  RT0025: {
+    summary:
+      'The maximum nesting depth for the futures (promises) an invocation awaits on has been reached.',
+    help: `The maximum nesting depth for the futures (promises) an invocation awaits on has been reached.
+
+Restate futures can be composed with combinators (e.g. \`all\`, \`race\`), and each level
+of composition adds one level of nesting. This error is raised when an invocation awaits
+on (or suspends on) a future whose nesting depth exceeds the limit configured in
+\`worker.invoker.max-awaited-future-depth\` (default: \`1000\`).
+
+This is most likely caused by unbounded or runaway recursion in the service code building
+ever-deeper combinator futures.
+
+When this limit is reached, the invocation is **paused**. You can resume the
+invocation manually after addressing the root cause.
+
+Suggestions:
+
+* Check your service code for recursive or loop-based composition of futures (e.g. repeatedly
+  wrapping futures in \`all\`/\`race\` combinators) that grows without a bound.`,
   },
 };
