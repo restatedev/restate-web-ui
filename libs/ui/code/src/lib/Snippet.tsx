@@ -3,7 +3,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { Children, PropsWithChildren, ReactNode, memo, useState } from 'react';
 import { tv } from '@restate/util-styles';
 import { syntaxHighlighter } from './SyntaxHighlighter';
-import { Nav, NavButtonItem } from '@restate/ui-nav';
+import { SegmentedControl } from '@restate/ui-tabs';
 
 interface SnippetProps {
   className?: string;
@@ -21,7 +21,7 @@ const LANGUAGE_LABEL: Record<
   Exclude<SnippetProps['language'], undefined>,
   string
 > = {
-  typescript: 'Typescript',
+  typescript: 'TypeScript',
   java: 'Java',
   json: 'json',
   bash: 'bash',
@@ -128,7 +128,7 @@ export function SnippetCopy({
 }
 
 const snippetTabsStyles = tv({
-  base: '@container relative',
+  base: 'flex flex-col items-start gap-1.5',
 });
 export function SnippetTabs({
   children,
@@ -146,25 +146,17 @@ export function SnippetTabs({
   const [currentLanguage, setCurrentLanguage] =
     useState<(typeof languages)[number]>(defaultLanguage);
   return (
-    <div
-      className={snippetTabsStyles({
-        className,
-      })}
-    >
-      <div className="absolute top-0 right-0 rounded-xl bg-tint-subtle">
-        <Nav ariaCurrentValue="true" className="gap-0">
-          {languages.map((language) => (
-            <NavButtonItem
-              key={language}
-              isActive={language === currentLanguage}
-              onClick={() => setCurrentLanguage(language)}
-            >
-              {LANGUAGE_LABEL[language]}
-            </NavButtonItem>
-          ))}
-        </Nav>
-      </div>
-      <div className="pt-8 @sm:pt-4 @lg:pt-0">{children(currentLanguage)}</div>
+    <div className={snippetTabsStyles({ className })}>
+      <SegmentedControl
+        label="Language"
+        value={currentLanguage}
+        options={languages.map((language) => ({
+          value: language,
+          label: LANGUAGE_LABEL[language],
+        }))}
+        onChange={setCurrentLanguage}
+      />
+      <div className="self-stretch">{children(currentLanguage)}</div>
     </div>
   );
 }
