@@ -21,6 +21,10 @@ function distanceBelowViewport(element: HTMLElement) {
   return element.getBoundingClientRect().bottom - window.innerHeight;
 }
 
+function pageTop(element: HTMLElement) {
+  return element.getBoundingClientRect().top + window.scrollY;
+}
+
 function isTyping(target: EventTarget | null) {
   return (
     target instanceof HTMLElement &&
@@ -131,15 +135,17 @@ export function JournalFollow({
         return;
       }
       const start = performance.now();
-      function step() {
+      const startTop = pageTop(journal);
+      const step = () => {
         const progress = Math.min(1, (performance.now() - start) / GLIDE_MS);
+        const shifted = pageTop(journal) - startTop;
         window.scrollTo({
-          top: from + below * (1 - (1 - progress) ** 3),
+          top: from + shifted + below * (1 - (1 - progress) ** 3),
           behavior: 'instant',
         });
         glideFrame.current =
           progress < 1 ? requestAnimationFrame(step) : undefined;
-      }
+      };
       glideFrame.current = requestAnimationFrame(step);
     },
     [journalRef, stopGlide],
@@ -198,17 +204,16 @@ export function JournalFollow({
       return;
     }
     let lastY = window.scrollY;
-    let lastTop = journal.getBoundingClientRect().top + lastY;
+    let lastTop = pageTop(journal);
     const onScroll = () => {
       const y = window.scrollY;
-      const rect = journal.getBoundingClientRect();
-      const top = rect.top + y;
+      const top = pageTop(journal);
       const moved = y - lastY;
       const shifted = top - lastTop;
       const scrolled = moved - shifted;
       lastY = y;
       lastTop = top;
-      const isAtEnd = rect.bottom - window.innerHeight <= END_SLACK_PX;
+      const isAtEnd = distanceBelowViewport(journal) <= END_SLACK_PX;
       setIsEndInView(isAtEnd);
       if (isAtEnd) {
         setSeenCount(entryCountRef.current);
