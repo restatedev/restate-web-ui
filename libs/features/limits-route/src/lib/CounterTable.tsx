@@ -275,7 +275,7 @@ function WaitingQueuesCell({ value }: { value?: number | null }) {
   }
   return (
     <Badge
-      variant="warning"
+      intent="warning"
       size="sm"
       className="min-w-7 justify-center font-semibold tabular-nums"
       aria-label={`${formatNumber(count)} waiting VQueues`}
@@ -351,7 +351,7 @@ function renderCounterCell(
               variant="secondary"
               className="inline-flex items-center gap-1 text-0.5xs text-muted no-underline hover:text-secondary"
             >
-              <Icon name={IconName.Plus} className="h-3 w-3" />
+              <Icon name={IconName.Plus} size="xs" />
               Create rule
             </Link>
           ) : (

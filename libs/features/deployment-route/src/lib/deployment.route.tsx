@@ -37,6 +37,7 @@ import {
   DeploymentDetails,
   deploymentTabFromSearch,
 } from './DeploymentDetails';
+import { Skeleton } from '@restate/ui-loading';
 
 function EndpointChip({
   endpoint,
@@ -63,11 +64,8 @@ function EndpointChip({
           }
           className="min-w-0 shrink-0"
         >
-          <Badge
-            size="sm"
-            className="max-w-40 cursor-default gap-0.5 font-mono"
-          >
-            <Icon name={IconName.AtSign} className="h-3.5 w-3.5 shrink-0" />
+          <Badge size="sm" mono className="max-w-40 cursor-default gap-0.5">
+            <Icon name={IconName.AtSign} size="sm" />
             <span className="truncate">{tunnelName}</span>
           </Badge>
         </HoverTooltip>
@@ -85,15 +83,12 @@ function EndpointChip({
           >
             <ChipSegment className="min-w-0 bg-surface pr-1 pl-2 font-mono text-[90%] text-tertiary">
               {isPending ? (
-                <span className="inline-block h-3.5 w-48 animate-pulse rounded bg-emphasis" />
+                <Skeleton className="h-3.5 w-48" />
               ) : (
                 <>
                   <TruncateTooltipTrigger>{endpoint}</TruncateTooltipTrigger>
                   {endpoint && (
-                    <Copy
-                      copyText={endpoint}
-                      className="ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
-                    />
+                    <Copy copyText={endpoint} size="2xs" className="ml-0.5" />
                   )}
                 </>
               )}
@@ -145,7 +140,7 @@ function Component() {
         <Header
           icon={icon}
           iconLabel="Deployment"
-          variant={isDeprecated ? 'warning' : 'default'}
+          intent={isDeprecated ? 'warning' : 'neutral'}
           className="min-w-0"
           trail={<Breadcrumbs variant="flat" />}
         >
@@ -173,10 +168,7 @@ function Component() {
               intent="danger"
               title="Couldn’t load this deployment"
             >
-              <ErrorBanner
-                error={error}
-                className="w-full rounded-xl text-left"
-              />
+              <ErrorBanner error={error} className="w-full" />
             </EmptyState>
           </div>
         ) : (

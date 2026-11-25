@@ -45,7 +45,7 @@ export function ThemeSwitch({
           {OPTIONS.map((option) => (
             <DropdownItem key={option.value} value={option.value}>
               <span className="flex items-center gap-2">
-                <Icon name={option.icon} className="h-4 w-4" />
+                <Icon name={option.icon} size="md" />
                 {option.label}
               </span>
             </DropdownItem>

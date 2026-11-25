@@ -64,7 +64,7 @@ export const PurgeInvocation = withConfirmation({
   description: <p>Are you sure you want to purge this invocation?</p>,
   iconClassName: 'text-danger-subtle',
   icon: IconName.Trash,
-  alertType: 'info',
+  alertIntent: 'info',
   alertContent: (
     <>
       After an invocation completes, it will be retained by Restate for some
@@ -72,8 +72,7 @@ export const PurgeInvocation = withConfirmation({
       perform deduplication.{' '}
       <Link
         href="https://docs.restate.dev/services/invocation/managing-invocations#cancel"
-        variant="secondary"
-        className="text-accent"
+        intent="info"
         target="_blank"
         rel="noopener noreferrer"
       >

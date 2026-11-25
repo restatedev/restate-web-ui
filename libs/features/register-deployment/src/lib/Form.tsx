@@ -6,13 +6,10 @@ import {
   PropsWithChildren,
   ReactNode,
 } from 'react';
-import { Radio, Heading } from 'react-aria-components';
+import { Radio } from 'react-aria-components';
 import { RadioGroup } from '@restate/ui-radio-group';
-import {
-  DeploymentProtocolCheck,
-  RegisterDeploymentResults,
-  Warning,
-} from './Results';
+import { DeploymentProtocolCheck, RegisterDeploymentResults } from './Results';
+import { Callout } from '@restate/ui-callout';
 import { AdditionalHeaders } from './AdditionalHeaders';
 import { UseHTTP11 } from './UseHTTP11';
 import { AssumeARNRole } from './AssumeARNRole';
@@ -34,6 +31,7 @@ import { OverrideWarning } from './OverrideWarnning';
 import { OverrideBreaking } from './OverrideBreaking';
 import { Metadata } from './Metadata';
 import { Link } from '@restate/ui-link';
+import { DialogTitle } from '@restate/ui-dialog';
 
 const customRadioStyles = tv({
   base: 'group relative flex cursor-default justify-center rounded-lg border bg-clip-padding shadow-none outline-hidden',
@@ -98,13 +96,7 @@ function Container({
 }>) {
   return (
     <div className="flex flex-col gap-2">
-      <Heading
-        slot="title"
-        level={3}
-        className="text-lg leading-6 font-medium text-primary"
-      >
-        {title}
-      </Heading>
+      <DialogTitle>{title}</DialogTitle>
       {description ? (
         <p className="text-sm text-muted">{description}</p>
       ) : (
@@ -186,18 +178,22 @@ export function UpdateForm() {
           }
           description={'Modify the configuration for this deployment. '}
         >
-          <Warning title="Service definitions are not updated">
+          <Callout
+            intent="warning"
+            title="Service definitions are not updated"
+            className="mt-2"
+          >
             This only updates the configuration. To apply code changes or add
             new handlers, you must re-register the deployment.{' '}
             <Link
               href="https://docs.restate.dev/services/versioning#deploying-new-service-versions"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-warning-strong"
+              intent="warning"
             >
               Learn more.
             </Link>
-          </Warning>
+          </Callout>
           {/* <EndpointForm /> */}
           <div className="mt-2" />
           <AdditionalHeaders />
@@ -507,7 +503,7 @@ function EndpointForm() {
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
                     aria-label="Http endpoint"
                   >
-                    <Icon name={IconName.Http} className="h-4 w-4" />
+                    <Icon name={IconName.Http} size="md" />
                   </CustomRadio>
                 </RadioTooltipTrigger>
                 <TooltipContent size="sm" offset={20}>
@@ -521,7 +517,7 @@ function EndpointForm() {
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
                     aria-label="Google Cloud Run"
                   >
-                    <Icon name={IconName.CloudRun} className="h-4 w-4" />
+                    <Icon name={IconName.CloudRun} size="md" />
                   </CustomRadio>
                 </RadioTooltipTrigger>
                 <TooltipContent size="sm" offset={20}>
@@ -535,7 +531,7 @@ function EndpointForm() {
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
                     aria-label="AWS lambda"
                   >
-                    <Icon name={IconName.Lambda} className="h-4 w-4" />
+                    <Icon name={IconName.Lambda} size="md" />
                   </CustomRadio>
                 </RadioTooltipTrigger>
                 <TooltipContent size="sm" offset={20}>
@@ -551,7 +547,7 @@ function EndpointForm() {
                         className="aspect-square items-center rounded-[0.4rem] p-1.5"
                         aria-label="Connected service"
                       >
-                        <Icon name={IconName.Connect} className="h-4 w-4" />
+                        <Icon name={IconName.Connect} size="md" />
                       </CustomRadio>
                     </RadioTooltipTrigger>
                     <TooltipContent size="sm" offset={20}>
@@ -565,7 +561,7 @@ function EndpointForm() {
                         className="aspect-square items-center rounded-[0.4rem] p-1.5"
                         aria-label="Tunnel"
                       >
-                        <Icon name={IconName.Tunnel} className="h-4 w-4" />
+                        <Icon name={IconName.Tunnel} size="md" />
                       </CustomRadio>
                     </RadioTooltipTrigger>
                     <TooltipContent size="sm" offset={20}>

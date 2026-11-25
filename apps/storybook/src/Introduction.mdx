@@ -1,0 +1,19 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Introduction" />
+
+# Restate UI components
+
+The shared components of the Restate web UI and the Restate Cloud console. Each one lives in `libs/ui/<name>` and is imported by package name, for example `import { Button } from '@restate/ui-button'`.
+
+Three rules:
+
+1. **Use a component.** Find the component for the job in the sidebar before you write markup.
+2. **`className` places a component; props style it.** Pass layout only: margins, width, flex and grid placement, position.
+3. **Tokens only.** Colors come from `@restate/util-styles/theme.css`, never from the Tailwind palette.
+
+`DESIGN.md` at the root of the repository has the catalog by job, the prop names (`variant`, `intent`, `size`, …) and the checklist for new components. The colors and their recipes are in `libs/util/styles/DESIGN.md`.
+
+Switch between the light and the dark theme with the brush in the toolbar. The Accessibility panel checks every story.
+
+Run it with `pnpm nx serve storybook`.

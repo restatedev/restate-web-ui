@@ -62,7 +62,7 @@ export const KillInvocation = withConfirmation({
   icon: IconName.Kill,
   iconClassName: 'text-danger-subtle',
   description: <p>Are you sure you want to kill this invocation?</p>,
-  alertType: 'warning',
+  alertIntent: 'warning',
   alertContent: (
     <>
       Killing immediately stops all calls in the invocation tree{' '}
@@ -71,8 +71,7 @@ export const KillInvocation = withConfirmation({
       other fixes.{' '}
       <Link
         href="https://docs.restate.dev/services/invocation/managing-invocations#kill"
-        variant="secondary"
-        className="text-warning"
+        intent="warning"
         target="_blank"
         rel="noopener noreferrer"
       >

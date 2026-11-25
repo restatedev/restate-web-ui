@@ -383,7 +383,7 @@ function Story({
             />
           )}
           <span className={s.laneArrow()} style={{ right: '-1.6rem' }}>
-            <Icon name={IconName.ChevronRight} className="h-3 w-3" />
+            <Icon name={IconName.ChevronRight} size="xs" />
           </span>
           {columns.map((_, index) => repeatFor(index))}
         </div>

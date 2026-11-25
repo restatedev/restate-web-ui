@@ -1,18 +1,15 @@
 import type { Invocation } from '@restate/data-access-admin-api-spec';
-import {
-  Header,
-  type HeaderIconProps,
-  type HeaderVariant,
-} from '@restate/ui-header';
+import { Header, type HeaderIconProps } from '@restate/ui-header';
+import type { Intent } from '@restate/util-styles';
 import type { PropsWithChildren, ReactNode } from 'react';
 
-export type InvocationStatusIntent = HeaderVariant;
+export type InvocationStatusIntent = Intent;
 
 export function getInvocationStatusIntent(
   invocation?: Invocation,
   status?: string,
 ): InvocationStatusIntent {
-  if (!invocation && !status) return 'default';
+  if (!invocation && !status) return 'neutral';
   if (invocation?.isRetrying) return 'warning';
   switch (invocation?.status ?? status) {
     case 'succeeded':
@@ -28,7 +25,7 @@ export function getInvocationStatusIntent(
     case 'started':
       return 'info';
     default:
-      return 'default';
+      return 'neutral';
   }
 }
 
@@ -48,7 +45,7 @@ export function InvocationStatusHeader({
   HeaderIconProps) {
   return (
     <Header
-      variant={getInvocationStatusIntent(invocation, status)}
+      intent={getInvocationStatusIntent(invocation, status)}
       className={className}
       trail={trail}
       {...iconProps}

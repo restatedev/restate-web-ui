@@ -4,7 +4,8 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { formatOrdinals } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
-import { Disclosure, DisclosurePanel, Heading } from 'react-aria-components';
+import { Heading } from 'react-aria-components';
+import { Disclosure, DisclosurePanel } from '@restate/ui-disclosure';
 import {
   JourneyActivityRows,
   journeyCountLabel,
@@ -123,7 +124,9 @@ function AttemptGroupHeader({
           >
             <Icon
               name={IconName.ChevronDown}
-              className="h-3 w-3 shrink-0 text-muted transition-transform group-expanded:rotate-180"
+              size="xs"
+              tone="muted"
+              className="transition-transform group-expanded:rotate-180"
             />
           </Button>
         </Heading>
@@ -252,9 +255,7 @@ export function JourneyAttemptGroup({
       >
         <Disclosure className="group">
           {header}
-          <DisclosurePanel className="h-(--disclosure-panel-height) overflow-clip motion-safe:transition-[height]">
-            {content}
-          </DisclosurePanel>
+          <DisclosurePanel animated>{content}</DisclosurePanel>
         </Disclosure>
       </div>
     );

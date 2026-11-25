@@ -72,7 +72,7 @@ export function Value({
   if (renderWhenReady && isDecoding) {
     return (
       <div className="flex items-center gap-1.5 py-2.5 pr-4 text-sm text-muted">
-        <Spinner className="h-4 w-4" />
+        <Spinner size="md" />
         Loading…
       </div>
     );

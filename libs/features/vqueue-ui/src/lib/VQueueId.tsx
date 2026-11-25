@@ -96,10 +96,7 @@ function VQueueFallbackContent({
               size="md"
               className="min-w-0 shrink font-normal"
             />
-            <Copy
-              copyText={id}
-              className="ml-0 h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-            />
+            <Copy copyText={id} size="xs" tone="muted" />
           </div>
         }
       >
@@ -107,7 +104,7 @@ function VQueueFallbackContent({
           role={loading ? 'status' : undefined}
           className="flex min-h-12 items-center justify-start gap-2 bg-surface px-4 py-3 text-xs text-muted"
         >
-          {loading && <Spinner className="h-4 w-4 shrink-0" />}
+          {loading && <Spinner size="md" />}
           <span>{message}</span>
         </div>
       </DropdownSection>
@@ -147,10 +144,7 @@ function VQueueIdWithPopover({
             showTooltip={false}
             aria-hidden
           />
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="h-3 w-3 shrink-0 text-subtle"
-          />
+          <Icon name={IconName.ChevronsUpDown} size="xs" tone="subtle" />
         </Button>
       </PopoverTrigger>
       <PopoverContent

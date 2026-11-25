@@ -91,33 +91,35 @@ export function GithubMetadata({
   return (
     <div className={githubStyles({ className })}>
       <span className="flex flex-auto items-center pl-1">
-        <Icon name={IconName.Github} className="mr-2.5 h-4 w-4" />
+        <Icon name={IconName.Github} size="md" className="mr-2.5" />
         Github
       </span>
       <div className="flex gap-2">
         {commitUrl && (
           <HoverTooltip content="View commit">
             <Link
+              aria-label="View commit"
               href={commitUrl}
               target="_blank"
               rel="noopener noreferrer"
               variant="icon"
               className="bg-accent-subtle text-accent"
             >
-              <Icon name={IconName.GitGraph} className="h-4 w-4" />
+              <Icon name={IconName.GitGraph} size="md" />
             </Link>
           </HoverTooltip>
         )}
         {actionUrl && (
           <HoverTooltip content="View GitHub Action run">
             <Link
+              aria-label="View GitHub Action run"
               href={actionUrl}
               target="_blank"
               rel="noopener noreferrer"
               variant="icon"
               className="bg-accent-subtle text-accent"
             >
-              <Icon name={IconName.CirclePlay} className="h-4 w-4" />
+              <Icon name={IconName.CirclePlay} size="md" />
             </Link>
           </HoverTooltip>
         )}
@@ -165,26 +167,28 @@ export function MiniGithubMetadata({
       {commitUrl && (
         <HoverTooltip content="View commit">
           <Link
+            aria-label="View commit"
             href={commitUrl}
             target="_blank"
             rel="noopener noreferrer"
             variant="icon"
             className="text-accent"
           >
-            <Icon name={IconName.GitGraph} className="h-3.5 w-3.5" />
+            <Icon name={IconName.GitGraph} size="sm" />
           </Link>
         </HoverTooltip>
       )}
       {actionUrl && (
         <HoverTooltip content="View GitHub Action run">
           <Link
+            aria-label="View GitHub Action run"
             href={actionUrl}
             target="_blank"
             rel="noopener noreferrer"
             variant="icon"
             className="text-accent"
           >
-            <Icon name={IconName.CirclePlay} className="h-3.5 w-3.5" />
+            <Icon name={IconName.CirclePlay} size="sm" />
           </Link>
         </HoverTooltip>
       )}

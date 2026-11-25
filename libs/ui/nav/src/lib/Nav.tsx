@@ -189,7 +189,8 @@ export function Nav({
               })}
               <Icon
                 name={IconName.ChevronsUpDown}
-                className="h-4 w-4 text-muted"
+                size="md"
+                className="text-muted"
               />
             </Button>
           </DropdownTrigger>

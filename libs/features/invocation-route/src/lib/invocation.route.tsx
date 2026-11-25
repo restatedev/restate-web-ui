@@ -40,6 +40,7 @@ import {
 import { useInvocationsRecent } from '@restate/util-sidebar-nav';
 import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { CardGrid } from '@restate/ui-card';
+import { Skeleton } from '@restate/ui-loading';
 
 const lastFailureContainer = tv({
   base: 'z-20 min-w-0 origin-bottom-right rounded-2xl p-0',
@@ -243,8 +244,8 @@ function Component() {
         >
           {isPending ? (
             <>
-              <div className="min-h-28 w-full animate-pulse rounded-xl bg-emphasis" />
-              <div className="min-h-28 w-full animate-pulse rounded-xl bg-emphasis" />
+              <Skeleton shape="card" className="block min-h-28 w-full" />
+              <Skeleton shape="card" className="block min-h-28 w-full" />
             </>
           ) : (
             <>
@@ -327,16 +328,15 @@ function Component() {
                       : 'Go to the related line'}
                     <Icon
                       name={IconName.ChevronDown}
-                      className="ml-1 h-4 w-4"
+                      size="md"
+                      className="ml-1"
                     />
                   </Link>
                 </div>
               )}
             </div>
           )}
-          {error && journalAndInvocationData && (
-            <ErrorBanner error={error} className="rounded-xl" />
-          )}
+          {error && journalAndInvocationData && <ErrorBanner error={error} />}
         </div>
 
         <ContentPanel
@@ -394,7 +394,8 @@ function InvocationUnavailable({
         <div className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-default bg-surface py-1 pr-1 pl-2.5 font-mono text-xs text-tertiary shadow-xs">
           <Icon
             name={IconName.Invocation}
-            className="h-3.5 w-3.5 shrink-0 fill-accent-muted text-accent"
+            size="sm"
+            className="fill-accent-muted text-accent"
           />
           <span className="min-w-0 truncate">{id}</span>
           <Copy
@@ -403,15 +404,13 @@ function InvocationUnavailable({
           />
         </div>
       )}
-      {!isNotFound && (
-        <ErrorBanner error={error} className="w-full rounded-xl text-left" />
-      )}
+      {!isNotFound && <ErrorBanner error={error} className="w-full" />}
       <Link
         href={backHref}
         variant="button"
         className="inline-flex items-center gap-1.5"
       >
-        <Icon name={IconName.ArrowLeft} className="h-4 w-4" />
+        <Icon name={IconName.ArrowLeft} size="md" />
         Back to invocations
       </Link>
     </EmptyState>

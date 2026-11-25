@@ -38,7 +38,7 @@ export function NotificationProgressTracker({
 
   return (
     <>
-      {!progress?.isFinished && <Spinner className="h-4 w-4 shrink-0" />}
+      {!progress?.isFinished && <Spinner size="md" />}
       {progress?.isFinished
         ? finishedContent({
             successful: progress.successful,
@@ -52,6 +52,11 @@ export function NotificationProgressTracker({
           })}
       <div className="ml-auto">
         <Button
+          aria-label={
+            progress?.isFinished && progress.failed === 0
+              ? 'Close'
+              : 'Show details'
+          }
           variant="icon"
           onClick={() => {
             onClose();

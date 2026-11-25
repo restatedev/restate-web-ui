@@ -23,7 +23,7 @@ export function FixHttp1({
   return (
     <div className={styles({ className })}>
       <div className="flex flex-auto items-center text-0.5xs">
-        <Icon name={IconName.Sparkles} className="mr-2 inline h-4 w-4" />
+        <Icon name={IconName.Sparkles} size="md" className="mr-2 inline" />
         Server responded with HTTP/1.1, common in local dev with FaaS platforms.
         <InlineTooltip
           variant="indicator-button"
@@ -47,7 +47,7 @@ export function FixHttp1({
         className="flex h-7 shrink-0 items-center gap-2 rounded-md bg-inverse-tint px-3 py-0 pr-1.5 text-0.5xs text-inverse outline-accent-strong hover:bg-inverse-tint-strong pressed:bg-inverse-tint-strong"
       >
         Switch to HTTP/1.1
-        <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+        <Icon name={IconName.ChevronRight} size="md" />
       </SubmitButton>
     </div>
   );

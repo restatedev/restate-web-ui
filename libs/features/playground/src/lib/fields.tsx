@@ -14,7 +14,7 @@ import type {
 } from '@restate/util-openapi';
 import { tv } from '@restate/util-styles';
 import { BodyEditor } from './BodyEditor';
-import { SegmentedControl } from './SegmentedControl';
+import { SegmentedControl } from '@restate/ui-tabs';
 import { bodyModelUri, isTextContentType, randomId } from './request';
 import { InfoPeek, Peek } from './floating';
 import type { BaseMode, HandlerRun, OperationRun } from './useHandlerRun';
@@ -121,7 +121,7 @@ function ParamField({
             className="flex shrink-0 items-center gap-1.5 self-stretch rounded-lg px-2.5 py-1 text-xs"
             onClick={() => runner.setParameter(parameter, randomId())}
           >
-            <Icon name={IconName.Wand} className="h-3.5 w-3.5" />
+            <Icon name={IconName.Wand} size="sm" />
             Generate
           </Button>
         )}
@@ -293,8 +293,9 @@ function ResetInput({ run }: { run: OperationRun }) {
   }
   return (
     <Button
-      variant="icon"
-      className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-2xs text-muted hover:text-secondary"
+      variant="ghost"
+      size="xs"
+      className="-my-0.5"
       onClick={() =>
         runner.setDraft((previous) => ({
           ...previous,
@@ -302,7 +303,7 @@ function ResetInput({ run }: { run: OperationRun }) {
         }))
       }
     >
-      <Icon name={IconName.RetryNow} className="h-3 w-3" />
+      <Icon name={IconName.RetryNow} size="xs" />
       Reset
     </Button>
   );
@@ -405,7 +406,7 @@ function FileInput({ run }: { run: OperationRun }) {
             runner.setDraft((previous) => ({ ...previous, file: undefined }))
           }
         >
-          <Icon name={IconName.X} className="h-3.5 w-3.5" />
+          <Icon name={IconName.X} size="sm" />
         </Button>
       )}
     </div>
@@ -455,9 +456,9 @@ export function RunButton({
       className={sendStyles({ className })}
     >
       {runner.isSending ? (
-        <Spinner className="h-3.5 w-3.5" />
+        <Spinner size="sm" />
       ) : (
-        <Icon name={IconName.Play} className="h-3.5 w-3.5 fill-current" />
+        <Icon name={IconName.Play} size="sm" className="fill-current" />
       )}
       {label}
     </Button>
@@ -522,9 +523,7 @@ export function SendButton({
       menus={availableModes.map((mode) => (
         <DropdownItem key={mode} value={mode}>
           <span className="flex w-4 shrink-0 justify-center">
-            {mode === base && (
-              <Icon name={IconName.Check} className="h-3.5 w-3.5" />
-            )}
+            {mode === base && <Icon name={IconName.Check} size="sm" />}
           </span>
           <span className="flex flex-col">
             <span className="font-medium">{MODE_COPY[mode].label}</span>
@@ -632,7 +631,8 @@ export function AdvancedToggle({
       )}
       <Icon
         name={isOpen ? IconName.ChevronUp : IconName.ChevronDown}
-        className="h-3.5 w-3.5 text-subtle"
+        size="sm"
+        tone="subtle"
       />
     </Button>
   );

@@ -21,6 +21,7 @@ import {
   deploymentHref,
   serviceHref,
 } from '@restate/util-panel';
+import { Skeleton } from '@restate/ui-loading';
 
 interface OverviewSidebarItemProps {
   baseUrl?: string;
@@ -106,7 +107,7 @@ function DeploymentRecentLabel({ deploymentId }: { deploymentId: string }) {
   const { label, endpoint, isPending } = useDeploymentLabel(deploymentId);
 
   if (isPending) {
-    return <span className="h-3 w-24 animate-pulse rounded bg-emphasis" />;
+    return <Skeleton className="h-3 w-24" />;
   }
   return (
     <RecentTooltip full={endpoint ?? deploymentId}>

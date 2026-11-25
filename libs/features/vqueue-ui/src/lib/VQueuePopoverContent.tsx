@@ -863,12 +863,9 @@ function VQueuePopoverHeader({ data }: { data: VqueueSnapshot }) {
           size="md"
           className="min-w-0 shrink font-normal"
         />
-        <Copy
-          copyText={data.identity.vqueueId}
-          className="ml-0 h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-        />
+        <Copy copyText={data.identity.vqueueId} size="xs" tone="muted" />
         {data.identity.isPaused && (
-          <Badge variant="warning" size="xs">
+          <Badge intent="warning" size="xs">
             Paused
           </Badge>
         )}

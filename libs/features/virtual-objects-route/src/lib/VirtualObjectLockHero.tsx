@@ -21,7 +21,7 @@ function LockHandler({ handler }: { handler: string }) {
   return (
     <span className="flex min-w-0 items-center gap-1.5">
       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-surface shadow-xs">
-        <Icon name={IconName.Function} className="h-4.5 w-4.5 text-subtle" />
+        <Icon name={IconName.Function} tone="subtle" className="h-4.5 w-4.5" />
       </span>
       <span className="truncate text-xs text-tertiary italic">
         {handler}
@@ -109,7 +109,8 @@ export function VirtualObjectLockHero({
                   ? IconName.Database
                   : IconName.Security
               }
-              className="h-4 w-4 shrink-0 text-subtle"
+              size="md"
+              tone="subtle"
             />
             {lockHolder.kind === 'state-mutation' && (
               <span className="shrink-0 text-xs text-tertiary">

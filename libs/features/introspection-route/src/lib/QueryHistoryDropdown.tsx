@@ -28,11 +28,12 @@ export function QueryHistoryDropdown({
       <DropdownTrigger>
         <HoverTooltip content="Query history">
           <Button
+            aria-label="Query history"
             variant="icon"
             disabled={isEmpty}
             className="h-full rounded-lg bg-inverse-tint-subtle px-2 text-inverse-secondary hover:bg-inverse-tint disabled:text-inverse-muted pressed:bg-inverse-tint-strong"
           >
-            <Icon name={IconName.History} className="h-4 w-4 shrink-0" />
+            <Icon name={IconName.History} size="md" />
           </Button>
         </HoverTooltip>
       </DropdownTrigger>
@@ -58,7 +59,7 @@ export function QueryHistoryDropdown({
           className="mt-0 pt-0"
         >
           <DropdownItem value="clear" destructive>
-            <Icon name={IconName.Trash} className="h-3.5 w-3.5 shrink-0" />
+            <Icon name={IconName.Trash} size="sm" />
             Clear history
           </DropdownItem>
         </DropdownMenu>

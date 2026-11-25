@@ -72,7 +72,7 @@ export function KeyedServiceState({
             className="relative left-px flex items-center gap-1.5 rounded-l-lg rounded-r-none p-0.5 px-2 text-0.5xs"
             onClick={() => openStateDialog(false)}
           >
-            <Icon name={IconName.Pencil} className="h-3 w-3" />
+            <Icon name={IconName.Pencil} size="xs" />
             Edit
           </Button>
         </SplitButton>

@@ -30,7 +30,8 @@ export function VqueueEntryIdentity({
           name={
             iconName ?? (isStateMutation ? IconName.Database : IconName.History)
           }
-          className="h-full w-full p-1 text-muted"
+          tone="muted"
+          className="h-full w-full p-1"
         />
       </div>
       <div className="flex min-w-0 items-baseline gap-2">

@@ -18,15 +18,18 @@ export interface ButtonProps {
   value?: string;
   disabled?: boolean;
   autoFocus?: boolean;
-  variant?: 'primary' | 'secondary' | 'destructive' | 'icon';
+  variant?: 'primary' | 'secondary' | 'destructive' | 'icon' | 'ghost';
+  size?: ButtonSize;
   className?: string;
   form?: string;
   slot?: string;
 }
 
-const styles = tv({
+export type ButtonSize = '2xs' | 'xs' | 'sm' | 'md';
+
+export const buttonStyles = tv({
   extend: focusRing,
-  base: 'cursor-default rounded-xl border border-tint px-5 py-2 text-center text-sm shadow-xs',
+  base: 'rounded-xl border border-tint px-5 py-2 text-center text-sm shadow-xs',
   variants: {
     variant: {
       primary:
@@ -36,20 +39,75 @@ const styles = tv({
       destructive:
         'bg-linear-to-b from-danger/95 to-danger text-inverse shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/15%)] drop-shadow-xs hover:from-danger-hover hover:to-danger-hover hover:shadow-none pressed:from-danger-pressed pressed:to-danger-pressed pressed:shadow-none',
       icon: 'flex items-center justify-center border-0 p-1 text-tertiary shadow-none hover:bg-tint disabled:bg-transparent pressed:bg-tint-strong',
+      ghost:
+        'flex h-6 items-center gap-1 rounded-md border-0 px-1.5 py-0 text-xs text-muted shadow-none hover:bg-tint hover:text-secondary pressed:bg-tint-strong',
+    },
+    size: {
+      '2xs': '',
+      xs: '',
+      sm: '',
+      md: '',
     },
     isDisabled: {
       true: 'border-tint-subtle bg-muted bg-none text-subtle',
     },
   },
+  compoundVariants: [
+    {
+      variant: 'ghost',
+      size: 'xs',
+      className: 'text-2xs',
+    },
+    {
+      variant: 'ghost',
+      isDisabled: true,
+      className: 'bg-transparent',
+    },
+    {
+      variant: ['primary', 'secondary', 'destructive'],
+      size: 'xs',
+      className: 'rounded-lg px-3 py-1 text-xs',
+    },
+    {
+      variant: ['primary', 'secondary', 'destructive'],
+      size: 'sm',
+      className: 'rounded-lg px-3 py-1.5 text-sm',
+    },
+    {
+      variant: 'icon',
+      size: '2xs',
+      className: 'h-4.5 w-4.5 shrink-0 rounded-md p-0',
+    },
+    {
+      variant: 'icon',
+      size: 'xs',
+      className: 'h-5 w-5 shrink-0 rounded-md p-0',
+    },
+    {
+      variant: 'icon',
+      size: 'sm',
+      className: 'h-6.5 w-6.5 shrink-0 rounded-lg p-0',
+    },
+    {
+      variant: 'icon',
+      size: 'md',
+      className: 'h-7 w-7 shrink-0 rounded-lg p-0',
+    },
+  ],
   defaultVariants: {
     variant: 'primary',
   },
 });
 
+const styles = tv({
+  extend: buttonStyles,
+  base: 'cursor-default',
+});
+
 export const Button = forwardRef<
   HTMLButtonElement,
   PropsWithChildren<ButtonProps>
->(({ variant, onClick, disabled, ...props }, ref) => {
+>(({ variant, size, onClick, disabled, ...props }, ref) => {
   return (
     <RACButton
       {...props}
@@ -57,7 +115,7 @@ export const Button = forwardRef<
       isDisabled={disabled}
       onPress={onClick as PressEvents['onPress']}
       className={composeRenderProps(props.className, (className, renderProps) =>
-        styles({ ...renderProps, variant, className }),
+        styles({ ...renderProps, variant, size, className }),
       )}
     />
   );

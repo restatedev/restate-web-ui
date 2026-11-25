@@ -25,7 +25,7 @@ describe('Header', () => {
   });
 
   it('renders a status-aware background', () => {
-    render(<Header variant="warning">Backing off</Header>);
+    render(<Header intent="warning">Backing off</Header>);
 
     expect(screen.getByRole('banner').className).toContain('border-warning');
     expect(screen.getByRole('banner').className).toContain(

@@ -49,7 +49,9 @@ export function ChartControlTrigger({
       {children}
       <Icon
         name={IconName.ChevronsUpDown}
-        className="h-3 w-3 self-center text-subtle transition-colors group-hover/chart-control:text-muted"
+        size="xs"
+        tone="subtle"
+        className="self-center transition-colors group-hover/chart-control:text-muted"
       />
       {suffix && <span className="text-subtle">{suffix}</span>}
     </Button>
@@ -75,7 +77,9 @@ export function ChartContextTrigger({ children }: { children: ReactNode }) {
       {children}
       <Icon
         name={IconName.ChevronsUpDown}
-        className="h-2.5 w-2.5 self-center text-muted transition-colors group-hover/chart-context:text-tertiary"
+        size="2xs"
+        tone="muted"
+        className="self-center transition-colors group-hover/chart-context:text-tertiary"
       />
     </Button>
   );

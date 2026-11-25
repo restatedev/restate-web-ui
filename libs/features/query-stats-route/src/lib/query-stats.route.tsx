@@ -380,17 +380,11 @@ function QueryActions({
       }}
       menus={[
         <DropdownItem key="standard" value="standard" isDisabled={isDisabled}>
-          <Icon
-            name={IconName.ScanSearch}
-            className="h-3.5 w-3.5 shrink-0 opacity-80"
-          />
+          <Icon name={IconName.ScanSearch} size="sm" tone="dimmed" />
           Explain analyze
         </DropdownItem>,
         <DropdownItem key="verbose" value="verbose" isDisabled={isDisabled}>
-          <Icon
-            name={IconName.Code}
-            className="h-3.5 w-3.5 shrink-0 opacity-80"
-          />
+          <Icon name={IconName.Code} size="sm" tone="dimmed" />
           Explain analyze verbose
         </DropdownItem>,
       ]}
@@ -405,7 +399,8 @@ function QueryActions({
           >
             <Icon
               name={IconName.ScanSearch}
-              className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
+              tone="dimmed"
+              className="h-[0.9em] w-[0.9em] shrink-0"
             />
             {isRunning ? 'Running…' : 'Explain analyze'}
           </Button>
@@ -505,7 +500,7 @@ function renderStatsCell(
                 {stat.description}
               </TruncateWithTooltip>
               {stat.deprecated && (
-                <Badge size="sm" variant="warning" className="shrink-0">
+                <Badge size="sm" intent="warning" className="shrink-0">
                   Deprecated
                 </Badge>
               )}
@@ -572,7 +567,8 @@ function renderStatsCell(
             {stat.max?.timedOut && (
               <Icon
                 name={IconName.TriangleAlert}
-                className="h-3 w-3 shrink-0 text-pending-subtle"
+                size="xs"
+                className="text-pending-subtle"
               />
             )}
           </span>
@@ -713,10 +709,7 @@ function Component() {
                   </div>
                 )}
                 inputPrefix={
-                  <Icon
-                    name={IconName.Search}
-                    className="h-4 w-4 shrink-0 text-subtle"
-                  />
+                  <Icon name={IconName.Search} size="md" tone="subtle" />
                 }
                 tagsPlacement="outside"
                 maxVisibleChips="auto"
@@ -747,11 +740,11 @@ function Component() {
                 type="button"
                 variant="icon"
                 aria-label="Download all query stats as JSON"
-                className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+                size="sm"
                 onClick={exportStats}
                 disabled={stats.length === 0}
               >
-                <Icon name={IconName.Download} className="h-3.5 w-3.5" />
+                <Icon name={IconName.Download} size="sm" />
               </Button>
             </TooltipTrigger>
             <TooltipContent size="sm">Download as JSON</TooltipContent>
@@ -762,11 +755,11 @@ function Component() {
                 type="button"
                 variant="icon"
                 aria-label="Clear recorded query stats"
-                className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+                size="sm"
                 onClick={() => clearQueryStats(baseUrl)}
                 disabled={stats.length === 0}
               >
-                <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
+                <Icon name={IconName.Trash} size="sm" />
               </Button>
             </TooltipTrigger>
             <TooltipContent size="sm">Clear recorded stats</TooltipContent>

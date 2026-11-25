@@ -138,7 +138,12 @@ export function Notification({ toast, className, queue }: NotificationProps) {
         </div>
       </ToastContent>
       {!isCountdown && !isProgress && (
-        <Button slot="close" variant="icon" className={close()}>
+        <Button
+          slot="close"
+          variant="icon"
+          aria-label="Close"
+          className={close()}
+        >
           <Icon name={IconName.X} />
         </Button>
       )}

@@ -50,7 +50,7 @@ export function Editor({
   // Loading fallback, then Monaco mounts.
   const loading = (
     <div className="flex items-center gap-1.5 py-2.5 pr-4 text-sm text-muted">
-      <Spinner className="h-4 w-4" />
+      <Spinner size="md" />
       Loading…
     </div>
   );
@@ -103,8 +103,8 @@ class ErrorBoundary extends Component<
     if (this.state.hasError) {
       return (
         <div className="my-1 flex w-full max-w-full min-w-0 flex-wrap items-center gap-2 truncate rounded-lg px-2 py-1 text-0.5xs text-danger">
-          <Icon name={IconName.TriangleAlert} className="h-3.5 w-3.5" /> Failed
-          to display value
+          <Icon name={IconName.TriangleAlert} size="sm" /> Failed to display
+          value
         </div>
       );
     }

@@ -18,7 +18,8 @@ export function OverrideWarning() {
           className="flex items-center gap-2 text-sm font-semibold text-warning"
         >
           <Icon
-            className="h-5 w-5 fill-warning text-on-warning"
+            size="lg"
+            className="fill-warning text-on-warning"
             name={IconName.TriangleAlert}
           />
           Deployment already exists!

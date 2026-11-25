@@ -220,10 +220,7 @@ export function AddQueryTrigger({
       tagOverflowStrategy={newId ? 'partial' : chipOverflowStrategy}
       overflowItemLabel="filter"
       overflowPrefix={
-        <Icon
-          name={IconName.ListFilter}
-          className="h-3.5 w-3.5 shrink-0 text-accent"
-        />
+        <Icon name={IconName.ListFilter} size="sm" className="text-accent" />
       }
       overflowClassName="border-default bg-subtle font-medium text-secondary shadow-xs hover:bg-muted pressed:bg-emphasis"
     />

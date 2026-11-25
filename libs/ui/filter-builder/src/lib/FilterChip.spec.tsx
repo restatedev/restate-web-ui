@@ -79,6 +79,24 @@ describe('FilterChip light', () => {
     ).toBeTruthy();
   });
 
+  it('ends a clause without a value at its operation', () => {
+    const clause = new QueryClause(
+      { ...schema, operations: [{ value: 'IS NULL', label: 'is null' }] },
+      { operation: 'IS NULL' },
+    );
+    renderChip({ item: clause });
+
+    const operation = screen
+      .getByText('is null')
+      .closest('[data-chip-segment]');
+    expect(operation?.querySelector('svg')).toBeTruthy();
+    expect(
+      operation
+        ?.closest('[data-chip]')
+        ?.querySelectorAll('[data-chip-segment]'),
+    ).toHaveLength(2);
+  });
+
   it('opens the editor from the chip overlay', async () => {
     const user = userEvent.setup();
     renderChip();

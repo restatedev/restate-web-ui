@@ -14,6 +14,7 @@ import {
   DialogFooter,
   QueryDialog,
   useDialog,
+  DialogTitle,
 } from '@restate/ui-dialog';
 import { ErrorBanner } from '@restate/ui-error';
 import { FormFieldCheckbox } from '@restate/ui-form-field';
@@ -21,13 +22,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { Link } from '@restate/ui-link';
 import { showSuccessNotification } from '@restate/ui-notification';
 import { type FormEvent, useId, useState } from 'react';
-import {
-  FieldError,
-  Heading,
-  Input,
-  Label,
-  TextField,
-} from 'react-aria-components';
+import { FieldError, Input, Label, TextField } from 'react-aria-components';
 import { Form, useSearchParams } from 'react-router';
 import { limitRulesForPatternHref } from './limitCounterNavigation';
 import {
@@ -40,6 +35,7 @@ import {
 } from './limitRulePattern';
 import { RuleLevelBadge, RuleLevelExplainer } from './RuleLevel';
 import { RuleMatchPreview, RulePatternBuilder } from './RulePatternBuilder';
+import { Heading } from '@restate/ui-heading';
 
 export const CREATE_LIMIT_RULE_QUERY_PARAM = 'create-rule';
 
@@ -200,16 +196,10 @@ function RuleFormContent({
       >
         <div className="flex items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-default bg-surface shadow-xs">
-            <Icon name={IconName.Filters} className="h-5 w-5 text-accent" />
+            <Icon name={IconName.Filters} size="lg" className="text-accent" />
           </span>
           <div className="min-w-0 flex-1">
-            <Heading
-              slot="title"
-              level={2}
-              className="text-lg font-semibold text-primary"
-            >
-              {isEditing ? 'Edit rule' : 'Create rule'}
-            </Heading>
+            <DialogTitle>{isEditing ? 'Edit rule' : 'Create rule'}</DialogTitle>
             <p className="text-sm leading-5 text-muted">
               {isEditing
                 ? 'Update this rule’s capacity and settings. Its limit counter level cannot be changed.'
@@ -222,9 +212,9 @@ function RuleFormContent({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-1">
-                <h3 className="text-sm font-semibold text-primary">
+                <Heading level={3} size="sm">
                   Rule pattern
-                </h3>
+                </Heading>
                 <RuleLevelExplainer
                   label=""
                   activeLevel={ruleLevel}

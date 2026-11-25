@@ -255,12 +255,14 @@ export function VQueueStageLegend({
                   <Button
                     variant="icon"
                     aria-label={`Show ${item.label} breakdown`}
-                    className="mr-0.5 h-5 w-5 rounded-md p-0"
+                    size="xs"
+                    className="mr-0.5"
                     disabled={Boolean(isLoading || isError)}
                   >
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="h-3.5 w-3.5 text-subtle"
+                      size="sm"
+                      tone="subtle"
                     />
                   </Button>
                 </PopoverTrigger>

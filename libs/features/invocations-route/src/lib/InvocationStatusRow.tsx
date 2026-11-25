@@ -1,10 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import {
-  SelectionIndicator,
-  ToggleButton,
-  ToggleButtonGroup,
-} from 'react-aria-components';
 import { Button } from '@restate/ui-button';
 import {
   Dropdown,
@@ -15,13 +10,13 @@ import {
 } from '@restate/ui-dropdown';
 import { Icon, IconName } from '@restate/ui-icons';
 import { HintTooltip } from '@restate/ui-tooltip';
+import { SegmentedControl } from '@restate/ui-tabs';
 import { tv } from '@restate/util-styles';
 import {
   describeStatusFilter,
   getInvocationStatusPreset,
   listInvocationPresets,
 } from '@restate/util-sidebar-nav';
-import { vqueueSummaryStyles } from '@restate/features-status-chart';
 import { COLUMN_QUERY_PREFIX, getDefaultInvocationColumns } from './columns';
 
 const ROW_PRESETS = ['all', 'processing', 'inflight', 'stuck', 'completed'];
@@ -32,7 +27,6 @@ const rowStyles = tv({
   slots: {
     root: 'flex max-w-full flex-wrap items-center justify-center gap-1',
     group: 'flex-wrap justify-center',
-    more: 'flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted shadow-none hover:bg-emphasis/40 hover:text-secondary',
   },
 });
 
@@ -132,40 +126,34 @@ export function InvocationStatusRow({
   if (group.extraId !== extraId) {
     setGroup({ extraId, key: extraId ? group.key + 1 : group.key });
   }
-  const { focusTabList, focusTab, focusIndicator } = vqueueSummaryStyles();
   const styles = rowStyles();
 
   return (
     <div className={styles.root()}>
-      <ToggleButtonGroup
+      <SegmentedControl
         key={group.key}
-        aria-label="Invocation status"
-        selectionMode="single"
-        disallowEmptySelection
-        selectedKeys={[active]}
-        onSelectionChange={(keys) => {
-          const [key] = keys;
+        size="md"
+        label="Invocation status"
+        options={items.map((item) => ({
+          value: item.id,
+          label: item.label,
+          hint: item.hint,
+        }))}
+        value={active}
+        onChange={(key) => {
           const href = items.find(({ id }) => id === key)?.href;
           if (href) go(href);
         }}
-        className={focusTabList({ className: styles.group() })}
-      >
-        {items.map((item) => (
-          <HintTooltip key={item.id} hint={item.hint} placement="bottom">
-            <ToggleButton id={item.id} className={focusTab()}>
-              <span>{item.label}</span>
-              <SelectionIndicator className={focusIndicator()} />
-            </ToggleButton>
-          </HintTooltip>
-        ))}
-      </ToggleButtonGroup>
+        className={styles.group()}
+      />
       <Dropdown>
         <DropdownTrigger>
-          <Button variant="icon" className={styles.more()}>
+          <Button variant="ghost">
             More
             <Icon
               name={IconName.ChevronsUpDown}
-              className="aspect-square h-3 w-3 opacity-60"
+              size="xs"
+              className="opacity-60"
             />
           </Button>
         </DropdownTrigger>

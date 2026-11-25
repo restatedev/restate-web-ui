@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { IconName } from '@restate/ui-icons';
+import type { CalloutIntent } from '@restate/ui-callout';
 import { InlineTooltip } from '@restate/ui-tooltip';
 import { formatNumber, formatPlurals } from '@restate/util-intl';
 import { OperationType } from './types';
@@ -22,7 +23,7 @@ export interface OperationConfig {
           filters: (FilterItem & { isActionImplicitFilter?: boolean })[];
         },
   ) => ReactNode;
-  alertType?: 'warning' | 'info';
+  alertIntent?: CalloutIntent;
   alertContent?: string;
   submitText: string;
   formMethod: 'POST';
@@ -98,7 +99,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           : '?'}
       </p>
     ),
-    alertType: 'info',
+    alertIntent: 'info',
     alertContent:
       'Cancellation frees held resources, cooperates with your handler code to roll back changes, and allows proper cleanup. It is non-blocking, so the call may return before cleanup finishes. In rare cases, cancellation may not take effect, retry the operation if needed.',
     progressTitle: 'Cancelling invocations',
@@ -123,7 +124,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
         The pause may not take effect right away.
       </p>
     ),
-    alertType: 'info',
+    alertIntent: 'info',
     alertContent:
       'Paused invocations will stop executing until manually resumed.',
     progressTitle: 'Pausing invocations',
@@ -147,7 +148,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           : ' as new?'}
       </p>
     ),
-    alertType: 'info',
+    alertIntent: 'info',
     alertContent:
       'Creates a new invocation with the same input (if any) as the original leaving the original unchanged. The new invocation will have a different ID',
     progressTitle: 'Restarting invocations',
@@ -192,7 +193,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           : ' now?'}
       </p>
     ),
-    alertType: 'info',
+    alertIntent: 'info',
     alertContent:
       'These invocations are backing off after a failed attempt. Retrying triggers a new attempt immediately instead of waiting for the next scheduled retry, keeping their current deployment.',
     progressTitle: 'Retrying invocations',
@@ -216,7 +217,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           : '?'}
       </p>
     ),
-    alertType: 'warning',
+    alertIntent: 'warning',
     alertContent:
       'Killing immediately stops all calls in the invocation tree without executing compensation logic. This may leave your service in an inconsistent state. Only use as a last resort after trying other fixes.',
     progressTitle: 'Killing invocations',
@@ -240,7 +241,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           : '?'}
       </p>
     ),
-    alertType: 'info',
+    alertIntent: 'info',
     alertContent:
       'After an invocation completes, it will be retained by Restate for some time, in order to introspect it and, in case of idempotent requests, to perform deduplication.',
     progressTitle: 'Purging invocations',

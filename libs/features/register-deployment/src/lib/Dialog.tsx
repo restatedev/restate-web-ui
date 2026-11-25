@@ -158,7 +158,7 @@ export function TriggerRegisterDeploymentDialog({
       href={`?${REGISTER_DEPLOYMENT_QUERY}=${endpoint}`}
       disabled={status === 'PENDING'}
     >
-      <Icon name={icon} className="h-4 w-4" />
+      <Icon name={icon} size="md" />
       {children}
     </Link>
   );

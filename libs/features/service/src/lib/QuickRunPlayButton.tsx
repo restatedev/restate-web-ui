@@ -73,7 +73,7 @@ export function QuickRunPlayButton({
           <Suspense
             fallback={
               <div className="flex min-h-32 w-[30rem] items-center justify-center gap-2 text-sm text-muted">
-                <Spinner className="h-4 w-4" />
+                <Spinner size="md" />
                 Loading…
               </div>
             }

@@ -155,7 +155,8 @@ export function InvocationsBreakdownTooltipContent({
           {totalLink && (
             <Icon
               name={IconName.ChevronRight}
-              className="ml-auto h-3.5 w-3.5 shrink-0 !text-inverse-subtle"
+              size="sm"
+              className="ml-auto !text-inverse-subtle"
             />
           )}
         </TooltipItem>
@@ -216,7 +217,8 @@ export function InvocationsBreakdownTooltipContent({
               {statusLink && (
                 <Icon
                   name={IconName.ChevronRight}
-                  className="h-3 w-3 shrink-0 !text-inverse-subtle"
+                  size="xs"
+                  className="!text-inverse-subtle"
                 />
               )}
             </TooltipItem>

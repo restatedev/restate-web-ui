@@ -53,6 +53,9 @@
       "path": "../explainers/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/heading/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/notification/tsconfig.lib.json"
     },
     {

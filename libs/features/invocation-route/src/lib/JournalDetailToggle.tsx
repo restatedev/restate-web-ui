@@ -102,7 +102,7 @@ export function JournalDetailToggle({
               className={chevron()}
               aria-label="Choose what the detailed view shows"
             >
-              <Icon name={IconName.ChevronsUpDown} className="h-3 w-3" />
+              <Icon name={IconName.ChevronsUpDown} size="xs" />
             </Button>
           </DropdownTrigger>
           <DropdownPopover placement="bottom right">

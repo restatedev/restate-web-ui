@@ -29,7 +29,7 @@ export function RefreshButton({
           type="button"
           variant="icon"
           aria-label={label}
-          className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+          size="sm"
           onClick={onClick}
           disabled={isFetching}
         >

@@ -1,13 +1,8 @@
 import { PropsWithChildren, ReactNode } from 'react';
-import { tv } from '@restate/util-styles';
+import { tv, type Intent } from '@restate/util-styles';
 import { Icon, IconName } from '@restate/ui-icons';
 
-export type EmptyStateIntent =
-  | 'neutral'
-  | 'danger'
-  | 'warning'
-  | 'info'
-  | 'success';
+export type EmptyStateIntent = Exclude<Intent, 'pending'>;
 
 export interface EmptyStateProps {
   title: ReactNode;

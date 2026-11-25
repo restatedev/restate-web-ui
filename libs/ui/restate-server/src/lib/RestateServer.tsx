@@ -152,6 +152,7 @@ export function RestateServer({
   aura,
   auraAlwaysVisible = false,
   appearance = 'ghost',
+  'aria-label': ariaLabel,
 }: PropsWithChildren<{
   className?: string;
   status: FerrofluidStatus;
@@ -160,6 +161,7 @@ export function RestateServer({
   aura?: AuraIntensity;
   auraAlwaysVisible?: boolean;
   appearance?: ServerAppearance;
+  'aria-label'?: string;
 }>) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const ferrofluidRef = useRef<FerrofluidHandle>(null);
@@ -278,6 +280,7 @@ export function RestateServer({
           onPress?.();
         }}
         ref={buttonRef}
+        aria-label={ariaLabel}
         className={buttonStyles({ isEmpty })}
       >
         <FerrofluidCanvas

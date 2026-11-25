@@ -29,7 +29,7 @@ import { toolId } from './names';
 import { API_KEY_PLACEHOLDER } from './useRunner';
 import { JsonSchemaTree, MarkdownDescription } from '@restate/ui-json-schema';
 import { statusText } from './status';
-import { SegmentedControl } from './SegmentedControl';
+import { SegmentedControl } from '@restate/ui-tabs';
 import { useServiceContract } from './useServiceContract';
 import type { HandlerRun, OperationRun } from './useHandlerRun';
 
@@ -85,7 +85,7 @@ export function LoadingState({
         </div>
       ) : (
         <div className="flex flex-auto items-center justify-center gap-2 text-sm text-muted">
-          {isPending && <Spinner className="h-4 w-4" />}
+          {isPending && <Spinner size="md" />}
           {isPending ? 'Loading…' : 'This service has no handlers to run.'}
         </div>
       )}
@@ -163,7 +163,9 @@ export function HandlerSwitcher({
             {handler && (
               <Icon
                 name={IconName.Function}
-                className="-mr-1 h-5 w-5 shrink-0 text-subtle"
+                size="lg"
+                tone="subtle"
+                className="-mr-1"
               />
             )}
             <span
@@ -171,10 +173,7 @@ export function HandlerSwitcher({
             >
               {label}
             </span>
-            <Icon
-              name={IconName.ChevronsUpDown}
-              className="h-3.5 w-3.5 shrink-0 text-subtle"
-            />
+            <Icon name={IconName.ChevronsUpDown} size="sm" tone="subtle" />
           </Button>
         </DropdownTrigger>
         <DropdownPopover placement="bottom start" className="w-72">
@@ -319,7 +318,7 @@ export function CodeView({
         className="flex items-center gap-1 self-end rounded-lg px-2 py-1 text-xs text-muted outline-offset-2 outline-focus hover:bg-tint hover:text-secondary focus-visible:outline-2"
         onClick={() => downloadSpec(contract)}
       >
-        <Icon name={IconName.Download} className="h-3.5 w-3.5" />
+        <Icon name={IconName.Download} size="sm" />
         Download OpenAPI
       </button>
       <CodeSamples samples={{ request: runner.sampleRequest, client }} />

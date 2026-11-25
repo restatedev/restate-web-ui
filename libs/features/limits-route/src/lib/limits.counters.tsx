@@ -267,10 +267,7 @@ function CountersComponent() {
             onItemRemove={scheduleSubmit}
             renderOption={renderFilterOption}
             inputPrefix={
-              <Icon
-                name={IconName.Search}
-                className="h-4 w-4 shrink-0 text-subtle"
-              />
+              <Icon name={IconName.Search} size="md" tone="subtle" />
             }
             tagsPlacement="outside"
             maxVisibleChips="auto"
@@ -314,7 +311,7 @@ function CountersComponent() {
                 ? 'Refreshing limit counters'
                 : 'Refresh limit counters'
             }
-            className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+            size="sm"
             onClick={() => {
               void counters.refetch();
               void rules.refetch();

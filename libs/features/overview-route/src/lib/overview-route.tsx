@@ -24,7 +24,7 @@ import {
 } from '@restate/features-status-chart';
 import { useWaveAnimation } from '@restate/ui-wave-animation';
 import { OVERVIEW_WAVE_TARGET } from './overviewWave';
-import { Ellipsis, Spinner } from '@restate/ui-loading';
+import { Ellipsis, Spinner, Skeleton } from '@restate/ui-loading';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -340,9 +340,7 @@ function TabCount({
   isLoading?: boolean;
 }) {
   if (isLoading) {
-    return (
-      <span className="ml-1 inline-block h-3 w-5 animate-pulse rounded bg-emphasis" />
-    );
+    return <Skeleton className="ml-1 h-3 w-5" />;
   }
   return (
     <span className="ml-1 rounded bg-muted px-1 py-px text-2xs font-medium text-muted tabular-nums">
@@ -412,7 +410,7 @@ function HeroGauge({
           </div>
         )}
         {isLoading ? (
-          <div className="h-7 w-14 animate-pulse rounded-lg bg-emphasis sm:h-8" />
+          <Skeleton shape="block" className="block h-7 w-14 sm:h-8" />
         ) : isError ? (
           <span className="text-xl font-semibold text-faint">–</span>
         ) : (
@@ -542,12 +540,13 @@ function OverviewContent() {
         >
           <Icon
             name={IconName.TriangleAlert}
-            className="h-4 w-4 fill-danger-emphasis text-danger"
+            size="md"
+            className="fill-danger-emphasis text-danger"
           />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-sm">
-        <ErrorBanner error={summaryError} className="rounded-xl" />
+        <ErrorBanner error={summaryError} />
       </PopoverContent>
     </Popover>
   ) : null;
@@ -596,6 +595,7 @@ function OverviewContent() {
           status={ferrofluidStatus}
           isEmpty
           onPress={onRefresh}
+          aria-label="Refresh"
         >
           {isError && !isDeploymentsFetching && (
             <div className="relative mt-6 flex w-full flex-col items-center gap-2 text-center">
@@ -622,6 +622,7 @@ function OverviewContent() {
           appearance="solid"
           isEmpty
           onPress={onRefresh}
+          aria-label="Refresh"
         >
           <NoDeploymentPlaceholder
             error={isError ? error : null}
@@ -694,6 +695,7 @@ function OverviewContent() {
           serverRef={serverRef}
           status={ferrofluidStatus}
           onPress={onRefresh}
+          aria-label="Refresh"
           belowServer={
             showsBreakdownMode || summaryErrorIndicator ? (
               <div className="flex items-center gap-2">
@@ -783,7 +785,7 @@ function OverviewContent() {
               id: 'services',
               label: (
                 <div className="flex items-center gap-2">
-                  <Icon name={IconName.Box} className="h-3.5 w-3.5" />
+                  <Icon name={IconName.Box} size="sm" />
                   Services
                   <TabCount
                     count={servicesCount}
@@ -796,7 +798,7 @@ function OverviewContent() {
               id: 'deployments',
               label: (
                 <div className="flex items-center gap-2">
-                  <Icon name={IconName.Http} className="h-3.5 w-3.5" />
+                  <Icon name={IconName.Http} size="sm" />
                   Deployments
                   <TabCount
                     count={deploymentsCount}
@@ -823,7 +825,9 @@ function OverviewContent() {
             <Label className="sr-only">{searchPlaceholder}</Label>
             <Icon
               name={IconName.Search}
-              className="ml-1.5 h-4 w-4 shrink-0 text-subtle"
+              size="md"
+              tone="subtle"
+              className="ml-1.5"
             />
             <AriaInput
               ref={filterRef}
@@ -835,10 +839,11 @@ function OverviewContent() {
                 type="button"
                 variant="icon"
                 aria-label="Clear search"
-                className="mr-0.5 flex h-5 w-5 shrink-0 rounded-md p-0 text-subtle shadow-none hover:bg-muted hover:text-tertiary pressed:bg-emphasis"
+                size="xs"
+                className="mr-0.5 text-subtle shadow-none hover:bg-muted hover:text-tertiary pressed:bg-emphasis"
                 onClick={() => setFilter('')}
               >
-                <Icon name={IconName.X} className="h-3.5 w-3.5" />
+                <Icon name={IconName.X} size="sm" />
               </Button>
             ) : (
               <FocusShortcutKey variant="light" className="mr-1 shrink-0" />
@@ -855,7 +860,7 @@ function OverviewContent() {
                     ? 'Refreshing overview'
                     : 'Refresh overview'
                 }
-                className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+                size="sm"
                 onClick={triggerManualRefresh}
                 disabled={isOverviewRefreshing}
               >
@@ -873,7 +878,7 @@ function OverviewContent() {
         <ContentPanelBody className="pb-20">
           <ContentPanelSection flush>
             {isError && !isDeploymentsFetching && error && (
-              <ErrorBanner error={error} className="mx-2 mb-3 rounded-xl" />
+              <ErrorBanner error={error} className="mx-2 mb-3" />
             )}
             {mode === 'services' ? <ServicesTable /> : <DeploymentsTable />}
           </ContentPanelSection>

@@ -151,11 +151,11 @@ function Type({ invocation }: CellProps) {
 function InvokedBy({ invocation }: CellProps) {
   const { data } = useListSubscriptions();
   if (invocation.invoked_by === 'ingress') {
-    return <Badge className="border-none">Ingress</Badge>;
+    return <Badge borderless>Ingress</Badge>;
   } else if (invocation.invoked_by === 'restart_as_new') {
     return (
       <div className="flex w-full items-center gap-0.5">
-        <Badge className="border-none">Restarted by</Badge>
+        <Badge borderless>Restarted by</Badge>
         {invocation.restarted_from && (
           <InvocationId
             id={invocation.restarted_from}
@@ -168,7 +168,7 @@ function InvokedBy({ invocation }: CellProps) {
     return (
       <div className="flex w-full flex-col items-center gap-0.5">
         <div className="flex w-full items-center gap-0.5">
-          <Badge className="border-none">Subscription</Badge>
+          <Badge borderless>Subscription</Badge>
           <span className="text-normal inline-block flex-auto truncate font-mono text-2xs text-muted">
             {invocation.invoked_by_subscription_id && (
               <TruncateWithTooltip>
@@ -179,7 +179,8 @@ function InvokedBy({ invocation }: CellProps) {
         </div>
         <Badge
           size="xs"
-          className="mr-1 ml-1 max-w-full truncate bg-surface font-mono"
+          mono
+          className="mr-1 ml-1 max-w-full truncate bg-surface"
         >
           <TruncateWithTooltip copyText={invocation.invoked_by_subscription_id}>
             {
@@ -276,10 +277,7 @@ function LastJournalEntry({
 
   return (
     <div className="flex max-w-full items-center gap-1 p-3 text-xs text-subtle">
-      <Icon
-        name={IconName.CornerDownRight}
-        className="h-3 w-3 shrink-0 text-subtle"
-      />
+      <Icon name={IconName.CornerDownRight} size="xs" tone="subtle" />
       <span className="truncate font-mono font-medium text-muted italic">
         {name}
         <span className="opacity-70">()</span>
@@ -332,7 +330,7 @@ function LastJournalEntryPopoverContent({
     <DropdownSection title="Last journal entry">
       {isPending ? (
         <div className="flex items-center gap-2 p-3 text-sm text-muted">
-          <Spinner className="h-4 w-4" />
+          <Spinner size="md" />
           Loading last journal entry…
         </div>
       ) : error ? (
@@ -370,7 +368,9 @@ function LastJournalEntryPopover({ invocation }: { invocation: Invocation }) {
           </span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="ml-1 h-3 w-3 shrink-0 text-subtle"
+            size="xs"
+            tone="subtle"
+            className="ml-1"
           />
         </Button>
       </PopoverTrigger>
@@ -416,19 +416,13 @@ function JournalCell({ invocation }: CellProps) {
     <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-0.5">
       <Popover>
         <PopoverTrigger>
-          <Button
-            variant="icon"
-            className="gap-1 rounded-md px-1.5 py-0 text-2xs leading-6 text-muted"
-          >
+          <Button variant="ghost" size="xs">
             {invocation.journal_commands_size || invocation.journal_size}{' '}
             {formatPlurals(invocation.journal_size, {
               one: 'entry',
               other: 'entries',
             })}
-            <Icon
-              name={IconName.ChevronsUpDown}
-              className="h-3 w-3 shrink-0 text-muted"
-            />
+            <Icon name={IconName.ChevronsUpDown} size="xs" tone="muted" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="max-w-2xl">
@@ -454,7 +448,7 @@ function JournalCell({ invocation }: CellProps) {
                   className="ml-auto flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal"
                 >
                   Timeline
-                  <Icon name={IconName.ExternalLink} className="h-3 w-3" />
+                  <Icon name={IconName.ExternalLink} size="xs" />
                 </Link>
               </div>
             }

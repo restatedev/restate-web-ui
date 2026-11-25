@@ -126,7 +126,7 @@ export function InvocationId({
     <div className={base({ className })}>
       <div className={container({})}>
         <div className={icon()} data-invocation-icon>
-          <Icon name={iconName} className="h-full w-full p-1 text-muted" />
+          <Icon name={iconName} tone="muted" className="h-full w-full p-1" />
         </div>
 
         {!isIcon &&

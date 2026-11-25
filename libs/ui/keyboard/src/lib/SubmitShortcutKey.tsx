@@ -16,7 +16,7 @@ export function SubmitShortcutKey({ className }: { className?: string }) {
   return (
     <kbd className={styles({ className })}>
       <div className="text-xs tracking-wider">{getMetaKeySymbol()}</div>
-      <Icon name={IconName.Return} className="h-3.5 w-3.5" />
+      <Icon name={IconName.Return} size="sm" />
     </kbd>
   );
 }

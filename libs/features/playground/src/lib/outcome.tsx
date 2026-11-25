@@ -362,7 +362,7 @@ function OpenInvocation({
       className={openStyles({ isPulsing, className })}
     >
       {children}
-      <Icon name={IconName.ExternalLink} className="h-3.5 w-3.5" />
+      <Icon name={IconName.ExternalLink} size="sm" />
     </Link>
   );
 }
@@ -378,7 +378,7 @@ function InvocationIdLink({ invocationId }: { invocationId: string }) {
       className="inline-flex max-w-full min-w-0 items-center gap-1 font-mono text-2xs text-muted hover:text-secondary"
     >
       <span className="min-w-0 truncate">{invocationId}</span>
-      <Icon name={IconName.ExternalLink} className="h-3 w-3 shrink-0" />
+      <Icon name={IconName.ExternalLink} size="xs" />
     </Link>
   );
 }
@@ -488,7 +488,7 @@ export function RunResult({
           !view.isDone &&
           !message && (
             <p className="flex items-center gap-1.5 text-xs text-muted">
-              {view.isLive && <Spinner className="h-3 w-3 shrink-0" />}
+              {view.isLive && <Spinner size="xs" />}
               {view.note ??
                 'Waiting for the result. You can close this, Restate keeps it running.'}
             </p>
@@ -520,11 +520,7 @@ export function RunResult({
       {actions}
       <div className={styles.trailing()}>
         {checkAgain && (
-          <Button
-            variant="secondary"
-            className="rounded-lg px-3 py-1.5 text-sm"
-            onClick={checkAgain}
-          >
+          <Button variant="secondary" size="sm" onClick={checkAgain}>
             Check again
           </Button>
         )}

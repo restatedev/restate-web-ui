@@ -52,11 +52,13 @@ export function IssuesBannerStack({ className }: { className?: string }) {
           <span className="relative flex h-4 w-4 shrink-0">
             <Icon
               name={IconName.TriangleAlert}
-              className="absolute h-4 w-4 animate-ping fill-pending-strong text-pending-strong opacity-60"
+              size="md"
+              className="absolute animate-ping fill-pending-strong text-pending-strong opacity-60"
             />
             <Icon
               name={IconName.TriangleAlert}
-              className="relative h-4 w-4 fill-pending-strong text-pending-strong"
+              size="md"
+              className="relative fill-pending-strong text-pending-strong"
             />
           </span>
           <span>
@@ -68,7 +70,8 @@ export function IssuesBannerStack({ className }: { className?: string }) {
           </span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 shrink-0 text-inverse-secondary"
+            size="sm"
+            className="text-inverse-secondary"
           />
         </Button>
         {Array.from({ length: stackCount - 1 }, (_, i) => {

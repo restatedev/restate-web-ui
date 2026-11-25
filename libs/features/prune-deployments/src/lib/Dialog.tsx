@@ -1,15 +1,16 @@
-import { Heading } from 'react-aria-components';
 import {
   useListDeployments,
   useListDrainedDeployments,
 } from '@restate/data-access-admin-api-hooks';
-import { Deployment, Warning } from '@restate/features-deployment';
+import { Deployment } from '@restate/features-deployment';
+import { Callout } from '@restate/ui-callout';
 import { Button, SubmitButton } from '@restate/ui-button';
 import {
   DialogClose,
   DialogContent,
   DialogFooter,
   QueryDialog,
+  DialogTitle,
 } from '@restate/ui-dialog';
 import { ErrorBanner } from '@restate/ui-error';
 import { Link } from '@restate/ui-link';
@@ -25,6 +26,7 @@ import {
 } from './constants';
 import { PruneDeploymentsProgressBar } from './PruneDeploymentsProgressBar';
 import { useDeleteDeployments } from './useDeleteDeployments';
+import { Skeleton } from '@restate/ui-loading';
 
 const INITIAL_VISIBLE_DEPLOYMENTS = 25;
 const VISIBLE_DEPLOYMENTS_STEP = 25;
@@ -47,8 +49,8 @@ function DeploymentListSkeleton() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2">
-        <div className="h-4 w-5/6 animate-pulse rounded-md bg-emphasis" />
-        <div className="h-4 w-3/5 animate-pulse rounded-md bg-emphasis" />
+        <Skeleton shape="block" className="block h-4 w-5/6" />
+        <Skeleton shape="block" className="block h-4 w-3/5" />
       </div>
       <div className="max-h-80 overflow-auto rounded-2xl border border-tint bg-inset p-1 shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
         <div className="flex flex-col gap-1">
@@ -57,8 +59,8 @@ function DeploymentListSkeleton() {
               key={index}
               className="flex items-center gap-3 rounded-xl border border-tint bg-surface p-2"
             >
-              <div className="h-6 w-6 animate-pulse rounded-lg bg-emphasis" />
-              <div className="h-5 w-2/5 animate-pulse rounded-md bg-emphasis" />
+              <Skeleton shape="block" className="block h-6 w-6" />
+              <Skeleton shape="block" className="block h-5 w-2/5" />
             </div>
           ))}
         </div>
@@ -245,15 +247,11 @@ function DeleteDeploymentsDialogContent({
     <DialogContent className="max-w-2xl" isDismissable={!isRunning}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <Heading
-            slot="title"
-            level={3}
-            className="text-lg leading-6 font-medium text-primary"
-          >
+          <DialogTitle>
             {isSelectedMode
               ? 'Delete selected deployments'
               : 'Prune drained deployments'}
-          </Heading>
+          </DialogTitle>
           {isLoading ? (
             <DeploymentListSkeleton />
           ) : loadError ? (
@@ -292,7 +290,7 @@ function DeleteDeploymentsDialogContent({
                   )}
                 </p>
                 {activeDeploymentIds.length > 0 && (
-                  <Warning title="Active deployments selected">
+                  <Callout intent="warning" title="Active deployments selected">
                     {formatNumber(activeDeploymentIds.length)} selected{' '}
                     {formatPlurals(activeDeploymentIds.length, {
                       one: 'deployment is',
@@ -305,11 +303,11 @@ function DeleteDeploymentsDialogContent({
                       rel="noopener noreferrer"
                       target="_blank"
                       href="https://docs.restate.dev/services/versioning#removing-a-service"
-                      className="text-warning-strong decoration-warning-strong"
+                      intent="warning"
                     >
                       Learn more…
                     </Link>
-                  </Warning>
+                  </Callout>
                 )}
                 <DeploymentList
                   deploymentIds={availableDeploymentIds}

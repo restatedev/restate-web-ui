@@ -68,7 +68,7 @@ function AccessStory({
   const badge = (
     <Badge
       size="xs"
-      variant={isPublic ? 'success' : 'default'}
+      intent={isPublic ? 'success' : 'neutral'}
       className={s.badge()}
     >
       <Icon

@@ -48,7 +48,7 @@ const styles = tv({
         nav: 'ml-2 gap-x-0 [--chip-shadow:0_1px_2px_--theme(--box-shadow-color-default/5%)]',
       },
       flat: {
-        nav: 'flex-nowrap gap-x-0 text-2xs leading-none [&_[data-crumb-label]+button]:h-3.5 [&_[data-crumb-label]+button]:w-3.5 [&_[data-crumb-label]+button]:p-[3px] [&>*:not(:first-child)]:-ml-px',
+        nav: 'flex-nowrap gap-x-0 text-2xs leading-none [&_.truncate]:overflow-x-clip [&_.truncate]:overflow-y-visible [&>*:not(:first-child)]:-ml-px',
       },
     },
     seg: {
@@ -153,7 +153,7 @@ function CollapsedCrumbs({
               aria-label={`Show ${crumbs.length} more pages`}
               className={flatEllipsisButton()}
             >
-              <Icon name={IconName.Ellipsis} className="h-3 w-3" />
+              <Icon name={IconName.Ellipsis} size="xs" />
             </Button>
           </DropdownTrigger>
           {menu}
@@ -176,7 +176,7 @@ function CollapsedCrumbs({
               aria-label={`Show ${crumbs.length} more pages`}
               className={ellipsisButton()}
             >
-              <Icon name={IconName.Ellipsis} className="h-3.5 w-3.5" />
+              <Icon name={IconName.Ellipsis} size="sm" />
             </Button>
           </ChipSegment>
         </Chip>

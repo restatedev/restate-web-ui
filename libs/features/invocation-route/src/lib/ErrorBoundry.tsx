@@ -35,7 +35,7 @@ export class ErrorBoundary extends Component<
           <Popover>
             <PopoverTrigger>
               <Button variant="icon" className="font-sans text-xs text-danger">
-                <Icon name={IconName.CircleX} className="mr-1 h-3 w-3" />{' '}
+                <Icon name={IconName.CircleX} size="xs" className="mr-1" />{' '}
                 {this.props.entry?.type}
               </Button>
             </PopoverTrigger>

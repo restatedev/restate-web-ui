@@ -99,7 +99,7 @@ function TenantInvocationContent({ invocationId }: { invocationId: string }) {
             />
           </div>
         </InvocationStatusHeader>
-        {error && <ErrorBanner error={error} className="rounded-xl" />}
+        {error && <ErrorBanner error={error} />}
         {isPending && (
           <div
             role="status"
