@@ -87,7 +87,7 @@ export function DeploymentDetails({
       tabs={tabs}
     >
       {tab === 'services' ? (
-        <ContentPanelBody className="pb-32">
+        <ContentPanelBody bottomSpace>
           <ContentPanelSection flush>
             <DeploymentServicesTable
               deploymentId={deploymentId}

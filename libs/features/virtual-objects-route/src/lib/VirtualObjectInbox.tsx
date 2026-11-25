@@ -126,7 +126,7 @@ function renderInboxCell(
 ) {
   if (column.id === 'actions') {
     return (
-      <Cell className="align-top [&&&]:overflow-visible">
+      <Cell align="top" overflow="visible">
         {entry.kind === 'invocation' && (
           <Actions invocation={entry.invocation} />
         )}

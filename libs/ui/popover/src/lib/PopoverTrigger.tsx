@@ -258,6 +258,7 @@ export function PopoverHoverTrigger({
   const popoverContext = useContext(PopoverContext);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isArmedRef = useRef(false);
 
   const getTriggerEl = useCallback(
     () => getTriggerElement(popoverContext),
@@ -409,6 +410,14 @@ export function PopoverHoverTrigger({
 
   const handleTriggerMouseEnter = useCallback(() => {
     clearCloseTimeout();
+    isArmedRef.current = true;
+  }, [clearCloseTimeout]);
+
+  const handleTriggerMouseMove = useCallback(() => {
+    if (!isArmedRef.current) {
+      return;
+    }
+    isArmedRef.current = false;
     if (isOpen || isHoverDisabled) {
       return;
     }
@@ -427,7 +436,6 @@ export function PopoverHoverTrigger({
       openTimeoutRef.current = setTimeout(open, delay);
     }
   }, [
-    clearCloseTimeout,
     clearOpenTimeout,
     getTriggerEl,
     handoffDelay,
@@ -438,16 +446,19 @@ export function PopoverHoverTrigger({
   ]);
 
   const handleTriggerMouseLeave = useCallback(() => {
+    isArmedRef.current = false;
     clearOpenTimeout();
   }, [clearOpenTimeout]);
 
   useEffect(() => {
     const triggerEl = getTriggerEl();
     triggerEl?.addEventListener('mouseenter', handleTriggerMouseEnter);
+    triggerEl?.addEventListener('mousemove', handleTriggerMouseMove);
     triggerEl?.addEventListener('mouseleave', handleTriggerMouseLeave);
 
     return () => {
       triggerEl?.removeEventListener('mouseenter', handleTriggerMouseEnter);
+      triggerEl?.removeEventListener('mousemove', handleTriggerMouseMove);
       triggerEl?.removeEventListener('mouseleave', handleTriggerMouseLeave);
     };
   });

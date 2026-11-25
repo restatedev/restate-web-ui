@@ -193,9 +193,7 @@ export function ServiceDetails({
       ) : activeTab === 'instances' ? (
         <VirtualObjectInstances service={service} />
       ) : (
-        <ContentPanelBody
-          className={activeTab === 'playground' ? 'pb-0' : 'pb-32'}
-        >
+        <ContentPanelBody bottomSpace={activeTab !== 'playground'}>
           <ContentPanelSection
             flush={activeTab !== 'playground'}
             fadeClassName={activeTab === 'playground' ? 'hidden' : undefined}

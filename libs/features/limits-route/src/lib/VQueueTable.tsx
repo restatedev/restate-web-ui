@@ -487,7 +487,7 @@ function renderCell(
   switch (column.id) {
     case 'vqueue':
       return (
-        <Cell className="min-w-0 overflow-hidden">
+        <Cell className="min-w-0">
           <span className="flex min-w-0 items-center gap-2 overflow-hidden">
             <VQueueId
               id={row.id}
@@ -502,7 +502,7 @@ function renderCell(
     case 'serviceLock': {
       const identity = lockIdentity(row);
       return (
-        <Cell className="min-w-0 overflow-hidden">
+        <Cell className="min-w-0">
           {identity ? (
             <VirtualObjectInstanceTarget
               identity={identity}
@@ -532,7 +532,7 @@ function renderCell(
     }
     case 'scope':
       return (
-        <Cell className="min-w-0 overflow-hidden">
+        <Cell className="min-w-0">
           {row.scope || row.limit_key ? (
             <ChipGroup density="compact" className="min-w-0">
               <Scope
@@ -553,7 +553,7 @@ function renderCell(
       );
     case 'head':
       return (
-        <Cell className="min-w-0 overflow-hidden">
+        <Cell className="min-w-0">
           <HeadEntry row={row} baseUrl={baseUrl} />
         </Cell>
       );

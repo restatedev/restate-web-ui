@@ -409,7 +409,7 @@ export function VirtualObjectInstances({
   ) : undefined;
   return (
     <>
-      <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
+      <ContentPanelToolbar variant="search">
         <Form
           ref={formRef}
           className="hidden min-w-0 flex-auto sm:block"
@@ -428,25 +428,13 @@ export function VirtualObjectInstances({
             multiple
           >
             <AddFilterTrigger
+              variant="toolbar"
               placeholder="Filter Virtual Objects…"
               title="Virtual Object filters"
               disabled={!service}
               onInputSubmit={applyKeyFilter}
               onItemRemove={scheduleSubmit}
               renderOption={renderFilterOption}
-              inputPrefix={
-                <Icon name={IconName.Search} size="md" tone="subtle" />
-              }
-              tagsPlacement="outside"
-              maxVisibleChips="auto"
-              chipOverflowStrategy="all"
-              tagGroupClassName="min-w-0 flex-nowrap"
-              showSectionTitle={false}
-              popoverPlacement="bottom start"
-              popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-surface/95 p-1"
-              optionClassName="gap-2 px-2.5 py-1.5 highlighted:bg-accent-subtle highlighted:text-accent-strong"
-              className="min-h-6.5 w-full justify-end text-primary"
-              inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-surface/70 shadow-xs hover:bg-surface [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-subtle"
             >
               {(props) => (
                 <FilterChip
@@ -484,7 +472,7 @@ export function VirtualObjectInstances({
           <TooltipContent size="sm">Refresh Virtual Objects</TooltipContent>
         </Tooltip>
       </ContentPanelToolbar>
-      <ContentPanelBody className="pb-32">
+      <ContentPanelBody bottomSpace>
         <ContentPanelSection flush>
           <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
             <PanelTable
@@ -578,7 +566,7 @@ export function VirtualObjectInstances({
                 }
                 if (column.id === 'lockHolder') {
                   return (
-                    <Cell className="overflow-visible">
+                    <Cell overflow="visible">
                       <LockHolderCell lockHolder={item.lockHolder} />
                     </Cell>
                   );
@@ -599,7 +587,7 @@ export function VirtualObjectInstances({
                 }
                 const identity = virtualObjectIdentity(service, item);
                 return (
-                  <Cell className="overflow-visible">
+                  <Cell overflow="visible">
                     <VirtualObjectInstanceTarget
                       identity={identity}
                       href={virtualObjectInstanceRouteHref(

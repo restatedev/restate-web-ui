@@ -38,6 +38,7 @@ import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { EngineCore } from './EngineCluster';
 import { OVERVIEW_MODE_PARAM } from './overviewMode';
 import { DeploymentActions } from './DeploymentActions';
+import { ServicesGroupBy } from './ServicesGroupBy';
 import { ServicesTable } from './ServicesTable';
 import { DeploymentsTable } from './DeploymentsTable';
 import { CompletionTimeRangeToggle } from './TimeRangeToggle';
@@ -810,7 +811,7 @@ function OverviewContent() {
           ],
         }}
       >
-        <ContentPanelToolbar className="min-w-0 justify-end gap-2 px-1 pb-1">
+        <ContentPanelToolbar variant="search" className="min-w-0">
           <SearchField
             aria-label={
               mode === 'services'
@@ -849,6 +850,7 @@ function OverviewContent() {
               <FocusShortcutKey variant="light" className="mr-1 shrink-0" />
             )}
           </SearchField>
+          {mode === 'services' && <ServicesGroupBy />}
           <DeploymentActions />
           <Tooltip>
             <TooltipTrigger>

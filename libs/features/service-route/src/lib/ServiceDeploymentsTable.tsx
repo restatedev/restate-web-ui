@@ -94,7 +94,7 @@ export function ServiceDeploymentsTable({ service }: { service: string }) {
       renderCell={(row, column) => {
         if (column.id === 'deployment') {
           return (
-            <Cell className="min-w-0 overflow-hidden">
+            <Cell className="min-w-0">
               <Deployment
                 deploymentId={row.deploymentId}
                 showLink={false}

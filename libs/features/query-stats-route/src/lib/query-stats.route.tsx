@@ -601,7 +601,7 @@ function renderStatsCell(
       );
     case 'actions':
       return (
-        <Cell className="[&&&]:overflow-visible">
+        <Cell overflow="visible">
           <div className="flex justify-end">
             <QueryActions stat={stat} explain={explain} />
           </div>
@@ -696,6 +696,7 @@ function Component() {
           <div className="hidden min-w-0 flex-auto sm:block">
             <FilterBuilder query={filters} schema={filterSchema} multiple>
               <AddFilterTrigger
+                variant="toolbar"
                 placeholder="Filter queries…"
                 title="Query filters"
                 renderOption={(item) => (
@@ -708,19 +709,6 @@ function Component() {
                     </span>
                   </div>
                 )}
-                inputPrefix={
-                  <Icon name={IconName.Search} size="md" tone="subtle" />
-                }
-                tagsPlacement="outside"
-                maxVisibleChips="auto"
-                chipOverflowStrategy="all"
-                tagGroupClassName="min-w-0 flex-nowrap"
-                showSectionTitle={false}
-                popoverPlacement="bottom start"
-                popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-surface/95 p-1"
-                optionClassName="gap-2 px-2.5 py-1.5 highlighted:bg-accent-subtle highlighted:text-accent-strong"
-                className="min-h-6.5 w-full justify-end text-primary"
-                inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-surface/70 shadow-xs hover:bg-surface [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-subtle"
               >
                 {(props) => (
                   <FilterChip
@@ -765,7 +753,7 @@ function Component() {
             <TooltipContent size="sm">Clear recorded stats</TooltipContent>
           </Tooltip>
         </ContentPanelToolbar>
-        <ContentPanelBody className="pb-32">
+        <ContentPanelBody bottomSpace>
           <ContentPanelSection flush>
             {explain.error ? (
               <div className="px-2 pt-2">

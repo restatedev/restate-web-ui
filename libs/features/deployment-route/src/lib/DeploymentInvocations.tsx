@@ -49,7 +49,7 @@ export function DeploymentInvocations({
     <>
       <InvocationsTabToolbar invocationsTab={invocationsTab} />
       <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
-        <ContentPanelBody className="pb-32">
+        <ContentPanelBody bottomSpace>
           <InvocationsStatusSummary invocationsTab={invocationsTab} />
           <ContentPanelSection
             flush

@@ -55,7 +55,7 @@ export function VqueueEntryCell({
 }) {
   if (column === 'id') {
     return (
-      <Cell className="overflow-visible">
+      <Cell overflow="visible">
         <VqueueEntryIdentity entry={entry} />
       </Cell>
     );
