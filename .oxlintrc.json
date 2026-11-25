@@ -28,6 +28,8 @@
     ],
     "restate/no-classname-template-literal": "error",
     "restate/no-palette-colors": "error",
+    "restate/ui-layer-imports": "error",
+    "restate/icon-button-label": "error",
     "no-case-declarations": "error",
     "no-empty": "error",
     "no-empty-function": "error",

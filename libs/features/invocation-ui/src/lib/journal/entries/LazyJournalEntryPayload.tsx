@@ -384,10 +384,7 @@ function PayloadPopover({
             <PopoverTrigger>
               <Button className={trigger()} variant="secondary">
                 {!isVoid && (
-                  <Icon
-                    name={IconName.Eye}
-                    className="mx-1.5 h-3 w-3 shrink-0"
-                  />
+                  <Icon name={IconName.Eye} size="xs" className="mx-1.5" />
                 )}
                 <span className={triggerLabelStyle()}>
                   {triggerLabel}
@@ -455,7 +452,7 @@ function PayloadContent({
     <>
       {isPending && (
         <div className="flex items-center gap-1.5 py-2.5 pr-4 text-sm text-muted">
-          <Spinner className="h-4 w-4" />
+          <Spinner size="md" />
           Loading…
         </div>
       )}
@@ -705,7 +702,7 @@ function LazyFailure({
   if (isPending) {
     return (
       <div className={className}>
-        <Spinner className="h-3 w-3" />
+        <Spinner size="xs" />
       </div>
     );
   }

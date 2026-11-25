@@ -1,5 +1,6 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 @custom-variant highlighted (&:where([data-focus-visible], [data-focused][data-hovered]));
+@custom-variant @tall (@media (min-height: 47rem));
 
 @theme static {
   --background-color-canvas: var(--color-gray-100);
@@ -917,4 +918,162 @@
 
 @utility mix-blend-tone {
   mix-blend-mode: var(--mix-blend-tone);
+}
+
+@theme {
+  --default-ring-width: 3px;
+  --default-ring-color: var(--ring-color-focus);
+
+  --text-3xs: 0.625rem;
+  --text-2xs: 0.6875rem;
+  --text-0.5xs: 0.8125rem;
+
+  --breakpoint-3xl: 140rem;
+
+  --font-sans: InterVariable, sans-serif;
+  --font-mono: JetBrainsMonoVariable, monospace;
+  --pulse-color: color-mix(in srgb, var(--ring-color-focus) 25%, transparent);
+
+  @keyframes ripple {
+    0% {
+      transform: scale(0.8);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(2.2);
+      opacity: 0;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+
+  @keyframes countdown {
+    0% {
+      width: 0px;
+    }
+    100% {
+      width: 100%;
+    }
+  }
+  --animate-countdown: countdown 5s linear;
+
+  @keyframes serverWave {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0;
+    }
+  }
+  --animate-serverWave: serverWave 1.5s ease-out forwards;
+
+  @keyframes stripeScroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(23px);
+    }
+  }
+  --animate-stripeScroll: stripeScroll 4s linear infinite;
+
+  @keyframes moveAndGrow {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 22.63px 0;
+    }
+  }
+  --animate-moveAndGrow: moveAndGrow 1s linear infinite;
+
+  @keyframes runningFlow {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(16.97px);
+    }
+  }
+  --animate-runningFlow: runningFlow 4s linear infinite;
+
+  @keyframes pulseButton {
+    0%,
+    100% {
+      box-shadow:
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+        0 0 0 0 var(--pulse-color);
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.02);
+      box-shadow:
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+        0 0 0 var(--pulse-size) var(--pulse-color);
+    }
+  }
+
+  --animate-pulseButton: pulseButton 1.5s ease-in-out infinite;
+
+  @keyframes scanlineSweep {
+    0% {
+      background-position: 100% 0;
+    }
+    100% {
+      background-position: 0% 0;
+    }
+  }
+  --animate-scanlineSweep: scanlineSweep 1250ms ease-in-out infinite;
+
+  @keyframes shimmerSweep {
+    0% {
+      transform: translateX(-30%);
+    }
+    100% {
+      transform: translateX(330%);
+    }
+  }
+  --animate-shimmerSweep: shimmerSweep 1.6s ease-in-out infinite;
+
+  @keyframes memoryScan {
+    0%,
+    100% {
+      transform: translateX(0) rotate(-8deg);
+    }
+    50% {
+      transform: translateX(0.75rem) rotate(8deg);
+    }
+  }
+  --animate-memoryScan: memoryScan 1.6s ease-in-out infinite;
+
+  @keyframes gaugePressure {
+    0%,
+    100% {
+      rotate: 30deg;
+    }
+    50% {
+      rotate: 75deg;
+    }
+  }
+  --animate-gaugePressure: gaugePressure 1.8s ease-in-out infinite;
+}
+
+@layer base {
+  :root {
+    --pulse-size: 4px;
+  }
+
+  *:focus-visible {
+    --pulse-size: 8px;
+  }
 }

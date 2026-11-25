@@ -66,6 +66,7 @@ export function AdditionalHeaders() {
               }
             />
             <Button
+              aria-label="Remove header"
               onClick={() => {
                 if (list.items.length === 1) {
                   list.update(item.index, {
@@ -81,7 +82,7 @@ export function AdditionalHeaders() {
               disabled={!showDelete}
               className={deleteStyles({ showDelete })}
             >
-              <Icon name={IconName.Trash} className="m-1 h-5 w-5" />
+              <Icon name={IconName.Trash} size="lg" className="m-1" />
             </Button>
           </div>
         );

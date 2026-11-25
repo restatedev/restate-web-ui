@@ -323,7 +323,7 @@ function RelationshipSource({
         {node.value}
         <div className={relationshipConnector()}>
           <span aria-hidden className={relationshipLine()} />
-          <Badge variant="warning" size="xs" className={relationshipVerb()}>
+          <Badge intent="warning" size="xs" className={relationshipVerb()}>
             {verb}
           </Badge>
           <Icon
@@ -510,7 +510,7 @@ export function BlockedStatus({
   );
 
   return (
-    <Badge variant="warning" className={status()}>
+    <Badge intent="warning" className={status()}>
       <span>Blocked</span>
       {!showReason ? null : hasPopover ? (
         <Popover onOpenChange={onOpenChange}>

@@ -329,11 +329,7 @@ function SlowQueryOverlay({
         {(isComplete || dashboardUrl) && (
           <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
             {isComplete && (
-              <Button
-                variant="primary"
-                onClick={onSwitchToPartial}
-                className="rounded-lg px-3 py-1 text-xs"
-              >
+              <Button variant="primary" onClick={onSwitchToPartial} size="xs">
                 Show a faster partial view
               </Button>
             )}
@@ -347,7 +343,8 @@ function SlowQueryOverlay({
                 Open the dashboard
                 <Icon
                   name={IconName.ExternalLink}
-                  className="h-3 w-3 opacity-70"
+                  size="xs"
+                  className="opacity-70"
                 />
               </a>
             )}
@@ -740,7 +737,8 @@ function Component() {
                 >
                   <Icon
                     name={IconName.TableProperties}
-                    className="aspect-square h-3.5 w-3.5 opacity-70"
+                    size="sm"
+                    className="aspect-square opacity-70"
                   />
                   <span className="max-sm:sr-only">Columns</span>
                 </Button>
@@ -799,6 +797,7 @@ function Component() {
                   </>
                 }
                 columns={panelColumns}
+                columnWidthsStorageKey="invocations-user-col-widths"
                 items={tableItems}
                 selectionMode="multiple"
                 selectedKeys={selectedInvocationIds}
@@ -843,7 +842,7 @@ function Component() {
                       <Button
                         variant="secondary"
                         onClick={sortByCreatedAt}
-                        className="rounded-lg px-3 py-1 text-xs"
+                        size="xs"
                       >
                         Sort by created at
                       </Button>
@@ -854,10 +853,7 @@ function Component() {
                       intent="danger"
                       title="Couldn’t load invocations"
                     >
-                      <ErrorBanner
-                        error={listError}
-                        className="w-full rounded-xl text-left"
-                      />
+                      <ErrorBanner error={listError} className="w-full" />
                     </EmptyState>
                   ) : countsDisagree ? (
                     <CountsDisagreeEmptyState />
@@ -870,7 +866,7 @@ function Component() {
                       <Button
                         variant="primary"
                         onClick={() => setListSampledOverride(false)}
-                        className="rounded-lg px-3 py-1 text-xs"
+                        size="xs"
                       >
                         Run a complete scan
                       </Button>

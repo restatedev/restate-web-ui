@@ -13,7 +13,7 @@ import {
   type PlaygroundRequest,
   type RestateClientSnippetInput,
 } from '@restate/util-openapi';
-import { SegmentedControl } from './SegmentedControl';
+import { SegmentedControl } from '@restate/ui-tabs';
 
 const GROUP_STORAGE_KEY = 'restate.playground.sampleGroup';
 

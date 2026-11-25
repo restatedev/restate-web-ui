@@ -250,14 +250,14 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
               <Button
                 variant="icon"
                 aria-label="Refresh invocations"
-                className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+                size="sm"
                 disabled={isFetching || summary.isFetching}
                 onClick={() => {
                   void refetch();
                   void summary.refetch();
                 }}
               >
-                <Icon name={IconName.Retry} className="h-4 w-4" />
+                <Icon name={IconName.Retry} size="md" />
               </Button>
             </HoverTooltip>
           </ContentPanelToolbar>
@@ -265,7 +265,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
             {(error || summary.error) && (
               <ErrorBanner
                 error={error ?? summary.error}
-                className="mx-4 mt-4 rounded-xl"
+                className="mx-4 mt-4"
               />
             )}
             <div className="border-b border-default/80 px-5 pt-8 pb-4">
@@ -298,6 +298,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
               <PanelTable
                 aria-label="Tenant invocations"
                 columns={columns}
+                columnWidthsStorageKey="tenant-invocations-user-col-widths"
                 items={rows}
                 selectionMode="multiple"
                 selectedKeys={selectedInvocationIds}

@@ -339,10 +339,7 @@ function Component() {
                     intent="danger"
                     title="Couldn’t load state"
                   >
-                    <ErrorBanner
-                      error={stateError}
-                      className="w-full rounded-xl text-left"
-                    />
+                    <ErrorBanner error={stateError} className="w-full" />
                   </EmptyState>
                 </div>
               ) : stateObjects.length > 0 || isStateLoading ? (

@@ -42,7 +42,7 @@ export function CompleteActionDialog({
     <Dialog>
       <DialogTrigger>
         <Button variant="secondary" className={triggerStyles()}>
-          <Icon name={IconName.Return} className="h-3 w-3 shrink-0" />
+          <Icon name={IconName.Return} size="xs" />
           Complete…
         </Button>
       </DialogTrigger>
@@ -111,7 +111,7 @@ export function CompleteForm({
       description={
         <span className="flex min-w-0 flex-col items-start gap-1.5">
           <span>The invocation is waiting on this {noun}:</span>
-          <Badge size="sm" className="max-w-full min-w-0 font-mono">
+          <Badge size="sm" mono className="max-w-full min-w-0">
             <TruncateWithTooltip copyText={target}>
               {target}
             </TruncateWithTooltip>

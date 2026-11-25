@@ -667,7 +667,7 @@ function InnerEntryProgress({
             ) : entryCompletionIsAmbiguous ? (
               <Icon
                 name={mode === 'paused' ? IconName.Pause : IconName.ClockAlert}
-                className="h-3 w-3"
+                size="xs"
               />
             ) : (
               duration

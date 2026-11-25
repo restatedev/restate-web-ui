@@ -7,6 +7,7 @@ import {
 } from '@restate/util-feature-flag';
 import { Switch } from '@restate/ui-form-field';
 import { Icon, IconName } from '@restate/ui-icons';
+import { Heading } from '@restate/ui-heading';
 
 function FeatureFlagRow({ flag }: { flag: FeatureFlag }) {
   const { title, description, serverFeature } = FEATURE_FLAG_METADATA[flag];
@@ -39,12 +40,12 @@ function Component() {
     <div className="mx-auto flex w-full max-w-3xl flex-col px-4 py-2 sm:px-6">
       <div className="mb-5 flex items-center gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border bg-surface shadow-xs">
-          <Icon name={IconName.Sparkles} className="h-5 w-5 text-muted" />
+          <Icon name={IconName.Sparkles} size="lg" tone="muted" />
         </div>
         <div className="flex flex-col">
-          <h1 className="text-xl font-semibold text-primary">
+          <Heading level={1} size="xl">
             Restate UI Labs
-          </h1>
+          </Heading>
           <p className="text-sm text-muted">
             Turn UI experimental features on or off. Preferences are saved in
             this browser only.

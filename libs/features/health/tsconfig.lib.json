@@ -44,10 +44,13 @@
       "path": "../../ui/notification/tsconfig.lib.json"
     },
     {
-      "path": "../../ui/icons/tsconfig.lib.json"
+      "path": "../../util/styles/tsconfig.lib.json"
     },
     {
-      "path": "../../util/styles/tsconfig.lib.json"
+      "path": "../../ui/loading/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/icons/tsconfig.lib.json"
     },
     {
       "path": "../restate-context/tsconfig.lib.json"

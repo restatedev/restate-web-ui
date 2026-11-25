@@ -91,7 +91,7 @@ export function LifeCycle({
         </span>
         {hasError && (
           <Badge
-            variant="warning"
+            intent="warning"
             size="sm"
             className="gap-0 truncate px-0 font-sans font-normal"
           >

@@ -47,10 +47,7 @@ function Component() {
         intent="danger"
         title="Couldn’t load state"
       >
-        <ErrorBanner
-          error={loadError}
-          className="w-full rounded-xl text-left"
-        />
+        <ErrorBanner error={loadError} className="w-full" />
       </EmptyState>
     );
   }

@@ -19,16 +19,17 @@ import {
 
 export type CrumbFragment = Omit<PageDefinition, 'pattern'>;
 
+function CurrentCopy({ crumb }: BreadcrumbComponentProps) {
+  return (
+    crumb.isCurrent && <Copy copyText={crumb.label} size="2xs" tone="muted" />
+  );
+}
+
 function InvocationCrumbContent({ crumb }: BreadcrumbComponentProps) {
   return (
     <>
       <CrumbContent crumb={crumb} />
-      {crumb.isCurrent && (
-        <Copy
-          copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-        />
-      )}
+      <CurrentCopy crumb={crumb} />
     </>
   );
 }
@@ -38,12 +39,7 @@ function DeploymentCrumbContent({ crumb }: BreadcrumbComponentProps) {
   return (
     <>
       <CrumbContent crumb={{ ...crumb, label: label ?? crumb.label, icon }} />
-      {crumb.isCurrent && (
-        <Copy
-          copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-        />
-      )}
+      <CurrentCopy crumb={crumb} />
     </>
   );
 }
@@ -55,19 +51,11 @@ function InvocationCrumbPopover({ crumb }: BreadcrumbComponentProps) {
 function VQueueCrumbContent({ crumb }: BreadcrumbComponentProps) {
   return (
     <>
-      <Icon
-        name={crumb.icon}
-        className="h-3 w-3 shrink-0 rotate-90 text-subtle"
-      />
+      <Icon name={crumb.icon} size="xs" tone="subtle" className="rotate-90" />
       <span data-crumb-label className="min-w-0 truncate">
         {crumb.label}
       </span>
-      {crumb.isCurrent && (
-        <Copy
-          copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-        />
-      )}
+      <CurrentCopy crumb={crumb} />
     </>
   );
 }
@@ -102,12 +90,7 @@ function VirtualObjectInstanceCrumbContent({
           {crumb.params['key'] ?? ''}
         </span>
       </span>
-      {crumb.isCurrent && (
-        <Copy
-          copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-        />
-      )}
+      <CurrentCopy crumb={crumb} />
     </>
   );
 }
@@ -132,10 +115,7 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
             showLabel={false}
           />
         )}
-        <Icon
-          name={IconName.Workflow}
-          className="h-3 w-3 shrink-0 text-subtle"
-        />
+        <Icon name={IconName.Workflow} size="xs" tone="subtle" />
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
         </span>
@@ -144,12 +124,7 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
           {crumb.params['workflowId'] ?? ''}
         </span>
       </span>
-      {crumb.isCurrent && (
-        <Copy
-          copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
-        />
-      )}
+      <CurrentCopy crumb={crumb} />
     </>
   );
 }

@@ -83,8 +83,8 @@ function Component() {
               className="shrink-0"
               contentClassName="max-w-64 break-normal"
             >
-              <Badge variant="warning" size="sm" className="gap-1">
-                <Icon name={IconName.EyeOff} className="h-3 w-3" />
+              <Badge intent="warning" size="sm" className="gap-1">
+                <Icon name={IconName.EyeOff} size="xs" />
                 Private
               </Badge>
             </HoverTooltip>
@@ -111,10 +111,7 @@ function Component() {
               intent="danger"
               title="Couldn’t load this service"
             >
-              <ErrorBanner
-                error={error}
-                className="w-full rounded-xl text-left"
-              />
+              <ErrorBanner error={error} className="w-full" />
             </EmptyState>
           </div>
         ) : (

@@ -1,4 +1,3 @@
-import { Heading } from 'react-aria-components';
 import { Form } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui-button';
 import { ErrorBanner } from '@restate/ui-error';
@@ -8,44 +7,9 @@ import { DialogFooter } from './DialogFooter';
 import { DialogClose } from './DialogClose';
 import { DialogContent } from './DialogContent';
 import { Dialog, QueryDialog } from './Dialog';
+import { DialogTitle } from './DialogTitle';
 import { tv } from '@restate/util-styles';
-
-interface AlertBannerProps {
-  type: 'warning' | 'info';
-  children: ReactNode;
-}
-
-const styles = tv({
-  slots: {
-    container: 'mt-2 flex gap-2 rounded-xl p-3 text-0.5xs',
-    icon: 'h-5 w-5 shrink-0',
-  },
-  variants: {
-    type: {
-      warning: {
-        container: 'border border-warning bg-warning-subtle text-warning',
-        icon: 'fill-warning text-on-warning',
-      },
-      info: {
-        container: 'border border-info bg-info-subtle text-info',
-        icon: 'fill-info text-on-info',
-      },
-    },
-  },
-});
-function AlertBanner({ type, children }: AlertBannerProps) {
-  const { container, icon } = styles({ type });
-
-  return (
-    <p className={container()}>
-      <Icon
-        className={icon()}
-        name={type === 'warning' ? IconName.TriangleAlert : IconName.Info}
-      />
-      <span className="block">{children}</span>
-    </p>
-  );
-}
+import { Callout, type CalloutIntent } from '@restate/ui-callout';
 
 export interface ConfirmationDialogProps {
   queryParam: string;
@@ -54,7 +18,7 @@ export interface ConfirmationDialogProps {
   iconClassName?: string;
   description: ReactNode;
   footer?: ReactNode;
-  alertType?: 'warning' | 'info';
+  alertIntent?: CalloutIntent;
   alertContent?: ReactNode;
   submitText: string;
   closeText?: string;
@@ -124,7 +88,7 @@ export function ConfirmationDialogBody({
   icon,
   iconClassName,
   description,
-  alertType,
+  alertIntent,
   alertContent,
   submitText,
   submitVariant = 'primary',
@@ -145,11 +109,7 @@ export function ConfirmationDialogBody({
 
   return (
     <div className="flex flex-col gap-2">
-      <Heading
-        slot="title"
-        level={3}
-        className="flex items-center gap-1 text-lg leading-6 font-medium text-primary"
-      >
+      <DialogTitle className="flex items-center gap-1">
         {icon && (
           <Icon
             name={icon}
@@ -157,11 +117,13 @@ export function ConfirmationDialogBody({
           />
         )}
         {title}
-      </Heading>
+      </DialogTitle>
       <div className="flex flex-col gap-2 text-sm text-muted">
         {description}
-        {alertType && alertContent && (
-          <AlertBanner type={alertType}>{alertContent}</AlertBanner>
+        {alertIntent && alertContent && (
+          <Callout intent={alertIntent} className="mt-2">
+            {alertContent}
+          </Callout>
         )}
       </div>
       <Form

@@ -37,10 +37,13 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../focus/tsconfig.lib.json"
+    },
+    {
       "path": "../../util/styles/tsconfig.lib.json"
     },
     {
-      "path": "../focus/tsconfig.lib.json"
+      "path": "../tooltip/tsconfig.lib.json"
     }
   ]
 }

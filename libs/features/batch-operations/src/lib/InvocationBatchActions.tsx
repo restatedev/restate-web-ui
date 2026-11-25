@@ -95,17 +95,14 @@ export function InvocationBatchActions({
           {Boolean(invocationIds.length || totalCount) && (
             <Badge
               size="xs"
-              variant={invocationIds.length > 0 ? 'default' : 'info'}
+              intent={invocationIds.length > 0 ? 'neutral' : 'info'}
             >
               {invocationIds.length > 0
                 ? invocationIds.length
                 : totalCountLabel}
             </Badge>
           )}
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 opacity-80"
-          />
+          <Icon name={IconName.ChevronsUpDown} size="sm" tone="dimmed" />
         </Button>
       </DropdownTrigger>
       <DropdownPopover>
@@ -141,10 +138,7 @@ export function InvocationBatchActions({
                   value={action.id}
                   destructive={action.destructive}
                 >
-                  <Icon
-                    name={action.icon}
-                    className="h-3.5 w-3.5 shrink-0 opacity-80"
-                  />
+                  <Icon name={action.icon} size="sm" tone="dimmed" />
                   {action.label}…
                 </DropdownItem>
               );

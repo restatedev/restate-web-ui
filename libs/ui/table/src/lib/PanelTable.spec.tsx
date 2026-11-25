@@ -1,8 +1,8 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { Collection } from 'react-aria-components';
 import { vi } from 'vitest';
 import { Cell, Row } from './Row';
-import { PanelTable } from './PanelTable';
+import { PanelTable, type PanelTableColumn } from './PanelTable';
 import { PanelTableQuickOpenCaption } from './PanelTableQuickOpen';
 
 class ResizeObserverMock implements ResizeObserver {
@@ -372,6 +372,115 @@ describe('PanelTable', () => {
     expect(onSortChange).toHaveBeenLastCalledWith({
       column: 'created_at',
       direction: 'ascending',
+    });
+  });
+
+  describe('saved column widths', () => {
+    const STORAGE_KEY = 'items-col-widths';
+
+    const itemsTable = (columns: PanelTableColumn[]) => (
+      <PanelTable
+        aria-label="Items"
+        columns={columns}
+        items={[{ id: 'one', name: 'One' }]}
+        columnWidthsStorageKey={STORAGE_KEY}
+        renderCell={(row) => <Cell>{row.name}</Cell>}
+      />
+    );
+
+    const headerTable = () =>
+      screen.getByRole('grid', { name: 'Items columns' });
+    const columnHeader = (name: RegExp) =>
+      within(headerTable()).getByRole('columnheader', { name });
+    const resizers = () =>
+      headerTable().querySelectorAll<HTMLInputElement>('input[type="range"]');
+
+    beforeEach(() => {
+      localStorage.clear();
+    });
+
+    it.each([undefined, STORAGE_KEY])(
+      'renders columns named like object properties (storage key: %s)',
+      (columnWidthsStorageKey) => {
+        render(
+          <PanelTable
+            aria-label="Items"
+            columns={[
+              { id: 'constructor', name: 'constructor' },
+              { id: 'toString', name: 'toString' },
+              { id: '__proto__', name: '__proto__' },
+              { id: 'ordinary', name: 'ordinary' },
+            ]}
+            items={[{ id: 'one', name: 'One' }]}
+            columnWidthsStorageKey={columnWidthsStorageKey}
+            renderCell={(row) => <Cell>{row.name}</Cell>}
+          />,
+        );
+
+        expect(columnHeader(/constructor/).style.width).not.toBe('');
+        expect(resizers()).toHaveLength(3);
+      },
+    );
+
+    it('saves only the column that was resized', () => {
+      render(
+        itemsTable([
+          { id: 'name', name: 'Name', isRowHeader: true, defaultWidth: 200 },
+          { id: 'created_at', name: 'Created at', defaultWidth: 150 },
+          { id: 'target', name: 'Target' },
+          { id: 'actions', name: 'Actions', width: 40, hideLabel: true },
+        ]),
+      );
+
+      const createdAtResizer = resizers()[1];
+      if (!createdAtResizer)
+        throw new Error('Created at resizer was not rendered');
+
+      fireEvent.keyDown(createdAtResizer, { key: 'Enter' });
+      fireEvent.keyDown(createdAtResizer, { key: 'ArrowRight' });
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+      fireEvent.keyDown(createdAtResizer, { key: 'Enter' });
+
+      expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')).toEqual({
+        created_at: 160,
+      });
+    });
+
+    it('starts from the saved width when the table mounts again', () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ created_at: 300 }));
+
+      render(
+        itemsTable([
+          { id: 'name', name: 'Name', isRowHeader: true, defaultWidth: 200 },
+          { id: 'created_at', name: 'Created at', defaultWidth: 150 },
+          { id: 'target', name: 'Target' },
+        ]),
+      );
+
+      expect(columnHeader(/Created at/).style.width).toBe('300px');
+    });
+
+    it('keeps the last flexible column flexible', () => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ created_at: 300, target: 500 }),
+      );
+      const columns: PanelTableColumn[] = [
+        { id: 'name', name: 'Name', isRowHeader: true, defaultWidth: 200 },
+        { id: 'created_at', name: 'Created at' },
+        { id: 'target', name: 'Target' },
+        { id: 'actions', name: 'Actions', width: 40, hideLabel: true },
+      ];
+
+      const { rerender } = render(itemsTable(columns));
+
+      expect(columnHeader(/Created at/).style.width).toBe('300px');
+      expect(columnHeader(/Target/).style.width).not.toBe('500px');
+
+      rerender(itemsTable(columns.filter(({ id }) => id !== 'target')));
+
+      expect(columnHeader(/Created at/).style.width).not.toBe('300px');
+      expect(resizers()).toHaveLength(1);
     });
   });
 

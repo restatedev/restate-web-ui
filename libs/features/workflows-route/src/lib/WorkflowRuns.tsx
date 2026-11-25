@@ -269,10 +269,7 @@ export function WorkflowRuns({
               onItemRemove={scheduleSubmit}
               renderOption={renderFilterOption}
               inputPrefix={
-                <Icon
-                  name={IconName.Search}
-                  className="h-4 w-4 shrink-0 text-subtle"
-                />
+                <Icon name={IconName.Search} size="md" tone="subtle" />
               }
               tagsPlacement="outside"
               maxVisibleChips="auto"
@@ -304,7 +301,7 @@ export function WorkflowRuns({
               aria-label={
                 isRunsFetching ? 'Refreshing Workflows' : 'Refresh Workflows'
               }
-              className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+              size="sm"
               onClick={() => void refetchRuns()}
               disabled={!service || isRunsFetching}
             >
@@ -326,6 +323,7 @@ export function WorkflowRuns({
               aria-label="Workflow runs"
               bodyHeadingHeight={0}
               columns={COLUMNS}
+              columnWidthsStorageKey="workflow-runs-user-col-widths"
               items={items}
               isLoading={isLoading}
               numOfRows={Math.max(items.length, 6)}
@@ -360,10 +358,7 @@ export function WorkflowRuns({
                     intent="danger"
                     title="Couldn’t load Workflows"
                   >
-                    <ErrorBanner
-                      error={error}
-                      className="w-full rounded-xl text-left"
-                    />
+                    <ErrorBanner error={error} className="w-full" />
                   </EmptyState>
                 ) : !hasServices ? (
                   <EmptyState

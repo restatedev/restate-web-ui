@@ -285,15 +285,11 @@ const recipes = tv({
     panel: 'rounded-2xl border bg-surface p-4 text-sm text-tertiary shadow-xs',
     field:
       'w-full rounded-lg border border-inset bg-inset px-2 py-1.5 text-sm text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] placeholder:text-placeholder focus:outline-2 focus:outline-focus',
-    banner:
-      'flex gap-2 rounded-xl border border-warning bg-warning-subtle p-3 text-0.5xs text-warning',
-    bannerIcon: 'h-5 w-5 shrink-0 fill-warning text-on-warning',
     badge:
       'w-fit rounded-md border border-danger-strong/10 bg-danger-subtle px-1.5 py-0.5 text-xs font-medium text-danger-strong',
     chip: 'w-fit rounded bg-muted px-1 py-px text-2xs font-medium text-tertiary',
     inverse:
       'rounded-xl border border-inverse bg-inverse/90 px-3 py-2 text-sm text-inverse-secondary shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)] backdrop-blur-xl',
-    skeleton: 'h-5 w-32 animate-pulse rounded-full bg-emphasis/70',
   },
 });
 
@@ -576,7 +572,7 @@ function Surfaces() {
               <span className={styles.label()}>{recipe}</span>
               <AriaButton className={styles.target()}>
                 {on === 'icon' ? (
-                  <Icon name={IconName.Copy} className="h-4 w-4" />
+                  <Icon name={IconName.Copy} size="md" />
                 ) : (
                   title
                 )}
@@ -755,7 +751,7 @@ function Group({ title, children }: PropsWithChildren<{ title: string }>) {
 function Components() {
   const intents = [
     'none',
-    'default',
+    'neutral',
     'info',
     'success',
     'warning',
@@ -774,7 +770,7 @@ function Components() {
           <Button variant="secondary">Secondary</Button>
           <Button variant="destructive">Destructive</Button>
           <Button variant="icon" aria-label="Copy">
-            <Icon name={IconName.Copy} className="h-4 w-4" />
+            <Icon name={IconName.Copy} size="md" />
           </Button>
           <Button variant="secondary" disabled>
             Disabled
@@ -796,12 +792,12 @@ function Components() {
           </Link>
         </Group>
         <Group title="Badge">
-          <Badge>default</Badge>
-          <Badge variant="info">info</Badge>
-          <Badge variant="success">success</Badge>
-          <Badge variant="warning">warning</Badge>
-          <Badge variant="danger">danger</Badge>
-          <Badge variant="success" size="sm">
+          <Badge>neutral</Badge>
+          <Badge intent="info">info</Badge>
+          <Badge intent="success">success</Badge>
+          <Badge intent="warning">warning</Badge>
+          <Badge intent="danger">danger</Badge>
+          <Badge intent="success" size="sm">
             sm
           </Badge>
         </Group>
@@ -892,12 +888,6 @@ function Recipes() {
         <Recipe title="Text field" classes={[r.field()]}>
           <input className={r.field()} placeholder="Search services…" />
         </Recipe>
-        <Recipe title="Banner" classes={[r.banner(), r.bannerIcon()]}>
-          <div className={r.banner()}>
-            <Icon name={IconName.TriangleAlert} className={r.bannerIcon()} />
-            This deployment has breaking changes.
-          </div>
-        </Recipe>
         <Recipe title="Status badge" classes={[r.badge()]}>
           <span className={r.badge()}>Failed</span>
         </Recipe>
@@ -906,9 +896,6 @@ function Recipes() {
         </Recipe>
         <Recipe title="Floating inverse panel" classes={[r.inverse()]}>
           <div className={r.inverse()}>Oct 16, 2026, 6:29:02 PM</div>
-        </Recipe>
-        <Recipe title="Skeleton" classes={[r.skeleton()]}>
-          <span className={r.skeleton()} />
         </Recipe>
       </div>
     </Block>

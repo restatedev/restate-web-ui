@@ -365,7 +365,8 @@ function SidebarOverflow({ items }: { items: SidebarSubItem[] }) {
         <Button variant="secondary" className={s.overflowTrigger()}>
           <Icon
             name={IconName.Ellipsis}
-            className="h-4 w-4 shrink-0 text-subtle"
+            size="md"
+            className="text-subtle"
             aria-hidden
           />
           <span className="min-w-0 flex-auto truncate">More</span>

@@ -24,7 +24,7 @@ export function ServiceType({
   className?: string;
 }) {
   return (
-    <Badge variant="info" size="sm" className={styles({ variant, className })}>
+    <Badge intent="info" size="sm" className={styles({ variant, className })}>
       <ServiceTypeExplainer
         type={type}
         variant="indicator-button"

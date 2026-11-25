@@ -187,14 +187,11 @@ function InboxBatchActions({
           >
             Actions
             {inboxCount !== undefined && inboxCount > 0 && (
-              <Badge size="xs" variant="info">
+              <Badge size="xs" intent="info">
                 {formatNumber(inboxCount, true)}
               </Badge>
             )}
-            <Icon
-              name={IconName.ChevronsUpDown}
-              className="h-3.5 w-3.5 opacity-80"
-            />
+            <Icon name={IconName.ChevronsUpDown} size="sm" tone="dimmed" />
           </Button>
         </DropdownTrigger>
         <DropdownPopover>
@@ -210,17 +207,11 @@ function InboxBatchActions({
               }}
             >
               <DropdownItem value="cancel" destructive>
-                <Icon
-                  name={IconName.Cancel}
-                  className="h-3.5 w-3.5 shrink-0 opacity-80"
-                />
+                <Icon name={IconName.Cancel} size="sm" tone="dimmed" />
                 Cancel…
               </DropdownItem>
               <DropdownItem value="kill" destructive>
-                <Icon
-                  name={IconName.Kill}
-                  className="h-3.5 w-3.5 shrink-0 opacity-80"
-                />
+                <Icon name={IconName.Kill} size="sm" tone="dimmed" />
                 Kill…
               </DropdownItem>
             </DropdownMenu>
@@ -273,6 +264,7 @@ function InboxEntriesTable({
       <PanelTable
         aria-label={ariaLabel}
         columns={INBOX_COLUMNS}
+        columnWidthsStorageKey="virtual-object-inbox-user-col-widths"
         items={rows}
         isLoading={isPending}
         error={error}

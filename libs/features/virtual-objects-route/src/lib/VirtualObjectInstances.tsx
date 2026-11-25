@@ -216,7 +216,8 @@ function LockHolderCell({
             ? IconName.Database
             : IconName.Security
         }
-        className="h-4 w-4 shrink-0 text-subtle"
+        size="md"
+        tone="subtle"
       />
       <span className="shrink-0 text-sm text-tertiary">
         {lockHolder.kind === 'state-mutation' ? 'State mutation' : 'Other'}
@@ -434,10 +435,7 @@ export function VirtualObjectInstances({
               onItemRemove={scheduleSubmit}
               renderOption={renderFilterOption}
               inputPrefix={
-                <Icon
-                  name={IconName.Search}
-                  className="h-4 w-4 shrink-0 text-subtle"
-                />
+                <Icon name={IconName.Search} size="md" tone="subtle" />
               }
               tagsPlacement="outside"
               maxVisibleChips="auto"
@@ -471,7 +469,7 @@ export function VirtualObjectInstances({
                   ? 'Refreshing Virtual Objects'
                   : 'Refresh Virtual Objects'
               }
-              className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+              size="sm"
               onClick={() => void refetchInstances()}
               disabled={!service || isInstancesFetching}
             >
@@ -493,6 +491,7 @@ export function VirtualObjectInstances({
               aria-label="Virtual Object instances"
               bodyHeadingHeight={0}
               columns={visibleColumns}
+              columnWidthsStorageKey="virtual-object-instances-user-col-widths"
               items={items}
               isLoading={isLoading}
               numOfRows={Math.max(items.length, 6)}
@@ -536,10 +535,7 @@ export function VirtualObjectInstances({
                     intent="danger"
                     title="Couldn’t load Virtual Objects"
                   >
-                    <ErrorBanner
-                      error={error}
-                      className="w-full rounded-xl text-left"
-                    />
+                    <ErrorBanner error={error} className="w-full" />
                   </EmptyState>
                 ) : !hasServices ? (
                   <EmptyState

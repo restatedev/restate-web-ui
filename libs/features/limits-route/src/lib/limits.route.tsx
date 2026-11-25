@@ -233,7 +233,9 @@ function CounterSummaryCell({
       </span>
       <Icon
         name={IconName.ChevronRight}
-        className="mr-1 h-3 w-3 shrink-0 text-subtle"
+        size="xs"
+        tone="subtle"
+        className="mr-1"
       />
     </Link>
   );
@@ -241,7 +243,7 @@ function CounterSummaryCell({
 
 function RuleStatusBadge({ disabled }: { disabled: boolean }) {
   return (
-    <Badge size="sm" variant={disabled ? 'default' : 'info'}>
+    <Badge size="sm" intent={disabled ? 'neutral' : 'info'}>
       {disabled ? 'Disabled' : 'Enabled'}
     </Badge>
   );
@@ -278,22 +280,17 @@ export function RuleActions({
           <DropdownItem key="toggle" value="toggle">
             <Icon
               name={enabled ? IconName.Pause : IconName.Play}
-              className="h-3.5 w-3.5 shrink-0 opacity-80"
+              size="sm"
+              tone="dimmed"
             />
             {enabled ? 'Disable rule' : 'Enable rule'}
           </DropdownItem>,
           <DropdownItem key="edit" value="edit">
-            <Icon
-              name={IconName.Pencil}
-              className="h-3.5 w-3.5 shrink-0 opacity-80"
-            />
+            <Icon name={IconName.Pencil} size="sm" tone="dimmed" />
             Edit…
           </DropdownItem>,
           <DropdownItem key="delete" value="delete" destructive>
-            <Icon
-              name={IconName.Trash}
-              className="h-3.5 w-3.5 shrink-0 opacity-80"
-            />
+            <Icon name={IconName.Trash} size="sm" tone="dimmed" />
             Delete…
           </DropdownItem>,
         ]}
@@ -635,10 +632,7 @@ function Component() {
             title="Rule filters"
             onItemRemove={scheduleSubmit}
             inputPrefix={
-              <Icon
-                name={IconName.Search}
-                className="h-4 w-4 shrink-0 text-subtle"
-              />
+              <Icon name={IconName.Search} size="md" tone="subtle" />
             }
             tagsPlacement="outside"
             maxVisibleChips="auto"
@@ -690,7 +684,7 @@ function Component() {
             type="button"
             variant="icon"
             aria-label={isFetching ? 'Refreshing rules' : 'Refresh rules'}
-            className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+            size="sm"
             onClick={() => {
               void rules.refetch();
               void ruleOptionsQuery.refetch();
@@ -731,6 +725,7 @@ function Component() {
               aria-label="Limit rules"
               bodyKey={ruleTableBodyKey}
               columns={RULE_COLUMNS}
+              columnWidthsStorageKey="limit-rules-user-col-widths"
               items={rows}
               isLoading={rules.isFetching}
               error={error as Error | null}

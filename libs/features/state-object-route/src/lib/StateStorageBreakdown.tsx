@@ -14,6 +14,7 @@ import {
 import { tv } from '@restate/util-styles';
 import { useSearchParams } from 'react-router';
 import { getStateServiceHref } from './ServiceSelector';
+import { Skeleton } from '@restate/ui-loading';
 
 const MAX_VISIBLE_STORAGE_SERVICES = 10;
 
@@ -26,7 +27,6 @@ const STORAGE_SEGMENT_COLORS = Array.from(
 const styles = tv({
   slots: {
     root: 'flex w-full flex-col items-stretch gap-2',
-    skeleton: 'h-9 w-full animate-pulse rounded-md bg-emphasis',
     empty:
       'h-9 rounded-md border-[1.5px] border-dashed border-strong/70 bg-emphasis/70 shadow-[inset_0_1px_2px_0_--theme(--box-shadow-color-default/4%)]',
     bar: 'relative flex h-9 w-full items-stretch gap-[2.5px] py-1',
@@ -145,7 +145,8 @@ function StorageTooltipContent({
           <span className={tooltipMeta()}>· {percentage}</span>
           <Icon
             name={IconName.ChevronRight}
-            className="ml-auto h-3.5 w-3.5 shrink-0 text-inverse-subtle!"
+            size="sm"
+            className="ml-auto text-inverse-subtle!"
           />
         </Link>
       </div>
@@ -189,7 +190,8 @@ function StorageTooltipContent({
             </span>
             <Icon
               name={IconName.ChevronRight}
-              className="h-3 w-3 shrink-0 text-inverse-subtle!"
+              size="xs"
+              className="text-inverse-subtle!"
             />
           </Link>
         ))}
@@ -204,7 +206,6 @@ export function StateStorageBreakdown() {
   const { baseUrl } = useRestateContext();
   const {
     root,
-    skeleton,
     empty,
     bar,
     segmentWrap,
@@ -240,16 +241,11 @@ export function StateStorageBreakdown() {
   const segments = buildStorageSegments(services);
 
   if (query.error) {
-    return (
-      <ErrorBanner
-        error={query.error}
-        className="w-full rounded-xl text-left"
-      />
-    );
+    return <ErrorBanner error={query.error} className="w-full" />;
   }
 
   if (query.isPending) {
-    return <div className={skeleton()} aria-hidden />;
+    return <Skeleton shape="block" className="block h-9 w-full" />;
   }
 
   if (total === 0) {
@@ -356,10 +352,7 @@ export function StateStorageBreakdown() {
                 className={legendItem({ class: legendItemLink() })}
               >
                 {content}
-                <Icon
-                  name={IconName.ChevronRight}
-                  className="h-3.5 w-3.5 shrink-0 text-subtle"
-                />
+                <Icon name={IconName.ChevronRight} size="sm" tone="subtle" />
               </Link>
             );
           }
@@ -379,7 +372,8 @@ export function StateStorageBreakdown() {
                     {content}
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="h-3.5 w-3.5 shrink-0 text-subtle"
+                      size="sm"
+                      tone="subtle"
                     />
                   </Button>
                 </PopoverTrigger>

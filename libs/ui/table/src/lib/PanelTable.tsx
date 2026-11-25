@@ -26,6 +26,11 @@ import { getNextSortDescriptor } from './sort';
 import { PanelTableLayout } from './PanelTableLayout';
 import { columnKey, fromColumnKey, tableBodyKeyProps } from './keys';
 import {
+  readColumnWidths,
+  saveColumnWidths,
+  type ColumnWidths,
+} from './columnWidthsStorage';
+import {
   keepIfSame,
   LEFT_SPACER_ID,
   measureColumnWidths,
@@ -65,6 +70,7 @@ export interface PanelTableProps<
 > {
   sortDescriptor?: SortDescriptor;
   onSortChange?: (descriptor: SortDescriptor | undefined) => void;
+  columnWidthsStorageKey?: string;
   columns: PanelTableColumn<TColId>[];
   items: T[];
   isLoading?: boolean;
@@ -97,6 +103,14 @@ function isFlexible(col: PanelTableColumn) {
     col.defaultWidth == null ||
     (typeof col.defaultWidth === 'string' && col.defaultWidth.endsWith('fr'))
   );
+}
+
+function toNumericWidths(widths: Map<Key, number | string>) {
+  const numericWidths = new Map<Key, number>();
+  widths.forEach((size, key) => {
+    if (typeof size === 'number') numericWidths.set(key, size);
+  });
+  return numericWidths;
 }
 
 const styles = tv({
@@ -150,6 +164,7 @@ export function PanelTable<
   onRowAction,
   sortDescriptor,
   onSortChange,
+  columnWidthsStorageKey,
   treeColumn,
   expandedKeys,
   defaultExpandedKeys,
@@ -189,6 +204,11 @@ export function PanelTable<
 
   const [columnWidths, setColumnWidths] = useState<Map<Key, number>>(
     () => new Map(),
+  );
+  const [savedWidths, setSavedWidths] = useState<ColumnWidths>(() =>
+    columnWidthsStorageKey
+      ? readColumnWidths(columnWidthsStorageKey)
+      : new Map(),
   );
   const isResizingRef = useRef(false);
   const [stickyHeaderScrollEl, setStickyHeaderScrollEl] =
@@ -264,16 +284,39 @@ export function PanelTable<
     return () => observer.disconnect();
   }, [dataTableScrollEl, stickyHeaderScrollEl]);
 
-  const handleResizeStart = useCallback(() => {
+  const resizeStartWidths = useRef<Map<Key, number>>(new Map());
+
+  const handleResizeStart = useCallback((widths: Map<Key, number | string>) => {
     isResizingRef.current = true;
+    resizeStartWidths.current = toNumericWidths(widths);
   }, []);
 
-  const handleResizeEnd = useCallback(() => {
-    isResizingRef.current = false;
-    if (!stickyHeaderScrollEl) return;
-    const next = measureColumnWidths(stickyHeaderScrollEl);
-    setColumnWidths((prev) => keepIfSame(prev, next));
-  }, [stickyHeaderScrollEl]);
+  const handleResizeEnd = useCallback(
+    (widths: Map<Key, number | string>) => {
+      isResizingRef.current = false;
+      if (stickyHeaderScrollEl) {
+        const next = measureColumnWidths(stickyHeaderScrollEl);
+        setColumnWidths((prev) => keepIfSame(prev, next));
+      }
+      if (!columnWidthsStorageKey) return;
+      const resizedWidths: ColumnWidths = new Map();
+      toNumericWidths(widths).forEach((size, key) => {
+        const columnId = fromColumnKey(key);
+        const column = columns.find(({ id }) => id === columnId);
+        if (
+          column &&
+          column.width === undefined &&
+          resizeStartWidths.current.get(key) !== size
+        ) {
+          resizedWidths.set(column.id, size);
+        }
+      });
+      if (resizedWidths.size > 0) {
+        setSavedWidths(saveColumnWidths(columnWidthsStorageKey, resizedWidths));
+      }
+    },
+    [columns, columnWidthsStorageKey, stickyHeaderScrollEl],
+  );
 
   const selectableItems = useMemo(() => {
     const disabled = new Set<Key>(disabledKeys ?? []);
@@ -400,6 +443,8 @@ export function PanelTable<
   ) => {
     const lastFlexibleIndex = cols.findLastIndex(isFlexible);
     return cols.map((col, index) => {
+      const allowsResizing = index < lastFlexibleIndex;
+      const savedWidth = allowsResizing ? savedWidths.get(col.id) : undefined;
       const synced = columnWidths.get(columnKey(col.id));
       const isFixed = typeof col.width === 'number';
       const widthProps: Pick<
@@ -410,7 +455,7 @@ export function PanelTable<
         : variant === 'dataTable' && typeof synced === 'number'
           ? { width: synced, minWidth: col.minWidth, maxWidth: col.maxWidth }
           : {
-              defaultWidth: col.defaultWidth,
+              defaultWidth: savedWidth ?? col.defaultWidth,
               minWidth: col.minWidth,
               maxWidth: col.maxWidth,
             };
@@ -426,7 +471,7 @@ export function PanelTable<
             col.allowsSorting
           }
           {...widthProps}
-          allowsResizing={index < lastFlexibleIndex}
+          allowsResizing={allowsResizing}
           className={col.hideLabel ? 'opacity-0' : undefined}
         >
           {col.hideLabel ? (

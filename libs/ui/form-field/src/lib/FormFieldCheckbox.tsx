@@ -1,4 +1,4 @@
-import { Label, CheckboxGroup } from 'react-aria-components';
+import { CheckboxGroup } from 'react-aria-components';
 import { tv } from '@restate/util-styles';
 import { FormFieldError } from './FormFieldError';
 import {
@@ -6,6 +6,7 @@ import {
   PropsWithChildren,
   ReactNode,
   forwardRef,
+  useId,
 } from 'react';
 import {
   Checkbox as AriaCheckbox,
@@ -33,23 +34,25 @@ interface FormFieldCheckboxProps extends Pick<
 
 const styles = tv({
   slots: {
-    label: 'row-start-1 text-base',
+    label: 'text-base',
     container: 'grid items-center gap-x-2',
     error: 'error row-start-2 px-0',
-    input: 'row-start-1 min-w-0',
+    input:
+      'col-span-2 col-start-1 row-start-1 grid min-w-0 grid-cols-subgrid items-center text-inherit',
+    box: '',
   },
   variants: {
     direction: {
       left: {
         container: 'grid-cols-[1.25rem_1fr]',
-        input: 'col-start-1',
+        box: 'col-start-1',
         label: 'col-start-2',
         error: 'col-start-2',
       },
       right: {
         container: 'grid-cols-[1fr_1.25rem]',
-        input: 'col-start-2 self-baseline',
-        label: 'col-start-1',
+        box: 'col-start-2 self-baseline',
+        label: 'col-start-1 row-start-1',
         error: 'col-start-1',
       },
     },
@@ -80,12 +83,14 @@ export const FormFieldCheckbox = forwardRef<
     },
     ref,
   ) => {
-    const { input, container, label, error } = styles({ direction });
+    const { input, container, label, error, box } = styles({ direction });
     const inputRef = useObjectRef(ref);
+    const labelId = useId();
 
     return (
       <CheckboxGroup
         className={container({ className })}
+        aria-labelledby={labelId}
         isDisabled={disabled}
         isRequired={required}
         {...(typeof checked === 'boolean' && {
@@ -104,9 +109,13 @@ export const FormFieldCheckbox = forwardRef<
           inputRef={inputRef}
           value={value}
           className={input()}
+          boxClassName={box()}
           slot={slot}
-        />
-        <Label className={label()}>{children}</Label>
+        >
+          <span id={labelId} className={label()}>
+            {children}
+          </span>
+        </Checkbox>
         <FormFieldError children={errorMessage} className={error()} />
       </CheckboxGroup>
     );
@@ -153,8 +162,11 @@ const iconStyles =
 
 export const Checkbox = forwardRef<
   HTMLInputElement,
-  Omit<AriaCheckboxProps, 'children'> & { children?: ReactNode }
->(({ children, ...props }, ref) => {
+  Omit<AriaCheckboxProps, 'children'> & {
+    children?: ReactNode;
+    boxClassName?: string;
+  }
+>(({ children, boxClassName, ...props }, ref) => {
   const inputRef = useObjectRef(ref);
 
   return (
@@ -171,6 +183,7 @@ export const Checkbox = forwardRef<
             className={boxStyles({
               isSelected: isSelected || isIndeterminate,
               ...renderProps,
+              className: boxClassName,
             })}
           >
             {isIndeterminate ? (

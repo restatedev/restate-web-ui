@@ -30,11 +30,11 @@ export function GettingStartedCard({
         <Icon name={icon} className="h-full w-full" />
       </div>
       <div className="z-[2] self-start rounded-md bg-muted p-1.5 text-muted">
-        <Icon name={icon} className="h-5 w-5" />
+        <Icon name={icon} size="lg" />
       </div>
       <h4 className="z-[2] mt-2 flex items-center gap-2 pr-12 text-sm font-medium text-tertiary">
         {title}
-        <Icon name={IconName.ArrowRight} className="h-3.5 w-3.5 text-muted" />
+        <Icon name={IconName.ArrowRight} size="sm" tone="muted" />
       </h4>
       <p className="z-[2] mt-2 min-h-18 max-w-40 text-0.5xs text-muted">
         {description}

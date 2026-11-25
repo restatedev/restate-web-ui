@@ -159,10 +159,7 @@ function Component() {
               intent="danger"
               title="Couldn’t load this Virtual Object"
             >
-              <ErrorBanner
-                error={error}
-                className="w-full rounded-xl text-left"
-              />
+              <ErrorBanner error={error} className="w-full" />
             </EmptyState>
           </div>
         ) : isUnavailable ? (

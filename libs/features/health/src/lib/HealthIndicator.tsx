@@ -1,5 +1,6 @@
 import { Status, useRestateContext } from '@restate/features-restate-context';
-import { StatusIndicator } from './StatusIndicator';
+import { IconName } from '@restate/ui-icons';
+import { StatusDot, type StatusDotProps } from '@restate/ui-loading';
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
@@ -31,12 +32,19 @@ const styles = tv({
   },
 });
 
-function isStatusDefined(
-  status?: Status,
-): status is Extract<
+type DefinedStatus = Extract<
   Status,
   'PENDING' | 'HEALTHY' | 'DEGRADED' | 'UNREACHABLE'
-> {
+>;
+
+const DOTS: Record<DefinedStatus, Pick<StatusDotProps, 'intent' | 'icon'>> = {
+  PENDING: { intent: 'pending' },
+  HEALTHY: { intent: 'success' },
+  DEGRADED: { intent: 'pending', icon: IconName.TriangleAlert },
+  UNREACHABLE: { intent: 'pending', icon: IconName.TriangleAlert },
+};
+
+function isStatusDefined(status?: Status): status is DefinedStatus {
   return Boolean(
     status &&
     ['PENDING', 'HEALTHY', 'DEGRADED', 'UNREACHABLE'].includes(status),
@@ -56,11 +64,18 @@ export function HealthIndicator({
     const { container } = styles({ status });
 
     if (mini) {
-      return <StatusIndicator status={status} className={className} />;
+      return (
+        <StatusDot
+          {...DOTS[status]}
+          pulse
+          label={status}
+          className={className}
+        />
+      );
     } else {
       return (
         <div className={container({ className })} role="status">
-          <StatusIndicator status={status} />
+          <StatusDot {...DOTS[status]} pulse />
           {status}
         </div>
       );

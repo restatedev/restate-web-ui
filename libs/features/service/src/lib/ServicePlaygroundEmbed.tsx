@@ -139,7 +139,7 @@ function ElementsServicePlaygroundEmbed({
         />
       ) : isFetching || mountKey === undefined ? (
         <div className="flex h-full items-center justify-center gap-2.5 text-sm text-muted">
-          <Spinner className="h-5 w-5" />
+          <Spinner />
           Loading…
         </div>
       ) : null}

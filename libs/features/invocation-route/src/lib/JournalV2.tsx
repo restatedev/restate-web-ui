@@ -38,7 +38,7 @@ import {
   JournalContextProvider,
   useJournalTimelineContext,
 } from '@restate/features-invocation-ui';
-import { Indicator, Spinner } from '@restate/ui-loading';
+import { Spinner, StatusDot } from '@restate/ui-loading';
 import { Entry } from '@restate/features-invocation-ui';
 import { useFailureRelatedCommandIndex } from '@restate/features-invocation-ui';
 import { Input } from '@restate/features-invocation-ui';
@@ -795,10 +795,7 @@ export function JournalV2({
     return (
       <ContentPanelSection>
         <div className="px-2">
-          <ErrorBanner
-            error={invocationApiError}
-            className="flex-none rounded-xl"
-          />
+          <ErrorBanner error={invocationApiError} className="flex-none" />
         </div>
       </ContentPanelSection>
     );
@@ -807,7 +804,7 @@ export function JournalV2({
   if (isPending[invocationId]) {
     const loading = (
       <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-muted">
-        <Spinner className="h-4 w-4" />
+        <Spinner size="md" />
         Loading…
       </div>
     );
@@ -872,7 +869,7 @@ export function JournalV2({
               fallback={
                 <ContentPanelSection>
                   <div className="flex items-center gap-1.5 p-4 text-sm text-muted">
-                    <Spinner className="h-4 w-4" />
+                    <Spinner size="md" />
                     Loading…
                   </div>
                 </ContentPanelSection>
@@ -912,8 +909,12 @@ export function JournalV2({
                     />
                     {areAllInvocationsCompleted && (
                       <HoverTooltip content="Refresh">
-                        <Button variant="icon" onClick={refetch}>
-                          <Icon name={IconName.Retry} className="h-4 w-4" />
+                        <Button
+                          aria-label="Refresh"
+                          variant="icon"
+                          onClick={refetch}
+                        >
+                          <Icon name={IconName.Retry} size="md" />
                         </Button>
                       </HoverTooltip>
                     )}
@@ -921,13 +922,11 @@ export function JournalV2({
                       <HoverTooltip content="Introspect">
                         <Link
                           variant="icon"
+                          aria-label="Introspect"
                           href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.id}'`}
                           target="_blank"
                         >
-                          <Icon
-                            name={IconName.ScanSearch}
-                            className="h-4 w-4"
-                          />
+                          <Icon name={IconName.ScanSearch} size="md" />
                         </Link>
                       </HoverTooltip>
                     )}
@@ -1175,7 +1174,7 @@ export function JournalV2({
                       className="flex items-center justify-center gap-1 py-3 text-xs text-accent hover:text-accent-strong"
                     >
                       View all entries
-                      <Icon name={IconName.ChevronRight} className="h-3 w-3" />
+                      <Icon name={IconName.ChevronRight} size="xs" />
                     </Link>
                   )}
                   <div data-last-failure-fallback aria-hidden className="h-0" />
@@ -1301,7 +1300,7 @@ function ReturnToLiveButton({
         onClick={() => setIsLive(true)}
       >
         <div className="">Live</div>
-        <Icon name={IconName.Play} className="mb-px h-2.5 w-2.5 fill-current" />
+        <Icon name={IconName.Play} size="2xs" className="mb-px fill-current" />
       </Button>
     );
   }
@@ -1319,7 +1318,7 @@ function ReturnToLiveButton({
         <div className="w-[8ch] text-right font-mono tabular-nums">
           {lagLabel}
         </div>
-        <Indicator status="INFO" className="mb-0.5" />
+        <StatusDot intent="info" pulse className="mb-0.5" />
       </Button>
     );
   }
@@ -1331,7 +1330,7 @@ function ReturnToLiveButton({
       onClick={() => setIsLive(false)}
     >
       <div className="">Live</div>
-      <Indicator status="INFO" className="mb-0.5" />
+      <StatusDot intent="info" pulse className="mb-0.5" />
     </Button>
   );
 }
@@ -1704,7 +1703,7 @@ const TimelineRow = memo(function TimelineRow({
 function JournalPurgedMessage() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-12 text-center">
-      <Icon name={IconName.Trash} className="h-5 w-5 text-subtle" />
+      <Icon name={IconName.Trash} size="lg" tone="subtle" />
       <div className="text-sm font-medium text-secondary">
         Journal was purged
       </div>
@@ -1765,7 +1764,7 @@ function HiddenEntriesChip({
       }
     >
       <span className={hiddenEntriesChipStyles()}>
-        <Icon name={IconName.EyeOff} className="h-3 w-3 text-subtle" />
+        <Icon name={IconName.EyeOff} size="xs" tone="subtle" />
         {count}
       </span>
     </HoverTooltip>

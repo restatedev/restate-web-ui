@@ -150,10 +150,7 @@ function Component() {
                       intent="danger"
                       title="Couldn’t run query"
                     >
-                      <ErrorBanner
-                        error={error}
-                        className="w-full rounded-xl text-left"
-                      />
+                      <ErrorBanner error={error} className="w-full" />
                     </EmptyState>
                   ) : query ? (
                     <EmptyState
@@ -338,7 +335,7 @@ function Download({
           variant="secondary-button"
           className={className}
         >
-          <Icon name={IconName.Download} className="h-4 w-4" />
+          <Icon name={IconName.Download} size="md" />
         </Link>
       </HoverTooltip>
     </RouterProvider>

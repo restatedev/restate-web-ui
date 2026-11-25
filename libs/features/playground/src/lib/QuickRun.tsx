@@ -40,7 +40,7 @@ export function QuickRun({ service, handler, onOpenFull }: QuickRunProps) {
   if (!contract || !current) {
     return (
       <div className="flex min-h-32 w-[30rem] max-w-[calc(100vw-2rem)] items-center justify-center gap-2 p-4 text-sm text-muted">
-        {loaded.isPending && <Spinner className="h-4 w-4" />}
+        {loaded.isPending && <Spinner size="md" />}
         {loaded.error
           ? 'Couldn’t load this service.'
           : loaded.isPending
@@ -119,13 +119,10 @@ function QuickRunBody({
             <Button
               variant="icon"
               aria-label="Open the full playground"
-              className="flex h-7 w-7 items-center justify-center rounded-lg"
+              size="md"
               onClick={onOpenFull}
             >
-              <Icon
-                name={IconName.Maximize}
-                className="h-3.5 w-3.5 text-muted"
-              />
+              <Icon name={IconName.Maximize} size="sm" tone="muted" />
             </Button>
           </HoverTooltip>
         </div>
@@ -179,8 +176,7 @@ function QuickRunBody({
             />
             {latest && (
               <Button
-                variant="icon"
-                className="rounded-md px-1.5 py-1 text-xs text-muted hover:text-secondary"
+                variant="ghost"
                 onClick={() => {
                   setDismissedRun(undefined);
                   focusSoon(RESULT_FOCUS);
@@ -232,17 +228,15 @@ function ResultPanel({
       actions={
         <Button
           variant="secondary"
-          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm"
+          size="sm"
+          className="flex items-center gap-1.5"
           onClick={record.isRunning ? onCancel : onEdit}
         >
           {record.isRunning ? (
             'Cancel'
           ) : (
             <>
-              <Icon
-                name={IconName.ArrowLeft}
-                className="h-3.5 w-3.5 text-subtle"
-              />
+              <Icon name={IconName.ArrowLeft} size="sm" tone="subtle" />
               Back
             </>
           )}

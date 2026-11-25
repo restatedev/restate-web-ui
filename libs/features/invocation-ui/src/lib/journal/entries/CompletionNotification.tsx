@@ -40,7 +40,7 @@ export function CompletionNotification({
   return (
     <div className="item-center mr-2 flex gap-2">
       <Badge
-        variant={entry.resultType === 'failure' ? 'danger' : 'success'}
+        intent={entry.resultType === 'failure' ? 'danger' : 'success'}
         size="sm"
         className="gap-1 truncate rounded-md px-0 py-0 font-sans text-2xs font-normal"
       >

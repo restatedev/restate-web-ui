@@ -110,7 +110,9 @@ export function Expression({
             {isHandler && (
               <Icon
                 name={IconName.Function}
-                className="-ml-1 h-4 w-4 shrink-0 text-subtle"
+                size="md"
+                tone="subtle"
+                className="-ml-1"
               />
             )}
             <TruncateWithTooltip copyText={name}>
@@ -201,7 +203,7 @@ export function InputOutput({
                 className="mx-0.5 my-0.5 flex h-5 min-w-6 items-center justify-center gap-0 rounded-xl p-0 font-sans text-2xs font-medium text-muted shadow-none outline-offset-0"
                 variant="secondary"
               >
-                <Icon name={IconName.Eye} className="mx-1.5 h-3 w-3 shrink-0" />
+                <Icon name={IconName.Eye} size="xs" className="mx-1.5" />
                 <span className="block min-w-0 truncate">
                   {popoverTitle}
                   <span className="inline-block w-3" />

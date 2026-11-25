@@ -56,10 +56,7 @@ export function ExpandInvocationButton({
           {invokedIsPending ? (
             <Spinner />
           ) : (
-            <Icon
-              name={isExpanded ? IconName.X : IconName.Plus}
-              className="h-3.5 w-3.5"
-            />
+            <Icon name={isExpanded ? IconName.X : IconName.Plus} size="sm" />
           )}
         </Button>
       )}

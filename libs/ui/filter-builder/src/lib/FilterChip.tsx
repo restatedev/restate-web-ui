@@ -129,6 +129,7 @@ export function FilterChip({
         (queryClauseOperationRequiresValue(item.value.operation)
           ? (emptyValueLabel ?? '?')
           : '');
+  const hasValue = Boolean(valueContent);
 
   if (appearance === 'light') {
     const hasRemove = Boolean(showRemove && onRemove);
@@ -165,31 +166,42 @@ export function FilterChip({
             <ChipSegment className="gap-1 bg-accent-subtle px-1.5">
               <Icon
                 name={IconName.ListFilter}
-                className="h-3 w-3 shrink-0 text-accent"
+                size="xs"
+                className="text-accent"
               />
               <span className="shrink-0 font-medium whitespace-nowrap text-accent-strong">
                 {item.label}
               </span>
             </ChipSegment>
             {item.operationLabel && (
-              <ChipSegment className="bg-subtle px-1.5 font-mono text-subtle">
+              <ChipSegment className="gap-0.5 bg-subtle px-1.5 font-mono text-subtle">
                 {item.operationLabel}
+                {!hasValue && (
+                  <Icon
+                    name={IconName.ChevronDown}
+                    size="xs"
+                    className="text-subtle"
+                  />
+                )}
               </ChipSegment>
             )}
-            <ChipSegment className="gap-0.5 px-2.5">
-              <span
-                className={lightValueStyles({
-                  isRichValue: Boolean(renderValue),
-                  className: valueClassName,
-                })}
-              >
-                {valueContent}
-              </span>
-              <Icon
-                name={IconName.ChevronDown}
-                className="h-3 w-3 shrink-0 text-subtle"
-              />
-            </ChipSegment>
+            {(hasValue || !item.operationLabel) && (
+              <ChipSegment className="gap-0.5 px-2.5">
+                <span
+                  className={lightValueStyles({
+                    isRichValue: Boolean(renderValue),
+                    className: valueClassName,
+                  })}
+                >
+                  {valueContent}
+                </span>
+                <Icon
+                  name={IconName.ChevronDown}
+                  size="xs"
+                  className="text-subtle"
+                />
+              </ChipSegment>
+            )}
           </Chip>
         </EditFilterTrigger>
         {hasRemove && onRemove && (
@@ -205,7 +217,7 @@ export function FilterChip({
                   submit();
                 }}
               >
-                <Icon name={IconName.X} className="h-3 w-3" />
+                <Icon name={IconName.X} size="xs" />
               </Button>
             </ChipSegment>
           </Chip>
@@ -235,7 +247,8 @@ export function FilterChip({
         >
           <Icon
             name={IconName.ListFilter}
-            className="h-3.5 w-3.5 shrink-0 text-current opacity-70"
+            size="sm"
+            className="text-current opacity-70"
           />
           <span className="shrink-0 whitespace-nowrap">{item.label}</span>
           {item.operationLabel?.split(' ').map((segment) => (
@@ -243,13 +256,14 @@ export function FilterChip({
               {segment}
             </span>
           ))}
-          <span className={darkChipValueStyles({ className: valueClassName })}>
-            {valueContent}
-          </span>
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="ml-1 h-3.5 w-3.5 shrink-0"
-          />
+          {hasValue && (
+            <span
+              className={darkChipValueStyles({ className: valueClassName })}
+            >
+              {valueContent}
+            </span>
+          )}
+          <Icon name={IconName.ChevronsUpDown} size="sm" className="ml-1" />
         </Button>
       </EditFilterTrigger>
       {showRemove && onRemove && (
@@ -263,7 +277,7 @@ export function FilterChip({
             submit();
           }}
         >
-          <Icon name={IconName.X} className="h-3.5 w-3.5" />
+          <Icon name={IconName.X} size="sm" />
         </Button>
       )}
     </div>

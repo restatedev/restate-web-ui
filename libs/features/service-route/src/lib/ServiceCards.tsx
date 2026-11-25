@@ -51,17 +51,7 @@ import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { formatConfigDuration, type ServiceConfig } from './serviceConfig';
-
-const skeletonStyles = tv({
-  base: 'inline-block animate-pulse rounded-full bg-emphasis/70',
-  variants: {
-    variant: {
-      hero: 'h-6 w-16',
-      default: 'h-4 w-12',
-    },
-  },
-  defaultVariants: { variant: 'default' },
-});
+import { Skeleton } from '@restate/ui-loading';
 
 const captionStyles = tv({
   base: 'flex min-w-0 items-center gap-1 text-2xs font-medium text-subtle',
@@ -73,10 +63,6 @@ const captionStyles = tv({
   },
   defaultVariants: { tone: 'default' },
 });
-
-function Skeleton({ variant }: { variant?: 'hero' | 'default' }) {
-  return <span className={skeletonStyles({ variant })} />;
-}
 
 function HeroText({
   title,
@@ -109,8 +95,8 @@ export function CardEditAction({
   const [, setSearchParams] = useSearchParams();
   return (
     <Button
-      variant="icon"
-      className="flex h-6 items-center gap-1 rounded-md px-1.5 text-2xs font-medium text-subtle hover:bg-transparent hover:text-tertiary"
+      variant="ghost"
+      size="xs"
       onClick={() =>
         setSearchParams(
           (old) => {
@@ -121,7 +107,7 @@ export function CardEditAction({
         )
       }
     >
-      <Icon name={IconName.Pencil} className="h-3 w-3" />
+      <Icon name={IconName.Pencil} size="xs" />
       {label}
     </Button>
   );
@@ -217,7 +203,7 @@ export function DeploymentProtocolRows({
             )}
           </div>
         ) : (
-          <Skeleton />
+          <Skeleton shape="pill" className="h-4 w-12" />
         )}
       </CardRow>
       <CardRow label="Service protocol">
@@ -232,7 +218,7 @@ export function DeploymentProtocolRows({
             }
           />
         ) : (
-          <Skeleton />
+          <Skeleton shape="pill" className="h-4 w-12" />
         )}
       </CardRow>
     </>
@@ -292,7 +278,7 @@ export function DeploymentCard({
       ) : (
         <CardRow variant="hero">
           <HeroText title="Latest revision" />
-          <Skeleton variant="hero" />
+          <Skeleton shape="pill" className="h-6 w-16" />
         </CardRow>
       )}
       <DeploymentSdkRow deployment={deployment} />
@@ -394,7 +380,7 @@ function RowLabel({ icon, children }: { icon: IconName; children: ReactNode }) {
   return (
     <span className="flex items-center gap-1.5">
       <span className="flex h-5 w-5 shrink-0 items-center justify-center">
-        <Icon name={icon} className="h-3.5 w-3.5" />
+        <Icon name={icon} size="sm" />
       </span>
       {children}
     </span>
@@ -456,8 +442,8 @@ function ConfigPopover({
         <span className="text-sm font-semibold text-muted">{title}</span>
         {editParam && !isReadonly && (
           <Button
-            variant="icon"
-            className="-my-1 ml-auto flex h-6 shrink-0 items-center gap-1 rounded-md px-1.5 text-xs font-normal text-muted hover:text-secondary"
+            variant="ghost"
+            className="-my-1 ml-auto shrink-0"
             onClick={() => {
               close?.();
               setSearchParams(
@@ -469,7 +455,7 @@ function ConfigPopover({
               );
             }}
           >
-            <Icon name={IconName.Pencil} className="h-3 w-3" />
+            <Icon name={IconName.Pencil} size="xs" />
             Edit
           </Button>
         )}
@@ -481,7 +467,8 @@ function ConfigPopover({
         >
           <Icon
             name={IconName.TriangleAlert}
-            className="mt-px h-3.5 w-3.5 shrink-0 text-warning-subtle"
+            size="sm"
+            className="mt-px text-warning-subtle"
           />
           <span>{warning}</span>
         </div>
@@ -540,7 +527,7 @@ function ConfigRow({
   }
   return (
     <CardRow label={<RowLabel icon={icon}>{label}</RowLabel>}>
-      {isPending ? <Skeleton /> : content}
+      {isPending ? <Skeleton shape="pill" className="h-4 w-12" /> : content}
     </CardRow>
   );
 }

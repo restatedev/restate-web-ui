@@ -3,6 +3,11 @@ import { isUnauthorizedError } from '@restate/util-errors';
 import { Link } from '@restate/ui-link';
 import { Button } from '@restate/ui-button';
 import { Copy } from '@restate/ui-copy';
+import {
+  Disclosure,
+  DisclosurePanel,
+  DisclosureTrigger,
+} from '@restate/ui-disclosure';
 import { EmptyState } from '@restate/ui-empty-state';
 import { IconName } from '@restate/ui-icons';
 
@@ -41,17 +46,17 @@ export function CrashError({
           Go to home
         </Link>
       </div>
-      <details className="w-full text-left">
-        <summary className="mx-auto w-fit cursor-pointer rounded-md px-2 py-1 text-xs text-muted hover:text-secondary">
-          Error details
-        </summary>
-        <div className="relative mt-2">
-          <pre className="max-h-64 overflow-auto rounded-xl border border-default bg-surface p-3 pr-10 font-mono text-xs leading-relaxed break-all whitespace-pre-wrap text-tertiary shadow-xs">
-            {details}
-          </pre>
-          <Copy copyText={details} className="absolute top-1.5 right-1.5" />
-        </div>
-      </details>
+      <Disclosure className="flex w-full flex-col text-left">
+        <DisclosureTrigger className="mx-auto">Error details</DisclosureTrigger>
+        <DisclosurePanel>
+          <div className="relative mt-2">
+            <pre className="max-h-64 overflow-auto rounded-xl border border-default bg-surface p-3 pr-10 font-mono text-xs leading-relaxed break-all whitespace-pre-wrap text-tertiary shadow-xs">
+              {details}
+            </pre>
+            <Copy copyText={details} className="absolute top-1.5 right-1.5" />
+          </div>
+        </DisclosurePanel>
+      </Disclosure>
       <p className="text-xs text-muted">
         If this keeps happening,{' '}
         <Link variant="secondary" href={supportHref}>

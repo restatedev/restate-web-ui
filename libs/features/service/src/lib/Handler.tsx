@@ -55,7 +55,8 @@ export function Handler({
           >
             <Icon
               name={IconName.Function}
-              className="h-full w-full text-subtle"
+              tone="subtle"
+              className="h-full w-full"
             />
           </div>
         </div>
@@ -66,7 +67,8 @@ export function Handler({
             showType && (
               <Badge
                 size="sm"
-                className="border-none bg-transparent px-0 py-0 text-xs font-medium text-subtle"
+                borderless
+                className="bg-transparent px-0 py-0 text-xs font-medium text-subtle"
               >
                 <HandlerTypeExplainer type={handler.ty} variant="inline-help">
                   {handler.ty}
@@ -98,16 +100,14 @@ export function Handler({
               {showLink && (
                 <Link
                   variant="icon"
+                  aria-label={`Open handler ${handler.name}`}
                   href={serviceHref(baseUrl, {
                     service,
                     handler: handler.name,
                   })}
                   className={link()}
                 >
-                  <Icon
-                    name={IconName.ChevronRight}
-                    className="h-4 w-4 text-subtle"
-                  />
+                  <Icon name={IconName.ChevronRight} size="md" tone="subtle" />
                 </Link>
               )}
             </span>

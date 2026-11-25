@@ -86,6 +86,8 @@ import {
   Rows3,
   Braces,
   CircleStop,
+  CircleAlert,
+  CircleCheck,
   MoveDown,
   MoveUp,
   ArrowDown,
@@ -254,6 +256,8 @@ export const enum IconName {
   CirclePlay = 'CirclePlay',
   CirclePause = 'CirclePause',
   CircleStop = 'CircleStop',
+  CircleAlert = 'CircleAlert',
+  CircleCheck = 'CircleCheck',
   MoveDown = 'MoveDown',
   MoveUp = 'MoveUp',
   ArrowDown = 'ArrowDown',
@@ -282,11 +286,25 @@ export const enum IconName {
   Moon = 'Moon',
   Monitor = 'Monitor',
 }
+export type IconSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg';
+
+export type IconTone =
+  | 'inherit'
+  | 'dimmed'
+  | 'secondary'
+  | 'tertiary'
+  | 'muted'
+  | 'subtle';
+
 export interface IconsProps {
   name: IconName;
+  size?: IconSize;
+  tone?: IconTone;
   ['aria-hidden']?: boolean;
   className?: string;
 }
+
+export type IconProps = IconsProps;
 
 const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Settings]: Settings,
@@ -402,6 +420,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.CirclePause]: CirclePause,
   [IconName.CirclePlay]: CirclePlay,
   [IconName.CircleStop]: CircleStop,
+  [IconName.CircleAlert]: CircleAlert,
+  [IconName.CircleCheck]: CircleCheck,
   [IconName.MoveDown]: MoveDown,
   [IconName.MoveUp]: MoveUp,
   [IconName.ArrowDown]: ArrowDown,
@@ -431,16 +451,36 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Monitor]: Monitor,
 };
 
+export const ICON_NAMES = Object.keys(ICONS) as IconName[];
+
 const styles = tv({
   base: 'h-[1.5em] w-[1.5em] text-current',
+  variants: {
+    size: {
+      '2xs': 'h-2.5 w-2.5 shrink-0',
+      xs: 'h-3 w-3 shrink-0',
+      sm: 'h-3.5 w-3.5 shrink-0',
+      md: 'h-4 w-4 shrink-0',
+      lg: 'h-5 w-5 shrink-0',
+    },
+    tone: {
+      inherit: '',
+      dimmed: 'opacity-80',
+      secondary: 'text-secondary',
+      tertiary: 'text-tertiary',
+      muted: 'text-muted',
+      subtle: 'text-subtle',
+    },
+  },
+  defaultVariants: { tone: 'inherit' },
 });
 
-export function Icon({ name, className, ...props }: IconsProps) {
+export function Icon({ name, size, tone, className, ...props }: IconsProps) {
   const IconComponent = ICONS[name];
   return (
     <IconComponent
       {...props}
-      className={styles({ className })}
+      className={styles({ size, tone, className })}
       aria-hidden="true"
     />
   );

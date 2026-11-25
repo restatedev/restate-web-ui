@@ -7,13 +7,19 @@ import {
   PressEvent,
 } from 'react-aria-components';
 import { useSearchParams, type NavigateOptions } from 'react-router';
-import { tv } from '@restate/util-styles';
+import { tv, type Intent } from '@restate/util-styles';
+import { buttonStyles, type ButtonSize } from '@restate/ui-button';
 
 declare module 'react-aria-components' {
   interface RouterConfig {
     routerOptions: NavigateOptions;
   }
 }
+
+export type LinkIntent = Extract<
+  Intent,
+  'info' | 'success' | 'warning' | 'danger'
+>;
 
 interface LinkProps
   extends
@@ -37,6 +43,8 @@ interface LinkProps
     | 'secondary-button'
     | 'destructive-button'
     | 'icon';
+  intent?: LinkIntent;
+  size?: ButtonSize;
   preserveQueryParams?: boolean | string[];
   onClick?: (event: Omit<PressEvent, 'target'>) => void;
   disabled?: boolean;
@@ -47,22 +55,42 @@ const styles = tv({
   base: 'rounded underline disabled:cursor-default disabled:no-underline',
   variants: {
     variant: {
-      button:
-        'inline-block rounded-xl border border-tint bg-linear-to-b from-accent/90 to-accent px-5 py-2 text-center text-sm text-inverse no-underline shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/20%)] drop-shadow-xs hover:from-accent-hover hover:to-accent-hover hover:shadow-none pressed:from-accent-pressed pressed:to-accent-pressed pressed:shadow-none',
-      'secondary-button':
-        'inline-block rounded-xl border bg-raised px-5 py-2 text-center text-sm text-primary no-underline shadow-xs hover:wash-tint pressed:wash-tint-strong',
-      'destructive-button':
-        'inline-block rounded-xl border border-tint bg-linear-to-b from-danger/95 to-danger px-5 py-2 text-center text-sm text-inverse no-underline shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/15%)] drop-shadow-xs hover:from-danger-hover hover:to-danger-hover hover:shadow-none pressed:from-danger-pressed pressed:to-danger-pressed pressed:shadow-none',
       primary: 'text-accent decoration-accent/60 hover:decoration-accent',
       secondary:
         'text-secondary decoration-secondary/50 hover:decoration-secondary',
       icon: 'flex items-center justify-center border-0 p-1 text-tertiary no-underline shadow-none hover:bg-tint disabled:bg-transparent pressed:bg-tint-strong',
+    },
+    intent: {
+      info: 'text-info-strong decoration-info-strong/60 hover:decoration-info-strong',
+      success:
+        'text-success-strong decoration-success-strong/60 hover:decoration-success-strong',
+      warning:
+        'text-warning-strong decoration-warning-strong/60 hover:decoration-warning-strong',
+      danger:
+        'text-danger-strong decoration-danger-strong/60 hover:decoration-danger-strong',
     },
   },
   defaultVariants: {
     variant: 'primary',
   },
 });
+
+const buttonLinkStyles = tv({
+  extend: buttonStyles,
+  base: 'inline-block no-underline disabled:cursor-default',
+});
+
+const BUTTON_VARIANTS = {
+  button: 'primary',
+  'secondary-button': 'secondary',
+  'destructive-button': 'destructive',
+} as const;
+
+function isButtonVariant(
+  variant: LinkProps['variant'],
+): variant is keyof typeof BUTTON_VARIANTS {
+  return Boolean(variant && variant in BUTTON_VARIANTS);
+}
 
 interface HrefWithQueryParamsOptions {
   preserveQueryParams: boolean | string[];
@@ -139,7 +167,18 @@ export function useHrefWithQueryParams({
 }
 
 export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ href, preserveQueryParams = true, onClick, disabled, ...props }, ref) => {
+  (
+    {
+      href,
+      preserveQueryParams = true,
+      onClick,
+      disabled,
+      size,
+      intent,
+      ...props
+    },
+    ref,
+  ) => {
     const hrefWithQueryParams = useHrefWithQueryParams({
       href,
       preserveQueryParams,
@@ -154,7 +193,19 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
         className={composeRenderProps(
           props.className,
           (className, renderProps) =>
-            styles({ ...renderProps, className, variant: props.variant }),
+            isButtonVariant(props.variant)
+              ? buttonLinkStyles({
+                  ...renderProps,
+                  className,
+                  size,
+                  variant: BUTTON_VARIANTS[props.variant],
+                })
+              : styles({
+                  ...renderProps,
+                  className,
+                  variant: props.variant,
+                  intent,
+                }),
         )}
         onPress={onClick}
       />

@@ -177,7 +177,7 @@ const ACTIVITIES = [
 function QueueStatus({ row }: { row: VQueueMetaRow }) {
   if (row.queue_is_paused) {
     return (
-      <Badge size="sm" variant="warning">
+      <Badge size="sm" intent="warning">
         Paused
       </Badge>
     );
@@ -613,6 +613,7 @@ export function VQueueTable({
       aria-label="VQueues"
       bodyKey={bodyKey}
       columns={COLUMNS}
+      columnWidthsStorageKey="vqueues-user-col-widths"
       items={rows}
       isLoading={isLoading}
       error={error}

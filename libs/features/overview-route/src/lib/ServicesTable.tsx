@@ -29,7 +29,7 @@ import { EmptyState } from '@restate/ui-empty-state';
 import { Icon, IconName } from '@restate/ui-icons';
 import { IssueBadge } from '@restate/ui-issue-banner';
 import { Link } from '@restate/ui-link';
-import { Spinner } from '@restate/ui-loading';
+import { Spinner, Skeleton } from '@restate/ui-loading';
 import {
   Cell,
   PanelTable,
@@ -789,7 +789,7 @@ export function ServicesTable() {
       return (
         <Cell className="[&&&]:overflow-visible">
           {isServiceSummaryLoading ? (
-            <span className="block h-5 w-16 animate-pulse rounded-full bg-emphasis/70" />
+            <Skeleton shape="pill" className="block h-5 w-16" />
           ) : issues.length > 0 ? (
             <IssueBadge
               issues={issues}
@@ -832,6 +832,7 @@ export function ServicesTable() {
     <PanelTable<OverviewTableRow, ServiceColumn>
       aria-label="Services and handlers"
       columns={COLUMNS}
+      columnWidthsStorageKey="services-user-col-widths"
       items={items}
       isLoading={
         isDeploymentsFetching || isServicesPending || isGroupMetadataPending

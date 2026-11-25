@@ -259,6 +259,7 @@ export function VQueueEntriesTable({
       <PanelTable
         aria-label={`${label} VQueue entries`}
         columns={columns}
+        columnWidthsStorageKey="vqueue-entries-user-col-widths"
         items={rows}
         isLoading={isPending}
         error={error}
