@@ -281,6 +281,7 @@ export function JournalV2({
 }: JournalV2Props) {
   const [isLive, setIsLive] = useState(true);
   const isScrollingRef = useRef(false);
+  const isFollowingRef = useRef(false);
   const [searchParams] = useSearchParams();
   const [invocationIds, setInvocationIds] = useState(() =>
     withTimeline
@@ -302,7 +303,7 @@ export function JournalV2({
     refetchInterval(query) {
       if (
         isLive &&
-        !isScrollingRef.current &&
+        (!isScrollingRef.current || isFollowingRef.current) &&
         query.state.status === 'success' &&
         hasPendingJournalUpdates(query.state.data)
       ) {
@@ -1147,6 +1148,7 @@ export function JournalV2({
                   <div data-last-failure-fallback aria-hidden className="h-0" />
                   <JournalFollow
                     journalRef={journalEndRef}
+                    isFollowingRef={isFollowingRef}
                     isEnabled={
                       isLive &&
                       !areAllInvocationsCompleted &&

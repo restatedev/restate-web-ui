@@ -65,12 +65,14 @@ function canGlide(distance: number) {
 
 export function JournalFollow({
   journalRef,
+  isFollowingRef,
   isEnabled,
   isComplete,
   contentSize,
   entryCount,
 }: {
   journalRef: RefObject<HTMLElement | null>;
+  isFollowingRef: RefObject<boolean>;
   isEnabled: boolean;
   isComplete: boolean;
   contentSize: number;
@@ -86,7 +88,6 @@ export function JournalFollow({
       setIsFollowing(false);
     }
   }
-  const isFollowingRef = useRef(false);
   const ignoreScrollUntil = useRef(0);
   const lastScrollY = useRef(0);
   const lastPointerMove = useRef(0);
@@ -109,7 +110,7 @@ export function JournalFollow({
         stopGlide();
       }
     },
-    [stopGlide],
+    [isFollowingRef, stopGlide],
   );
 
   const scrollToEnd = useCallback(
@@ -156,7 +157,7 @@ export function JournalFollow({
       }
       scrollToEnd(true);
     },
-    [journalRef, scrollToEnd],
+    [isFollowingRef, journalRef, scrollToEnd],
   );
 
   useLayoutEffect(() => {
@@ -184,6 +185,7 @@ export function JournalFollow({
     entryCount,
     isComplete,
     isEnabled,
+    isFollowingRef,
     journalRef,
     keepUp,
     scrollToEnd,
@@ -223,6 +225,7 @@ export function JournalFollow({
     const onKeyDown = (event: KeyboardEvent) => {
       if (
         isFollowingRef.current &&
+        !event.defaultPrevented &&
         !isTyping(event.target) &&
         (UP_KEYS.has(event.key) || (event.key === ' ' && event.shiftKey))
       ) {
@@ -245,7 +248,7 @@ export function JournalFollow({
       window.removeEventListener('keydown', onKeyDown);
       journal.removeEventListener('pointermove', onPointerMove);
     };
-  }, [isEnabled, journalRef, setFollowing, stopGlide]);
+  }, [isEnabled, isFollowingRef, journalRef, setFollowing, stopGlide]);
 
   if (!isEnabled || isFollowing || isEndInView) {
     return null;
