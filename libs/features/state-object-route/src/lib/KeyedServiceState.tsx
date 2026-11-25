@@ -7,7 +7,7 @@ import { EmptyState } from '@restate/ui-empty-state';
 import { Icon, IconName } from '@restate/ui-icons';
 import { SplitButton } from '@restate/ui-split-button';
 import { useMemo } from 'react';
-import { StateEntriesTable } from './StateObjectTable';
+import { ReadOnlyStateNote, StateEntriesTable } from './StateObjectTable';
 
 type KeyedServiceType = 'virtual_object' | 'workflow';
 
@@ -21,10 +21,12 @@ export function KeyedServiceState({
   identity,
   deploymentId,
   serviceType,
+  readOnlyStateKeyPrefix,
 }: {
   identity: KeyedServiceStateIdentity;
   deploymentId?: string;
   serviceType: KeyedServiceType;
+  readOnlyStateKeyPrefix?: string;
 }) {
   const setEditState = useEditStateContext();
   const codecOptions = useMemo<RestateCodecOptions>(
@@ -49,39 +51,44 @@ export function KeyedServiceState({
   return (
     <>
       <ContentPanelToolbar>
-        <SplitButton
-          mini={false}
-          variant="secondary"
-          className="self-end text-0.5xs"
-          splitClassName="rounded-r-lg px-1.5 py-0.5"
-          menus={
-            <>
-              <DropdownItem value="edit">Edit state…</DropdownItem>
-              <DropdownItem destructive value="delete">
-                Delete state…
-              </DropdownItem>
-            </>
-          }
-          onSelect={(key) => {
-            if (key === 'edit') openStateDialog(false);
-            if (key === 'delete') openStateDialog(true);
-          }}
-        >
-          <Button
+        {readOnlyStateKeyPrefix ? (
+          <ReadOnlyStateNote className="self-end py-1" />
+        ) : (
+          <SplitButton
+            mini={false}
             variant="secondary"
-            className="relative left-px flex items-center gap-1.5 rounded-l-lg rounded-r-none p-0.5 px-2 text-0.5xs"
-            onClick={() => openStateDialog(false)}
+            className="self-end text-0.5xs"
+            splitClassName="rounded-r-lg px-1.5 py-0.5"
+            menus={
+              <>
+                <DropdownItem value="edit">Edit state…</DropdownItem>
+                <DropdownItem destructive value="delete">
+                  Delete state…
+                </DropdownItem>
+              </>
+            }
+            onSelect={(key) => {
+              if (key === 'edit') openStateDialog(false);
+              if (key === 'delete') openStateDialog(true);
+            }}
           >
-            <Icon name={IconName.Pencil} className="h-3 w-3" />
-            Edit
-          </Button>
-        </SplitButton>
+            <Button
+              variant="secondary"
+              className="relative left-px flex items-center gap-1.5 rounded-l-lg rounded-r-none p-0.5 px-2 text-0.5xs"
+              onClick={() => openStateDialog(false)}
+            >
+              <Icon name={IconName.Pencil} className="h-3 w-3" />
+              Edit
+            </Button>
+          </SplitButton>
+        )}
       </ContentPanelToolbar>
       <StateEntriesTable
         codecOptions={codecOptions}
         serviceName={identity.service}
         serviceKey={identity.key}
         scope={identity.scope}
+        readOnlyKeyPrefix={readOnlyStateKeyPrefix}
         emptyPlaceholder={
           <EmptyState
             icon={IconName.Database}

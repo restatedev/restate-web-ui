@@ -57,6 +57,7 @@ export function VirtualObjectDetails({
   identity,
   tab,
   deploymentId,
+  readOnlyStateKeyPrefix,
   inboxData,
   inboxDataUpdatedAt,
   inboxError,
@@ -69,6 +70,7 @@ export function VirtualObjectDetails({
   identity: VirtualObjectInstanceIdentity;
   tab: VirtualObjectInstanceTab;
   deploymentId?: string;
+  readOnlyStateKeyPrefix?: string;
   inboxData?: InboxResponse;
   inboxDataUpdatedAt?: number;
   inboxError: Error | null;
@@ -113,6 +115,7 @@ export function VirtualObjectDetails({
               identity={identity}
               deploymentId={deploymentId}
               serviceType="virtual_object"
+              readOnlyStateKeyPrefix={readOnlyStateKeyPrefix}
             />
           ) : tab === 'recent' ? (
             <VirtualObjectInvocations
