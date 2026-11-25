@@ -10,14 +10,16 @@ import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { formatPlurals } from '@restate/util-intl';
 
+const AIM_TARGETS =
+  'a[href], button, [role="button"], [role="link"], [aria-expanded]';
+const AIM_WAIT_MS = 1000;
 const END_SLACK_PX = 8;
-const HOVER_WAIT_MS = 1000;
 const IGNORE_SCROLL_MS = 150;
 const RETRY_MS = 500;
 const SPRING_RATE = 7;
 const UP_KEYS = new Set(['ArrowUp', 'PageUp', 'Home']);
 
-type PointedTrigger = { element: Element | null; movedAt: number };
+type Aim = { target: Element | null; movedAt: number; isPressed: boolean };
 
 function distanceBelowViewport(element: HTMLElement) {
   return element.getBoundingClientRect().bottom - window.innerHeight;
@@ -54,20 +56,17 @@ function hasOpenOverlay() {
   );
 }
 
-function isPointingAtTrigger(journal: HTMLElement, pointed: PointedTrigger) {
+function isAiming(journal: HTMLElement, aim: Aim) {
   return (
-    pointed.element !== null &&
-    performance.now() - pointed.movedAt < HOVER_WAIT_MS &&
-    journal.contains(pointed.element)
+    aim.isPressed ||
+    (aim.target !== null &&
+      performance.now() - aim.movedAt < AIM_WAIT_MS &&
+      journal.contains(aim.target))
   );
 }
 
-function isBusy(journal: HTMLElement, pointed: PointedTrigger) {
-  return (
-    hasSelectionIn(journal) ||
-    hasOpenOverlay() ||
-    isPointingAtTrigger(journal, pointed)
-  );
+function isBusy(journal: HTMLElement, aim: Aim) {
+  return hasSelectionIn(journal) || hasOpenOverlay() || isAiming(journal, aim);
 }
 
 function canGlide(distance: number) {
@@ -107,7 +106,7 @@ export function JournalFollow({
   const retryTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const glideFrame = useRef<number>(undefined);
   const velocity = useRef(0);
-  const pointed = useRef<PointedTrigger>({ element: null, movedAt: 0 });
+  const aim = useRef<Aim>({ target: null, movedAt: 0, isPressed: false });
   const entryCountRef = useRef(entryCount);
 
   const stopGlide = useCallback(() => {
@@ -153,7 +152,7 @@ export function JournalFollow({
       let position: number | undefined;
       let written = 0;
       const glide = () => {
-        if (isBusy(journal, pointed.current)) {
+        if (isBusy(journal, aim.current)) {
           velocity.current = 0;
           last = 0;
           position = undefined;
@@ -198,7 +197,7 @@ export function JournalFollow({
       if (!journal || !isFollowingRef.current) {
         return;
       }
-      if (isBusy(journal, pointed.current)) {
+      if (isBusy(journal, aim.current)) {
         retryTimer.current = setTimeout(keepUp, RETRY_MS);
         return;
       }
@@ -223,7 +222,7 @@ export function JournalFollow({
       keepUp();
     } else if (isComplete && isFollowingRef.current) {
       setFollowing(false);
-      if (!isBusy(journal, pointed.current)) {
+      if (!isBusy(journal, aim.current)) {
         scrollToEnd(false);
       }
     }
@@ -285,33 +284,47 @@ export function JournalFollow({
         setFollowing(false);
       }
     };
-    const onPointerMove = (event: PointerEvent) => {
+    const onPointer = (event: PointerEvent) => {
       if (event.pointerType === 'touch') {
         return;
       }
-      const wasPointing = isPointingAtTrigger(journal, pointed.current);
-      pointed.current = {
-        element:
-          event.target instanceof Element
-            ? event.target.closest('[aria-expanded]')
-            : null,
+      const wasAiming = isAiming(journal, aim.current);
+      const target = event.target instanceof Element ? event.target : null;
+      aim.current = {
+        target: target?.closest(AIM_TARGETS) ?? null,
         movedAt: performance.now(),
+        isPressed:
+          event.type === 'pointerdown'
+            ? journal.contains(target)
+            : event.type === 'pointermove' &&
+              event.buttons > 0 &&
+              aim.current.isPressed,
       };
-      if (wasPointing && !isPointingAtTrigger(journal, pointed.current)) {
+      if (wasAiming && !isAiming(journal, aim.current)) {
         keepUp();
       }
     };
+    const pointerEvents = [
+      'pointermove',
+      'pointerdown',
+      'pointerup',
+      'pointercancel',
+    ] as const;
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('wheel', onWheel, { passive: true });
     window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    for (const type of pointerEvents) {
+      window.addEventListener(type, onPointer, { passive: true });
+    }
     return () => {
       setFollowing(false);
       clearTimeout(retryTimer.current);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('pointermove', onPointerMove);
+      for (const type of pointerEvents) {
+        window.removeEventListener(type, onPointer);
+      }
     };
   }, [isEnabled, journalRef, keepUp, setFollowing]);
 
