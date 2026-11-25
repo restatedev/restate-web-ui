@@ -601,7 +601,8 @@ export interface paths {
     };
     /**
      * Get version information
-     * @description Returns the server version, supported Admin API versions, and the advertised ingress endpoint.
+     * @description Returns the server version, supported Admin API versions, the advertised ingress endpoint, and
+     *     what the query engine offers.
      */
     get: operations['version'];
     put?: never;
@@ -2355,6 +2356,30 @@ export interface components {
         };
     /** @enum {string} */
     ProtocolType: 'RequestResponse' | 'BidiStream';
+    /**
+     * @description What the SQL query engine offers. New fields can be added; clients ignore the ones
+     *     they don't know.
+     */
+    QueryEngineInformation: {
+      /**
+       * @description # Default query engine
+       *
+       *     The engine that runs a query unless the request selects another: `v1` or `v2`.
+       */
+      default_engine: string;
+      /**
+       * @description # Statistics tables
+       *
+       *     Whether the statistics tables (`sys_service_stats`, `sys_deployment_stats` and
+       *     `sys_virtual_object_stats`) answer queries. `false` while queries don't read indexes,
+       *     because the tables aren't shown then. Otherwise `true`, from the admin node's start, unless
+       *     its last check found a partition whose leader answered and lacks a complete status gauge.
+       *     Partitions without a known leader, leaders that are down or don't answer, and leaders whose
+       *     partition store isn't open (no registry rows) don't count. The admin node checks every
+       *     `admin.query-engine.index-catalog-refresh-interval`.
+       */
+      stats_tables: boolean;
+    };
     /** @description Error response for query endpoint. */
     QueryErrorBody: {
       message: string;
@@ -2961,6 +2986,7 @@ export interface components {
        *     Minimum supported admin API version by the admin server
        */
       min_admin_api_version: number;
+      query_engine?: components['schemas']['QueryEngineInformation'] | null;
       /**
        * @description # Admin server version
        *

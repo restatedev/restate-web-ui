@@ -22,9 +22,13 @@ function usesUiFeature(context: { features: Set<string> }, feature: UiFeature) {
 }
 
 export const STATS_SERVER_FEATURE = 'track_status_gauges';
+export const STATS_TABLES_QUERY_ENGINE_FEATURE = 'query_engine.stats_tables';
 
 export function usesStatsTables(context: { features: ReadonlySet<string> }) {
-  return context.features.has(STATS_SERVER_FEATURE);
+  return (
+    context.features.has(STATS_SERVER_FEATURE) ||
+    context.features.has(STATS_TABLES_QUERY_ENGINE_FEATURE)
+  );
 }
 
 export function usesIndexesV1(context: { features: Set<string> }) {
