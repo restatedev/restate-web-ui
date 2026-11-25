@@ -3,6 +3,7 @@ import {
   getMetadataKeys,
   groupServices,
   parseServiceGroupBy,
+  resolveServiceGroupBy,
 } from './serviceGroups';
 import type { OverviewService } from './sortServices';
 
@@ -42,11 +43,21 @@ describe('service groups', () => {
       service('Greeter', 'dp_core'),
     ]);
 
-    expect(keys).toEqual([
-      { key: 'team', count: 2 },
-      { key: 'tier', count: 1 },
-    ]);
+    expect(keys).toEqual(['team', 'tier']);
   });
+
+  it.each([
+    ['meta.team', 'meta.team'],
+    ['meta.owner', 'none'],
+    ['meta.dev.restate.serde.preview.handler', 'none'],
+    ['meta.constructor', 'none'],
+    ['deployment', 'deployment'],
+  ] as const)(
+    'keeps %s only when a service has that key',
+    (groupBy, expected) => {
+      expect(resolveServiceGroupBy(groupBy, ['team', 'tier'])).toBe(expected);
+    },
+  );
 
   it('groups by a metadata key and puts services without it last', () => {
     const groups = groupServices(
@@ -70,6 +81,24 @@ describe('service groups', () => {
       ['payments', ['Refunds', 'Cart']],
       [null, ['Greeter', 'Export']],
     ]);
+  });
+
+  it('ignores keys inherited from Object', () => {
+    const groups = groupServices(
+      [service('Cart', 'dp_core', { team: 'payments' })],
+      'meta.constructor',
+    );
+
+    expect(groups.map(({ value }) => value)).toEqual([null]);
+  });
+
+  it('gives groups ids that no service or handler row can have', () => {
+    const groups = groupServices(
+      [service('group', 'dp_core', { team: 'payments' })],
+      'meta.team',
+    );
+
+    expect(groups[0]?.id.startsWith('\x00')).toBe(true);
   });
 
   it('groups by deployment and orders groups by their label', () => {

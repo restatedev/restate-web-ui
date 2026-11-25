@@ -8,30 +8,25 @@ import {
   DropdownTrigger,
 } from '@restate/ui-dropdown';
 import { Icon, IconName } from '@restate/ui-icons';
-import { useMemo } from 'react';
 import { useOverviewContext } from './OverviewContext';
 import {
   getMetadataGroupKey,
-  getMetadataKeys,
   metadataGroupBy,
   parseServiceGroupBy,
-  useServiceGroupBy,
   type ServiceGroupBy,
 } from './serviceGroups';
+import { useServiceGroupBy } from './useServiceGroupBy';
 
 const BUILT_IN_LABELS: Partial<Record<ServiceGroupBy, string>> = {
   deployment: 'Deployment',
 };
 
 export function ServicesGroupBy() {
-  const { servicesMap, isServiceDetailsPending } = useOverviewContext();
+  const { metadataKeys, isServiceDetailsPending, isServiceDetailsError } =
+    useOverviewContext();
   const [groupBy, setGroupBy] = useServiceGroupBy();
-  const keys = useMemo(
-    () => getMetadataKeys(servicesMap?.values() ?? []),
-    [servicesMap],
-  );
-  const total = servicesMap?.size ?? 0;
   const activeLabel = getMetadataGroupKey(groupBy) ?? BUILT_IN_LABELS[groupBy];
+  const selectGroupBy = (key: string) => setGroupBy(parseServiceGroupBy(key));
 
   return (
     <Dropdown>
@@ -60,26 +55,36 @@ export function ServicesGroupBy() {
           <DropdownMenu
             selectable
             selectedItems={[groupBy]}
-            onSelect={(key) => setGroupBy(parseServiceGroupBy(key))}
+            onSelect={selectGroupBy}
             aria-label="Group services by"
           >
             <DropdownItem value="none">None</DropdownItem>
             <DropdownItem value="deployment">Deployment</DropdownItem>
-            {keys.map(({ key, count }) => (
-              <DropdownItem key={key} value={metadataGroupBy(key)}>
-                <span className="truncate">{key}</span>
-                <span className="ml-auto pl-4 text-xs text-muted tabular-nums group-highlighted:text-inverse-secondary">
-                  {count === total ? 'all' : `${count} of ${total}`}
-                </span>
-              </DropdownItem>
-            ))}
           </DropdownMenu>
         </DropdownSection>
-        {!isServiceDetailsPending && keys.length === 0 && (
-          <p className="max-w-64 px-4 pt-1 pb-3 text-0.5xs text-muted">
-            Add metadata to your services, such as a team or a domain, to group
-            by it.
-          </p>
+        {metadataKeys.length > 0 ? (
+          <DropdownSection title="Service metadata">
+            <DropdownMenu
+              selectable
+              selectedItems={[groupBy]}
+              onSelect={selectGroupBy}
+              aria-label="Group services by metadata"
+            >
+              {metadataKeys.map((key) => (
+                <DropdownItem key={key} value={metadataGroupBy(key)}>
+                  <span className="truncate">{key}</span>
+                </DropdownItem>
+              ))}
+            </DropdownMenu>
+          </DropdownSection>
+        ) : (
+          !isServiceDetailsPending &&
+          !isServiceDetailsError && (
+            <p className="max-w-64 px-4 pt-1 pb-3 text-0.5xs text-muted">
+              Add metadata to your services, such as a team or a domain, to
+              group by it.
+            </p>
+          )
         )}
       </DropdownPopover>
     </Dropdown>

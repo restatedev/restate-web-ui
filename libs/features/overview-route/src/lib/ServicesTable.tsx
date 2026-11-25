@@ -55,16 +55,16 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
 import { sortServices, type OverviewService } from './sortServices';
-import {
-  getMetadataGroupKey,
-  groupServices,
-  useServiceGroupBy,
-} from './serviceGroups';
+import { getMetadataGroupKey, groupServices } from './serviceGroups';
 import {
   isServiceGroupRow,
   renderServiceGroupCell,
   type ServiceGroupTableRow,
 } from './ServiceGroupCells';
+import {
+  useCollapsedServiceGroups,
+  useServiceGroupBy,
+} from './useServiceGroupBy';
 
 type ServiceColumn =
   | 'name'
@@ -87,8 +87,6 @@ interface OverviewHandlerTableRow {
 type OverviewTableRow =
   | OverviewServiceTableRow
   | ServiceGroupTableRow<OverviewServiceTableRow>;
-
-const NO_COLLAPSED_GROUPS = new Set<string>();
 
 const COLUMNS: PanelTableColumn<ServiceColumn>[] = [
   {
@@ -135,8 +133,7 @@ const COLUMNS: PanelTableColumn<ServiceColumn>[] = [
 const tableStyles = tv({
   slots: {
     row: 'cursor-pointer [content-visibility:auto]',
-    groupRow:
-      'cursor-pointer bg-subtle [content-visibility:auto] hover:bg-muted',
+    groupRow: 'cursor-pointer bg-subtle',
     childRow: 'cursor-pointer bg-subtle/30 hover:bg-muted/80',
     identityCell: '[&&&]:overflow-visible',
     serviceIdentity: 'flex min-w-0 items-center gap-2',
@@ -669,12 +666,42 @@ export function ServicesTable() {
   const isGrouped = groupBy !== 'none';
   const isGroupMetadataPending =
     getMetadataGroupKey(groupBy) !== undefined && isServiceDetailsPending;
-  const [collapsed, setCollapsed] = useState(() => ({
+  const groupRows = useMemo<ServiceGroupTableRow<OverviewServiceTableRow>[]>(
+    () =>
+      isGrouped
+        ? groupServices(
+            rows,
+            groupBy,
+            (deploymentId) =>
+              getEndpoint(deploymentsMap?.get(deploymentId)) ?? deploymentId,
+          ).map((group) => ({ id: group.id, kind: 'group', group }))
+        : [],
+    [deploymentsMap, groupBy, isGrouped, rows],
+  );
+  const [collapsedGroups, setCollapsedGroups] = useCollapsedServiceGroups(
     groupBy,
-    ids: NO_COLLAPSED_GROUPS,
-  }));
-  const collapsedGroups =
-    collapsed.groupBy === groupBy ? collapsed.ids : NO_COLLAPSED_GROUPS;
+    filter,
+  );
+  const tableExpandedKeys = useMemo(
+    () =>
+      new Set<Key>([
+        ...visibleExpandedKeys,
+        ...groupRows
+          .filter(({ id }) => !collapsedGroups.has(id))
+          .map(({ id }) => id),
+      ]),
+    [collapsedGroups, groupRows, visibleExpandedKeys],
+  );
+  const items: OverviewTableRow[] = isGrouped ? groupRows : rows;
+  const rowDependencies = [
+    groupBy,
+    visibleExpandedKeys,
+    notCompletedInvocationCounts,
+    serviceStageCounts,
+    serviceIssuesMap,
+    isServiceSummaryLoading,
+    isServiceSummaryError,
+  ];
   const toggleGroup = (groupId: string) => {
     const next = new Set(collapsedGroups);
     if (next.has(groupId)) {
@@ -682,20 +709,120 @@ export function ServicesTable() {
     } else {
       next.add(groupId);
     }
-    setCollapsed({ groupBy, ids: next });
+    setCollapsedGroups(next);
   };
-  const items = useMemo<OverviewTableRow[]>(() => {
-    if (!isGrouped) return rows;
-    return groupServices(
-      rows,
-      groupBy,
-      (deploymentId) =>
-        getEndpoint(deploymentsMap?.get(deploymentId)) ?? deploymentId,
-    ).flatMap((group) => [
-      { id: group.id, kind: 'group' as const, group },
-      ...(collapsedGroups.has(group.id) ? [] : group.services),
-    ]);
-  }, [collapsedGroups, deploymentsMap, groupBy, isGrouped, rows]);
+  const renderHandlerRows = (
+    service: OverviewServiceTableRow,
+    columns: PanelTableColumn[],
+  ) => (
+    <HandlerRows
+      service={service}
+      columns={columns}
+      baseUrl={baseUrl}
+      linkParams={linkParams}
+      handlerInvocations={handlerInvocations}
+      isGrouped={isGrouped}
+    />
+  );
+  const renderServiceCell = (
+    row: OverviewServiceTableRow,
+    column: PanelTableColumn,
+  ) => {
+    if (column.id === 'name') {
+      return (
+        <Cell className={styles.identityCell()}>
+          <ServiceIdentity
+            row={row}
+            isOnboarding={isOnboarding}
+            OnboardingGuide={OnboardingGuide}
+            isGrouped={isGrouped}
+          />
+        </Cell>
+      );
+    }
+    if (column.id === 'invocations') {
+      const invocationCount = notCompletedInvocationCounts.get(row.name) ?? 0;
+      const stageEntries = buildStatusEntries(
+        (serviceStageCounts.get(row.name) ?? []).map(({ name, count }) => ({
+          status: name,
+          count,
+        })),
+      );
+      const nonCompleted = stageEntries.filter(
+        ({ name }) => name !== 'finished',
+      );
+      const serviceInvocationsHref = serviceHref(baseUrl, {
+        service: row.name,
+      });
+      const issues = serviceIssuesMap.get(row.name) ?? [];
+      return (
+        <NotCompletedInvocationsCell
+          label={row.name}
+          count={invocationCount}
+          isLoading={isServiceSummaryLoading}
+          isError={isServiceSummaryError}
+        >
+          <ServiceStatusBar
+            serviceName={row.name}
+            statusEntries={nonCompleted}
+            serviceIssues={issues}
+            isLoading={isServiceSummaryLoading}
+            linkParams={linkParams}
+            rangeLabel="Not completed"
+            ariaLabel={`Not-completed invocation status for ${row.name}`}
+            totalLink={serviceInvocationsHref}
+            onOpenChange={(isOpen) => {
+              if (isOpen && servicesWithHighInbox.has(row.name)) {
+                void loadServiceInboxBreakdown(row.name);
+              }
+            }}
+          />
+        </NotCompletedInvocationsCell>
+      );
+    }
+    if (column.id === 'health') {
+      const issues = serviceIssuesMap.get(row.name) ?? [];
+      return (
+        <Cell className="[&&&]:overflow-visible">
+          {isServiceSummaryLoading ? (
+            <span className="block h-5 w-16 animate-pulse rounded-full bg-emphasis/70" />
+          ) : issues.length > 0 ? (
+            <IssueBadge
+              issues={issues}
+              serviceName={row.name}
+              baseUrl={baseUrl}
+              onOpenChange={(isOpen) => {
+                if (isOpen && servicesWithHighInbox.has(row.name)) {
+                  void loadServiceInboxBreakdown(row.name);
+                }
+              }}
+            />
+          ) : null}
+        </Cell>
+      );
+    }
+    if (column.id === 'created_at') {
+      const deployedAt = deploymentsMap?.get(row.deployment_id)?.created_at;
+      return (
+        <Cell>
+          {deployedAt ? (
+            <RelativeDate date={deployedAt} title="Deployed at" />
+          ) : null}
+        </Cell>
+      );
+    }
+    if (column.id === 'deployment') {
+      return (
+        <Cell className="min-w-0 overflow-hidden">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <LatestRevisionDeployment serviceName={row.name} />
+            <AllRevisions serviceName={row.name} />
+          </div>
+        </Cell>
+      );
+    }
+    return <Cell />;
+  };
 
   return (
     <PanelTable<OverviewTableRow, ServiceColumn>
@@ -705,10 +832,21 @@ export function ServicesTable() {
       isLoading={
         isDeploymentsFetching || isServicesPending || isGroupMetadataPending
       }
-      numOfRows={Math.max(items.length, 6)}
+      numOfRows={Math.max(rows.length + groupRows.length, 6)}
       treeColumn="name"
-      expandedKeys={visibleExpandedKeys}
+      expandedKeys={tableExpandedKeys}
       onExpandedChange={(nextExpandedKeys) => {
+        if (isGrouped) {
+          const nextCollapsed = groupRows
+            .filter(({ id }) => !nextExpandedKeys.has(id))
+            .map(({ id }) => id);
+          if (
+            nextCollapsed.length !== collapsedGroups.size ||
+            nextCollapsed.some((id) => !collapsedGroups.has(id))
+          ) {
+            setCollapsedGroups(new Set(nextCollapsed));
+          }
+        }
         setExpandedKeys((previous) => {
           const next = new Set(previous);
           for (const rowId of rowIds) {
@@ -727,16 +865,17 @@ export function ServicesTable() {
         setServiceSortDescriptor(descriptor ?? null)
       }
       onRowAction={(rowId) => {
-        if (items.some((row) => row.id === rowId && isServiceGroupRow(row))) {
-          toggleGroup(String(rowId));
+        const key = String(rowId);
+        if (groupRows.some(({ id }) => id === key)) {
+          toggleGroup(key);
           return;
         }
-        const service = serviceRows.get(String(rowId));
+        const service = serviceRows.get(key);
         if (service) {
           navigate(serviceHref(baseUrl, { service: service.name }));
           return;
         }
-        const handler = handlerRows.get(String(rowId));
+        const handler = handlerRows.get(key);
         if (handler) {
           navigate(
             serviceHref(baseUrl, {
@@ -750,26 +889,8 @@ export function ServicesTable() {
         isServiceGroupRow(row) ? styles.groupRow() : styles.row()
       }
       rowDataAttributes={() => OVERVIEW_ROW_WAVE}
-      bodyDependencies={[
-        groupBy,
-        collapsedGroups,
-        visibleExpandedKeys,
-        notCompletedInvocationCounts,
-        serviceStageCounts,
-        serviceIssuesMap,
-        isServiceSummaryLoading,
-        isServiceSummaryError,
-      ]}
-      rowDependencies={[
-        groupBy,
-        collapsedGroups,
-        visibleExpandedKeys,
-        notCompletedInvocationCounts,
-        serviceStageCounts,
-        serviceIssuesMap,
-        isServiceSummaryLoading,
-        isServiceSummaryError,
-      ]}
+      bodyDependencies={rowDependencies}
+      rowDependencies={rowDependencies}
       emptyPlaceholder={
         <EmptyState
           icon={IconName.Search}
@@ -777,126 +898,43 @@ export function ServicesTable() {
           description="Try adjusting your search."
         />
       }
-      renderCell={(row, column) => {
-        if (isServiceGroupRow<OverviewServiceTableRow>(row)) {
-          return renderServiceGroupCell({
-            row,
-            column,
-            groupBy,
-            isExpanded: !collapsedGroups.has(row.id),
-            deploymentsMap,
-            stageCounts: serviceStageCounts,
-            serviceIssuesMap,
-            isLoading: isServiceSummaryLoading,
-            isError: isServiceSummaryError,
-          });
-        }
-        if (column.id === 'name') {
-          return (
-            <Cell className={styles.identityCell()}>
-              <ServiceIdentity
-                row={row}
-                isOnboarding={isOnboarding}
-                OnboardingGuide={OnboardingGuide}
-                isGrouped={isGrouped}
-              />
-            </Cell>
-          );
-        }
-        if (column.id === 'invocations') {
-          const invocationCount =
-            notCompletedInvocationCounts.get(row.name) ?? 0;
-          const stageEntries = buildStatusEntries(
-            (serviceStageCounts.get(row.name) ?? []).map(({ name, count }) => ({
-              status: name,
-              count,
-            })),
-          );
-          const nonCompleted = stageEntries.filter(
-            ({ name }) => name !== 'finished',
-          );
-          const serviceInvocationsHref = serviceHref(baseUrl, {
-            service: row.name,
-          });
-          const issues = serviceIssuesMap.get(row.name) ?? [];
-          return (
-            <NotCompletedInvocationsCell
-              label={row.name}
-              count={invocationCount}
-              isLoading={isServiceSummaryLoading}
-              isError={isServiceSummaryError}
-            >
-              <ServiceStatusBar
-                serviceName={row.name}
-                statusEntries={nonCompleted}
-                serviceIssues={issues}
-                isLoading={isServiceSummaryLoading}
-                linkParams={linkParams}
-                rangeLabel="Not completed"
-                ariaLabel={`Not-completed invocation status for ${row.name}`}
-                totalLink={serviceInvocationsHref}
-                onOpenChange={(isOpen) => {
-                  if (isOpen && servicesWithHighInbox.has(row.name)) {
-                    void loadServiceInboxBreakdown(row.name);
-                  }
-                }}
-              />
-            </NotCompletedInvocationsCell>
-          );
-        }
-        if (column.id === 'health') {
-          const issues = serviceIssuesMap.get(row.name) ?? [];
-          return (
-            <Cell className="[&&&]:overflow-visible">
-              {isServiceSummaryLoading ? (
-                <span className="block h-5 w-16 animate-pulse rounded-full bg-emphasis/70" />
-              ) : issues.length > 0 ? (
-                <IssueBadge
-                  issues={issues}
-                  serviceName={row.name}
-                  baseUrl={baseUrl}
-                  onOpenChange={(isOpen) => {
-                    if (isOpen && servicesWithHighInbox.has(row.name)) {
-                      void loadServiceInboxBreakdown(row.name);
-                    }
-                  }}
-                />
-              ) : null}
-            </Cell>
-          );
-        }
-        if (column.id === 'created_at') {
-          const deployedAt = deploymentsMap?.get(row.deployment_id)?.created_at;
-          return (
-            <Cell>
-              {deployedAt ? (
-                <RelativeDate date={deployedAt} title="Deployed at" />
-              ) : null}
-            </Cell>
-          );
-        }
-        if (column.id === 'deployment') {
-          return (
-            <Cell className="min-w-0 overflow-hidden">
-              <div className="flex min-w-0 items-center gap-1.5">
-                <LatestRevisionDeployment serviceName={row.name} />
-                <AllRevisions serviceName={row.name} />
-              </div>
-            </Cell>
-          );
-        }
-        return <Cell />;
-      }}
+      renderCell={(row, column) =>
+        isServiceGroupRow<OverviewServiceTableRow>(row)
+          ? renderServiceGroupCell({
+              row,
+              column,
+              groupBy,
+              chevronClassName: styles.chevron(),
+              deploymentsMap,
+              stageCounts: serviceStageCounts,
+              serviceIssuesMap,
+              isLoading: isServiceSummaryLoading,
+              isError: isServiceSummaryError,
+            })
+          : renderServiceCell(row, column)
+      }
       renderChildRows={(row, columns) =>
-        isServiceGroupRow(row) ? null : (
-          <HandlerRows
-            service={row}
-            columns={columns}
-            baseUrl={baseUrl}
-            linkParams={linkParams}
-            handlerInvocations={handlerInvocations}
-            isGrouped={isGrouped}
-          />
+        isServiceGroupRow<OverviewServiceTableRow>(row) ? (
+          <Collection
+            items={row.group.services}
+            dependencies={[...rowDependencies, columns]}
+          >
+            {(service) => (
+              <Row
+                id={service.id}
+                columns={columns}
+                hasLeadingCell
+                className={styles.row()}
+                dataAttributes={OVERVIEW_ROW_WAVE}
+                dependencies={[...rowDependencies, columns]}
+                childRows={renderHandlerRows(service, columns)}
+              >
+                {(column) => renderServiceCell(service, column)}
+              </Row>
+            )}
+          </Collection>
+        ) : (
+          renderHandlerRows(row, columns)
         )
       }
     />

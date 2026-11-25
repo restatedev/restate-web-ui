@@ -50,9 +50,6 @@
       "path": "../../ui/keyboard/tsconfig.lib.json"
     },
     {
-      "path": "../options/tsconfig.lib.json"
-    },
-    {
       "path": "../../util/feature-flag/tsconfig.lib.json"
     },
     {
@@ -60,6 +57,12 @@
     },
     {
       "path": "../service-target/tsconfig.lib.json"
+    },
+    {
+      "path": "../options/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/badge/tsconfig.lib.json"
     },
     {
       "path": "../system-health/tsconfig.lib.json"

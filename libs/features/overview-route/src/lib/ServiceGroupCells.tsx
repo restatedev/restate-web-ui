@@ -7,8 +7,9 @@ import {
   StackedStatusBar,
 } from '@restate/features-status-chart';
 import type { ServiceIssue } from '@restate/features-system-health';
+import { Badge } from '@restate/ui-badge';
+import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
-import { issueButtonStyles, issueIconStyles } from '@restate/ui-issue-banner';
 import { Cell, type PanelTableColumn } from '@restate/ui-table';
 import { RelativeDate } from '@restate/ui-tooltip';
 import { formatNumber, formatPlurals } from '@restate/util-intl';
@@ -52,16 +53,6 @@ const labelStyles = tv({
   },
 });
 
-const chevronStyles = tv({
-  base: 'h-5 w-5 shrink-0 p-0.5 text-subtle transition-transform',
-  variants: {
-    isExpanded: {
-      true: 'rotate-90',
-      false: '',
-    },
-  },
-});
-
 export function getServiceGroupLabel(
   group: ServiceGroup<OverviewService>,
   groupBy: ServiceGroupBy,
@@ -80,7 +71,7 @@ export function renderServiceGroupCell<T extends OverviewService>({
   row,
   column,
   groupBy,
-  isExpanded,
+  chevronClassName,
   deploymentsMap,
   stageCounts,
   serviceIssuesMap,
@@ -90,7 +81,7 @@ export function renderServiceGroupCell<T extends OverviewService>({
   row: ServiceGroupTableRow<T>;
   column: PanelTableColumn;
   groupBy: ServiceGroupBy;
-  isExpanded: boolean;
+  chevronClassName: string;
   deploymentsMap?: Map<string, Deployment>;
   stageCounts: Map<string, { name: string; count: number }[]>;
   serviceIssuesMap: Map<string, ServiceIssue[]>;
@@ -105,10 +96,9 @@ export function renderServiceGroupCell<T extends OverviewService>({
     return (
       <Cell className="[&&&]:overflow-visible">
         <div className={identity()}>
-          <Icon
-            name={IconName.ChevronRight}
-            className={chevronStyles({ isExpanded })}
-          />
+          <Button slot="chevron" variant="icon" className={chevronClassName}>
+            <Icon name={IconName.ChevronRight} className="h-full w-full" />
+          </Button>
           <span className={labelStyles({ isMissing: group.value === null })}>
             {label}
           </span>
@@ -122,24 +112,18 @@ export function renderServiceGroupCell<T extends OverviewService>({
     const groupIssues = group.services.flatMap(
       (service) => serviceIssuesMap.get(service.name) ?? [],
     );
-    const severity = groupIssues.some((issue) => issue.severity === 'high')
-      ? 'high'
-      : 'low';
+    const hasHighSeverity = groupIssues.some(
+      (issue) => issue.severity === 'high',
+    );
     return (
       <Cell>
         {!isLoading && groupIssues.length > 0 ? (
-          <span
-            className={issueButtonStyles({
-              severity,
-              className: 'inline-flex',
-            })}
+          <Badge
+            size="sm"
+            variant={hasHighSeverity ? 'danger' : 'warning'}
+            className="gap-1 tabular-nums"
           >
-            <span className="relative mx-0.5 flex h-2.5 w-2.5 shrink-0">
-              <Icon
-                name={IconName.TriangleAlert}
-                className={issueIconStyles({ severity })}
-              />
-            </span>
+            <Icon name={IconName.TriangleAlert} className="h-3 w-3 shrink-0" />
             {formatNumber(groupIssues.length)}
             <span className="sr-only">
               {formatPlurals(groupIssues.length, {
@@ -148,7 +132,7 @@ export function renderServiceGroupCell<T extends OverviewService>({
               })}{' '}
               in {label}
             </span>
-          </span>
+          </Badge>
         ) : null}
       </Cell>
     );

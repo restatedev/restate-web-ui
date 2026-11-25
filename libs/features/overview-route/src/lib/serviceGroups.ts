@@ -1,10 +1,7 @@
 import { getVisibleMetadataEntries } from '@restate/features-options';
-import { useCallback } from 'react';
-import { useSearchParams } from 'react-router';
 import type { OverviewService } from './sortServices';
 
 export const SERVICE_GROUP_PARAM = 'group';
-const STORAGE_KEY = 'restate-overview-services-group';
 const METADATA_PREFIX = 'meta.';
 
 export type ServiceGroupBy =
@@ -41,50 +38,12 @@ export function getMetadataGroupKey(groupBy: ServiceGroupBy) {
     : undefined;
 }
 
-function readStoredGroupBy() {
-  try {
-    return window.localStorage.getItem(STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function storeGroupBy(groupBy: ServiceGroupBy) {
-  try {
-    if (groupBy === 'none') {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } else {
-      window.localStorage.setItem(STORAGE_KEY, groupBy);
-    }
-  } catch {
-    return;
-  }
-}
-
-export function useServiceGroupBy() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const groupBy = parseServiceGroupBy(
-    searchParams.get(SERVICE_GROUP_PARAM) ?? readStoredGroupBy(),
-  );
-  const setGroupBy = useCallback(
-    (next: ServiceGroupBy) => {
-      storeGroupBy(next);
-      setSearchParams(
-        (previous) => {
-          const params = new URLSearchParams(previous);
-          if (next === 'none') {
-            params.delete(SERVICE_GROUP_PARAM);
-          } else {
-            params.set(SERVICE_GROUP_PARAM, next);
-          }
-          return params;
-        },
-        { replace: true, preventScrollReset: true },
-      );
-    },
-    [setSearchParams],
-  );
-  return [groupBy, setGroupBy] as const;
+export function resolveServiceGroupBy(
+  groupBy: ServiceGroupBy,
+  metadataKeys: readonly string[],
+): ServiceGroupBy {
+  const key = getMetadataGroupKey(groupBy);
+  return key === undefined || metadataKeys.includes(key) ? groupBy : 'none';
 }
 
 export function getMetadataKeys(services: Iterable<OverviewService>) {
@@ -94,16 +53,20 @@ export function getMetadataKeys(services: Iterable<OverviewService>) {
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
   }
-  return Array.from(counts, ([key, count]) => ({ key, count })).sort(
-    (a, b) => b.count - a.count || a.key.localeCompare(b.key),
-  );
+  return Array.from(counts)
+    .sort(([a, aCount], [b, bCount]) => bCount - aCount || a.localeCompare(b))
+    .map(([key]) => key);
 }
 
 function getGroupValue(service: OverviewService, groupBy: ServiceGroupBy) {
   if (groupBy === 'deployment') return service.deployment_id;
   const key = getMetadataGroupKey(groupBy);
-  const value = key ? service.metadata?.[key]?.trim() : undefined;
-  return value || null;
+  const metadata = service.metadata;
+  const value =
+    key !== undefined && metadata && Object.hasOwn(metadata, key)
+      ? metadata[key]
+      : undefined;
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
 export function groupServices<T extends OverviewService>(
@@ -119,7 +82,7 @@ export function groupServices<T extends OverviewService>(
   const label = (value: string) =>
     groupBy === 'deployment' ? (getDeploymentLabel?.(value) ?? value) : value;
   return Array.from(groups, ([value, groupServices]) => ({
-    id: `group\x00${value ?? ''}`,
+    id: `\x00group:${value ?? ''}`,
     value,
     services: groupServices,
   })).sort((a, b) => {
