@@ -34,7 +34,7 @@ export function ServicesGroupBy() {
         <Button variant="secondary" size="xs" className="shrink-0">
           <span className="flex max-w-44 min-w-0 items-center gap-1.5">
             <Icon name={IconName.Rows3} size="sm" tone="dimmed" />
-            <span className="min-w-0 truncate max-sm:sr-only">
+            <span className="min-w-0 truncate max-lg:sr-only">
               {activeLabel ? (
                 <>
                   Group: <span className="font-medium">{activeLabel}</span>
