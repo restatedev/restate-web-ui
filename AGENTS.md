@@ -11,7 +11,8 @@
 - **Typecheck**: `pnpm nx typecheck <project>` (e.g., `pnpm nx typecheck web-ui`); every project runs `tsc --build tsconfig.json`, covering its runtime and spec configs, after the declarations of the projects it depends on are emitted (into each lib's `dist/`)
 - **Sync project references**: `pnpm nx sync` (CI runs `pnpm nx sync:check`)
 - **Storybook**: `pnpm nx serve storybook` serves the component catalog on `localhost:6006` (set `STORYBOOK_PORT` to change it); `pnpm nx build storybook` builds it into `dist/apps/storybook`. Stories live in `apps/storybook/src`, one file per component family
-- **Design system report**: `pnpm run design-system-report` counts the calls that restyle a shared component through `className`; CI adds it to the Static Analyzis job summary
+- **Storybook tests**: `pnpm nx test storybook` renders every story in jsdom, like the other unit tests, runs its `play` function and checks the result with axe. A render error, a failed `play` or an axe violation fails it. `OPEN_FINDINGS` in `apps/storybook/stories.spec.tsx` skips a known finding's rule only in the story files where it still fires. jsdom has no layout, so a story whose `play` needs real sizes takes `tags: ['!test']`
+- **Design system report**: `pnpm run design-system-report` counts the calls that restyle a shared component through a literal `className` string; computed values, such as a `tv()` call, aren't counted. With `--base <ref>` (for example `pnpm run design-system-report --base origin/main`) it also counts them at the merge base and exits 1 when the total went up, naming the components; a one-for-one swap between components passes. CI runs it with `--base origin/main` in the Static Analyzis job and adds the report to its summary
 - **E2E**: `pnpm nx e2e web-ui-e2e`. It reuses a dev server already running on `UI_PORT` (default 4300), so in a worktree set the same `UI_PORT` as that worktree's dev server
 
 ## Library Generation
