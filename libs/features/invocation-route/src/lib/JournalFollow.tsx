@@ -65,14 +65,14 @@ function canGlide(distance: number) {
 
 export function JournalFollow({
   journalRef,
-  isFollowingRef,
+  onFollowingChange,
   isEnabled,
   isComplete,
   contentSize,
   entryCount,
 }: {
   journalRef: RefObject<HTMLElement | null>;
-  isFollowingRef: RefObject<boolean>;
+  onFollowingChange: (isFollowing: boolean) => void;
   isEnabled: boolean;
   isComplete: boolean;
   contentSize: number;
@@ -88,6 +88,7 @@ export function JournalFollow({
       setIsFollowing(false);
     }
   }
+  const isFollowingRef = useRef(false);
   const ignoreScrollUntil = useRef(0);
   const lastScrollY = useRef(0);
   const lastPointerMove = useRef(0);
@@ -106,11 +107,12 @@ export function JournalFollow({
     (value: boolean) => {
       isFollowingRef.current = value;
       setIsFollowing(value);
+      onFollowingChange(value);
       if (!value) {
         stopGlide();
       }
     },
-    [isFollowingRef, stopGlide],
+    [onFollowingChange, stopGlide],
   );
 
   const scrollToEnd = useCallback(
@@ -157,7 +159,7 @@ export function JournalFollow({
       }
       scrollToEnd(true);
     },
-    [isFollowingRef, journalRef, scrollToEnd],
+    [journalRef, scrollToEnd],
   );
 
   useLayoutEffect(() => {
@@ -175,7 +177,7 @@ export function JournalFollow({
     if (isEnabled) {
       keepUp();
     } else if (isComplete && isFollowingRef.current) {
-      isFollowingRef.current = false;
+      setFollowing(false);
       if (!isBusy(journal, lastPointerMove.current)) {
         scrollToEnd(false);
       }
@@ -185,10 +187,10 @@ export function JournalFollow({
     entryCount,
     isComplete,
     isEnabled,
-    isFollowingRef,
     journalRef,
     keepUp,
     scrollToEnd,
+    setFollowing,
   ]);
 
   useEffect(() => {
@@ -240,15 +242,14 @@ export function JournalFollow({
     window.addEventListener('keydown', onKeyDown);
     journal.addEventListener('pointermove', onPointerMove, { passive: true });
     return () => {
-      isFollowingRef.current = false;
+      setFollowing(false);
       clearTimeout(retryTimer.current);
-      stopGlide();
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
       journal.removeEventListener('pointermove', onPointerMove);
     };
-  }, [isEnabled, isFollowingRef, journalRef, setFollowing, stopGlide]);
+  }, [isEnabled, journalRef, setFollowing]);
 
   if (!isEnabled || isFollowing || isEndInView) {
     return null;

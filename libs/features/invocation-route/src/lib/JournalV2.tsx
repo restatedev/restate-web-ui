@@ -280,8 +280,8 @@ export function JournalV2({
   showIntrospection = true,
 }: JournalV2Props) {
   const [isLive, setIsLive] = useState(true);
-  const isScrollingRef = useRef(false);
-  const isFollowingRef = useRef(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const isUserScrollingRef = useRef(false);
   const [searchParams] = useSearchParams();
   const [invocationIds, setInvocationIds] = useState(() =>
     withTimeline
@@ -303,7 +303,7 @@ export function JournalV2({
     refetchInterval(query) {
       if (
         isLive &&
-        (!isScrollingRef.current || isFollowingRef.current) &&
+        !isUserScrollingRef.current &&
         query.state.status === 'success' &&
         hasPendingJournalUpdates(query.state.data)
       ) {
@@ -476,8 +476,9 @@ export function JournalV2({
     rangeExtractor: renderWindow.rangeExtractor,
   });
   renderWindow.scrollStateRef.current = virtualizer;
+  const isUserScrolling = virtualizer.isScrolling && !isFollowing;
   useLayoutEffect(() => {
-    isScrollingRef.current = virtualizer.isScrolling;
+    isUserScrollingRef.current = isUserScrolling;
   });
   useGrowRenderWindowWhenIdle(
     renderWindow,
@@ -761,7 +762,7 @@ export function JournalV2({
       getEventRelatedInvocationIds(journalAndInvocationData?.journal?.entries),
     [journalAndInvocationData],
   );
-  const referencedInvocationIds = virtualizer.isScrolling
+  const referencedInvocationIds = isUserScrolling
     ? []
     : [
         ...new Set([
@@ -786,7 +787,7 @@ export function JournalV2({
     refetchInterval(query) {
       if (
         isLive &&
-        !isScrollingRef.current &&
+        !isUserScrollingRef.current &&
         hasNonCompletedReferencedInvocations(
           referencedInvocationIds,
           query.state.data?.invocations,
@@ -845,7 +846,7 @@ export function JournalV2({
           invocationIds={journalProblems.childCheck.invocationIds}
           referenceInvocationId={invocationId}
           isLive={isLive}
-          isScrolling={virtualizer.isScrolling}
+          isScrolling={isUserScrolling}
           onProgress={journalProblems.childCheck.onProgress}
         />
       )}
@@ -1148,7 +1149,7 @@ export function JournalV2({
                   <div data-last-failure-fallback aria-hidden className="h-0" />
                   <JournalFollow
                     journalRef={journalEndRef}
-                    isFollowingRef={isFollowingRef}
+                    onFollowingChange={setIsFollowing}
                     isEnabled={
                       isLive &&
                       !areAllInvocationsCompleted &&
