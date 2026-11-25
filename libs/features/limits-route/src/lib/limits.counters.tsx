@@ -345,10 +345,10 @@ function CountersComponent() {
     <div className="relative flex min-h-0 flex-1 flex-col">
       <FlowControlHeader />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'counters')}>
-        <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
+        <ContentPanelToolbar variant="search">
           {pageToolbar}
         </ContentPanelToolbar>
-        <ContentPanelBody className="pb-32">
+        <ContentPanelBody bottomSpace>
           <ContentPanelSection flush>
             <CounterTable
               ariaLabel="Limit counters"

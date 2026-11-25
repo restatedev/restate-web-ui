@@ -94,7 +94,7 @@ export function WorkflowDetails({
       className="-mt-[calc(var(--cp-toolbar-tuck,0px)-1.5rem)]"
       tabs={tabs}
     >
-      <ContentPanelBody className="pb-32">
+      <ContentPanelBody bottomSpace>
         <ContentPanelSection flush>
           {tab === 'recent' ? (
             <WorkflowInvocationsTable

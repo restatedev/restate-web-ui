@@ -330,7 +330,7 @@ function Component() {
           </div>
         )}
         <ContentPanel tabs={serviceTabs}>
-          <ContentPanelBody className="pb-32">
+          <ContentPanelBody bottomSpace>
             <ContentPanelSection flush>
               {stateError ? (
                 <div className="px-4 py-20">

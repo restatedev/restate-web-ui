@@ -409,7 +409,7 @@ export function VirtualObjectInstances({
   ) : undefined;
   return (
     <>
-      <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
+      <ContentPanelToolbar variant="search">
         <Form
           ref={formRef}
           className="hidden min-w-0 flex-auto sm:block"
@@ -484,7 +484,7 @@ export function VirtualObjectInstances({
           <TooltipContent size="sm">Refresh Virtual Objects</TooltipContent>
         </Tooltip>
       </ContentPanelToolbar>
-      <ContentPanelBody className="pb-32">
+      <ContentPanelBody bottomSpace>
         <ContentPanelSection flush>
           <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
             <PanelTable

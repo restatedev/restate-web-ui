@@ -765,7 +765,7 @@ function Component() {
             <TooltipContent size="sm">Clear recorded stats</TooltipContent>
           </Tooltip>
         </ContentPanelToolbar>
-        <ContentPanelBody className="pb-32">
+        <ContentPanelBody bottomSpace>
           <ContentPanelSection flush>
             {explain.error ? (
               <div className="px-2 pt-2">

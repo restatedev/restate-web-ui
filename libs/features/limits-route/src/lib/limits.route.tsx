@@ -719,7 +719,7 @@ function Component() {
       <FlowControlHeader />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'rules')}>
         <ContentPanelToolbar>{pageToolbar}</ContentPanelToolbar>
-        <ContentPanelBody className="pb-32">
+        <ContentPanelBody bottomSpace>
           <ContentPanelSection flush>
             <PanelTable
               aria-label="Limit rules"

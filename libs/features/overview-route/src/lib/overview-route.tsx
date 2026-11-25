@@ -810,7 +810,7 @@ function OverviewContent() {
           ],
         }}
       >
-        <ContentPanelToolbar className="min-w-0 justify-end gap-2 px-1 pb-1">
+        <ContentPanelToolbar variant="search" className="min-w-0">
           <SearchField
             aria-label={
               mode === 'services'

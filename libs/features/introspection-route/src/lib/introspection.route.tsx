@@ -133,7 +133,7 @@ function Component() {
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <ContentPanel>
-        <ContentPanelBody className="pb-32">
+        <ContentPanelBody bottomSpace>
           <ContentPanelSection flush>
             <IntrospectionServicesContext value={services}>
               <PanelTable

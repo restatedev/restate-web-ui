@@ -131,6 +131,9 @@ const styles = tv({
     flush: {
       true: { sectionContent: 'pt-0' },
     },
+    bottomSpace: {
+      true: { body: 'pb-32' },
+    },
   },
 });
 
@@ -146,6 +149,12 @@ const tabStyles = tv({
 
 const toolbarContentStyles = tv({
   base: 'flex min-h-9 w-full items-end justify-end gap-1.5 pr-1 pb-1 pl-2',
+  variants: {
+    variant: {
+      default: '',
+      search: 'gap-2 px-1',
+    },
+  },
 });
 
 const headerContentStyles = tv({
@@ -789,16 +798,23 @@ function ContentPanelSlotElement({
   return <div ref={setSlotElement} data-cp-slot={slot} className={className} />;
 }
 
+export type ContentPanelToolbarVariant = 'default' | 'search';
+
+export interface ContentPanelToolbarProps extends ComponentPropsWithoutRef<'div'> {
+  variant?: ContentPanelToolbarVariant;
+}
+
 export function ContentPanelToolbar({
   children,
   className,
+  variant,
   ...props
-}: PropsWithChildren<ComponentPropsWithoutRef<'div'>>) {
+}: PropsWithChildren<ContentPanelToolbarProps>) {
   const ctx = use(ContentPanelContext);
   const element = ctx?.getSlot('toolbar');
 
   const content = (
-    <div {...props} className={toolbarContentStyles({ className })}>
+    <div {...props} className={toolbarContentStyles({ variant, className })}>
       {children}
     </div>
   );
@@ -835,12 +851,17 @@ export function ContentPanelHeader({
   return createPortal(content, element);
 }
 
+export interface ContentPanelBodyProps extends ComponentPropsWithoutRef<'div'> {
+  bottomSpace?: boolean;
+}
+
 export function ContentPanelBody({
   children,
   className,
+  bottomSpace,
   ...props
-}: PropsWithChildren<ComponentPropsWithoutRef<'div'>>) {
-  const { body } = styles();
+}: PropsWithChildren<ContentPanelBodyProps>) {
+  const { body } = styles({ bottomSpace });
   return (
     <div {...props} className={body({ className })}>
       {children}
