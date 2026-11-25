@@ -10,12 +10,16 @@ import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { formatPlurals } from '@restate/util-intl';
 
+const AIM_TARGETS =
+  'a[href], button, [role="button"], [role="link"], [aria-expanded]';
+const AIM_WAIT_MS = 1000;
 const END_SLACK_PX = 8;
 const IGNORE_SCROLL_MS = 150;
-const POINTER_REST_MS = 1000;
 const RETRY_MS = 500;
-const GLIDE_MS = 200;
+const SPRING_RATE = 7;
 const UP_KEYS = new Set(['ArrowUp', 'PageUp', 'Home']);
+
+type Aim = { target: Element | null; movedAt: number; isPressed: boolean };
 
 function distanceBelowViewport(element: HTMLElement) {
   return element.getBoundingClientRect().bottom - window.innerHeight;
@@ -52,12 +56,17 @@ function hasOpenOverlay() {
   );
 }
 
-function isBusy(journal: HTMLElement, lastPointerMove: number) {
+function isAiming(journal: HTMLElement, aim: Aim) {
   return (
-    performance.now() - lastPointerMove < POINTER_REST_MS ||
-    hasSelectionIn(journal) ||
-    hasOpenOverlay()
+    aim.isPressed ||
+    (aim.target !== null &&
+      performance.now() - aim.movedAt < AIM_WAIT_MS &&
+      journal.contains(aim.target))
   );
+}
+
+function isBusy(journal: HTMLElement, aim: Aim) {
+  return hasSelectionIn(journal) || hasOpenOverlay() || isAiming(journal, aim);
 }
 
 function canGlide(distance: number) {
@@ -94,12 +103,15 @@ export function JournalFollow({
   }
   const isFollowingRef = useRef(false);
   const ignoreScrollUntil = useRef(0);
-  const lastPointerMove = useRef(0);
   const retryTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const glideFrame = useRef<number>(undefined);
+  const velocity = useRef(0);
+  const aim = useRef<Aim>({ target: null, movedAt: 0, isPressed: false });
   const entryCountRef = useRef(entryCount);
 
   const stopGlide = useCallback(() => {
+    velocity.current = 0;
+    clearTimeout(retryTimer.current);
     if (glideFrame.current !== undefined) {
       cancelAnimationFrame(glideFrame.current);
       glideFrame.current = undefined;
@@ -124,29 +136,56 @@ export function JournalFollow({
       if (!journal) {
         return;
       }
-      stopGlide();
       const below = distanceBelowViewport(journal);
+      if (shouldGlide && glideFrame.current !== undefined && canGlide(below)) {
+        return;
+      }
+      stopGlide();
       if (below <= 0) {
         return;
       }
-      const from = window.scrollY;
       if (!shouldGlide || !canGlide(below)) {
-        window.scrollTo({ top: from + below, behavior: 'instant' });
+        window.scrollTo({ top: window.scrollY + below, behavior: 'instant' });
         return;
       }
-      const start = performance.now();
-      const startTop = pageTop(journal);
-      const step = () => {
-        const progress = Math.min(1, (performance.now() - start) / GLIDE_MS);
-        const shifted = pageTop(journal) - startTop;
-        window.scrollTo({
-          top: from + shifted + below * (1 - (1 - progress) ** 3),
-          behavior: 'instant',
-        });
-        glideFrame.current =
-          progress < 1 ? requestAnimationFrame(step) : undefined;
+      let last = 0;
+      let position: number | undefined;
+      let written = 0;
+      const glide = () => {
+        if (isBusy(journal, aim.current)) {
+          velocity.current = 0;
+          last = 0;
+          position = undefined;
+          glideFrame.current = undefined;
+          retryTimer.current = setTimeout(() => {
+            glideFrame.current = requestAnimationFrame(glide);
+          }, RETRY_MS);
+          return;
+        }
+        const now = performance.now();
+        const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
+        last = now;
+        const y = window.scrollY;
+        position = position === undefined ? y : position + y - written;
+        const target = y + distanceBelowViewport(journal);
+        const remaining = target - position;
+        if (remaining <= 0.5) {
+          if (target > y) {
+            window.scrollTo({ top: target, behavior: 'instant' });
+          }
+          velocity.current = 0;
+          glideFrame.current = undefined;
+          return;
+        }
+        const decay = Math.exp(-SPRING_RATE * dt);
+        const pull = velocity.current - SPRING_RATE * remaining;
+        velocity.current = (velocity.current - SPRING_RATE * pull * dt) * decay;
+        position = target + (pull * dt - remaining) * decay;
+        window.scrollTo({ top: position, behavior: 'instant' });
+        written = window.scrollY;
+        glideFrame.current = requestAnimationFrame(glide);
       };
-      glideFrame.current = requestAnimationFrame(step);
+      glideFrame.current = requestAnimationFrame(glide);
     },
     [journalRef, stopGlide],
   );
@@ -158,7 +197,7 @@ export function JournalFollow({
       if (!journal || !isFollowingRef.current) {
         return;
       }
-      if (isBusy(journal, lastPointerMove.current)) {
+      if (isBusy(journal, aim.current)) {
         retryTimer.current = setTimeout(keepUp, RETRY_MS);
         return;
       }
@@ -183,7 +222,7 @@ export function JournalFollow({
       keepUp();
     } else if (isComplete && isFollowingRef.current) {
       setFollowing(false);
-      if (!isBusy(journal, lastPointerMove.current)) {
+      if (!isBusy(journal, aim.current)) {
         scrollToEnd(false);
       }
     }
@@ -245,22 +284,49 @@ export function JournalFollow({
         setFollowing(false);
       }
     };
-    const onPointerMove = () => {
-      lastPointerMove.current = performance.now();
+    const onPointer = (event: PointerEvent) => {
+      if (event.pointerType === 'touch') {
+        return;
+      }
+      const wasAiming = isAiming(journal, aim.current);
+      const target = event.target instanceof Element ? event.target : null;
+      aim.current = {
+        target: target?.closest(AIM_TARGETS) ?? null,
+        movedAt: performance.now(),
+        isPressed:
+          event.type === 'pointerdown'
+            ? journal.contains(target)
+            : event.type === 'pointermove' &&
+              event.buttons > 0 &&
+              aim.current.isPressed,
+      };
+      if (wasAiming && !isAiming(journal, aim.current)) {
+        keepUp();
+      }
     };
+    const pointerEvents = [
+      'pointermove',
+      'pointerdown',
+      'pointerup',
+      'pointercancel',
+    ] as const;
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('wheel', onWheel, { passive: true });
     window.addEventListener('keydown', onKeyDown);
-    journal.addEventListener('pointermove', onPointerMove, { passive: true });
+    for (const type of pointerEvents) {
+      window.addEventListener(type, onPointer, { passive: true });
+    }
     return () => {
       setFollowing(false);
       clearTimeout(retryTimer.current);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
-      journal.removeEventListener('pointermove', onPointerMove);
+      for (const type of pointerEvents) {
+        window.removeEventListener(type, onPointer);
+      }
     };
-  }, [isEnabled, journalRef, setFollowing]);
+  }, [isEnabled, journalRef, keepUp, setFollowing]);
 
   if (!isEnabled || isFollowing || isEndInView) {
     return null;
