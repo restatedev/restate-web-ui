@@ -90,7 +90,6 @@ export function JournalFollow({
   }
   const isFollowingRef = useRef(false);
   const ignoreScrollUntil = useRef(0);
-  const lastScrollY = useRef(0);
   const lastPointerMove = useRef(0);
   const retryTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const glideFrame = useRef<number>(undefined);
@@ -198,24 +197,31 @@ export function JournalFollow({
     if (!isEnabled || !journal) {
       return;
     }
-    lastScrollY.current = window.scrollY;
+    let lastY = window.scrollY;
+    let lastTop = journal.getBoundingClientRect().top + lastY;
     const onScroll = () => {
       const y = window.scrollY;
-      const previousY = lastScrollY.current;
-      lastScrollY.current = y;
-      const isAtEnd = distanceBelowViewport(journal) <= END_SLACK_PX;
+      const rect = journal.getBoundingClientRect();
+      const top = rect.top + y;
+      const moved = y - lastY;
+      const shifted = top - lastTop;
+      const scrolled = moved - shifted;
+      lastY = y;
+      lastTop = top;
+      const isAtEnd = rect.bottom - window.innerHeight <= END_SLACK_PX;
       setIsEndInView(isAtEnd);
       if (isAtEnd) {
         setSeenCount(entryCountRef.current);
       }
       if (isFollowingRef.current) {
         if (
-          y < previousY - 1 &&
+          moved < -1 &&
+          scrolled < -1 &&
           performance.now() >= ignoreScrollUntil.current
         ) {
           setFollowing(false);
         }
-      } else if (isAtEnd && y > previousY) {
+      } else if (isAtEnd && moved > 0 && scrolled > 0) {
         setFollowing(true);
       }
     };
