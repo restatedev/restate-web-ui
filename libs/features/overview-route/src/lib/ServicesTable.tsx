@@ -908,6 +908,7 @@ export function ServicesTable() {
               row,
               column,
               groupBy,
+              identityCellClassName: styles.identityCell(),
               chevronClassName: styles.chevron(),
               deploymentsMap,
               stageCounts: serviceStageCounts,

@@ -40,6 +40,7 @@ const styles = tv({
     identity: 'flex min-w-0 items-center gap-2',
     count:
       'rounded bg-muted px-1 py-px text-2xs font-medium text-muted tabular-nums',
+    issueCount: 'flex items-center gap-1 tabular-nums',
   },
 });
 
@@ -71,6 +72,7 @@ export function renderServiceGroupCell<T extends OverviewService>({
   row,
   column,
   groupBy,
+  identityCellClassName,
   chevronClassName,
   deploymentsMap,
   stageCounts,
@@ -81,6 +83,7 @@ export function renderServiceGroupCell<T extends OverviewService>({
   row: ServiceGroupTableRow<T>;
   column: PanelTableColumn;
   groupBy: ServiceGroupBy;
+  identityCellClassName: string;
   chevronClassName: string;
   deploymentsMap?: Map<string, Deployment>;
   stageCounts: Map<string, { name: string; count: number }[]>;
@@ -89,12 +92,12 @@ export function renderServiceGroupCell<T extends OverviewService>({
   isError: boolean;
 }): ReactElement {
   const { group } = row;
-  const { identity, count } = styles();
+  const { identity, count, issueCount } = styles();
   const label = getServiceGroupLabel(group, groupBy, deploymentsMap);
 
   if (column.id === 'name') {
     return (
-      <Cell className="[&&&]:overflow-visible">
+      <Cell className={identityCellClassName}>
         <div className={identity()}>
           <Button slot="chevron" variant="icon" className={chevronClassName}>
             <Icon name={IconName.ChevronRight} className="h-full w-full" />
@@ -118,13 +121,11 @@ export function renderServiceGroupCell<T extends OverviewService>({
     return (
       <Cell>
         {!isLoading && groupIssues.length > 0 ? (
-          <Badge
-            size="sm"
-            variant={hasHighSeverity ? 'danger' : 'warning'}
-            className="gap-1 tabular-nums"
-          >
-            <Icon name={IconName.TriangleAlert} className="h-3 w-3 shrink-0" />
-            {formatNumber(groupIssues.length)}
+          <Badge size="sm" intent={hasHighSeverity ? 'danger' : 'warning'}>
+            <span className={issueCount()}>
+              <Icon name={IconName.TriangleAlert} size="xs" />
+              {formatNumber(groupIssues.length)}
+            </span>
             <span className="sr-only">
               {formatPlurals(groupIssues.length, {
                 one: 'issue',
