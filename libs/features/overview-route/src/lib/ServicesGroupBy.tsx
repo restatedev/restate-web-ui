@@ -31,7 +31,11 @@ export function ServicesGroupBy() {
   return (
     <Dropdown>
       <DropdownTrigger>
-        <Button variant="secondary" size="xs" className="shrink-0">
+        <Button
+          variant="secondary"
+          size="xs"
+          className="shrink-0 text-0.5xs leading-4"
+        >
           <span className="flex max-w-44 min-w-0 items-center gap-1.5">
             <Icon name={IconName.Rows3} size="sm" tone="dimmed" />
             <span className="min-w-0 truncate max-lg:sr-only">
