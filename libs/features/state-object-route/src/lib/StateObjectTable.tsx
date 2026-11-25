@@ -263,6 +263,7 @@ export function StateObjectTable({
     <PanelTable
       aria-label="State"
       columns={columns}
+      columnWidthsStorageKey="state-objects-user-col-widths"
       items={items}
       isLoading={isLoading}
       numOfRows={numOfRows}
@@ -389,6 +390,7 @@ export function StateEntriesTable({
     <PanelTable
       aria-label="State"
       columns={columns}
+      columnWidthsStorageKey="state-entries-user-col-widths"
       items={items}
       isLoading={entriesQuery.isPending}
       error={entriesQuery.error}

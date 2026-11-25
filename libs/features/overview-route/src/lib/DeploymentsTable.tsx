@@ -358,6 +358,7 @@ export function DeploymentsTable() {
       <PanelTable
         aria-label="Deployments"
         columns={columns}
+        columnWidthsStorageKey="deployments-user-col-widths"
         items={deployments}
         selectionMode="multiple"
         selectedKeys={selectedDeploymentIds}

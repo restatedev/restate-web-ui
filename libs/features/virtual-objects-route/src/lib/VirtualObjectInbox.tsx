@@ -273,6 +273,7 @@ function InboxEntriesTable({
       <PanelTable
         aria-label={ariaLabel}
         columns={INBOX_COLUMNS}
+        columnWidthsStorageKey="virtual-object-inbox-user-col-widths"
         items={rows}
         isLoading={isPending}
         error={error}

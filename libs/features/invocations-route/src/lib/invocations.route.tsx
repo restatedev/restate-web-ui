@@ -799,6 +799,7 @@ function Component() {
                   </>
                 }
                 columns={panelColumns}
+                columnWidthsStorageKey="invocations-user-col-widths"
                 items={tableItems}
                 selectionMode="multiple"
                 selectedKeys={selectedInvocationIds}

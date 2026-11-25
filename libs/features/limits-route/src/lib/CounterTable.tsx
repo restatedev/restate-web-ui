@@ -409,6 +409,7 @@ export function CounterTable({
       aria-label={ariaLabel}
       bodyKey={bodyKey}
       columns={columns}
+      columnWidthsStorageKey="counters-user-col-widths"
       items={rows}
       isLoading={isLoading}
       error={error}

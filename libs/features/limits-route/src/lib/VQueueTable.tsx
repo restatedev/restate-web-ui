@@ -613,6 +613,7 @@ export function VQueueTable({
       aria-label="VQueues"
       bodyKey={bodyKey}
       columns={COLUMNS}
+      columnWidthsStorageKey="vqueues-user-col-widths"
       items={rows}
       isLoading={isLoading}
       error={error}

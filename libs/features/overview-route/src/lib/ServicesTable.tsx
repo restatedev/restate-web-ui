@@ -619,6 +619,7 @@ export function ServicesTable() {
     <PanelTable
       aria-label="Services and handlers"
       columns={COLUMNS}
+      columnWidthsStorageKey="services-user-col-widths"
       items={rows}
       isLoading={isDeploymentsFetching || isServicesPending}
       numOfRows={Math.max(rows.length, 6)}
