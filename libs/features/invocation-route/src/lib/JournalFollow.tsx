@@ -12,9 +12,8 @@ import { formatPlurals } from '@restate/util-intl';
 
 const END_SLACK_PX = 8;
 const IGNORE_SCROLL_MS = 150;
-const POINTER_REST_MS = 1000;
 const RETRY_MS = 500;
-const GLIDE_MS = 200;
+const SPRING_RATE = 7;
 const UP_KEYS = new Set(['ArrowUp', 'PageUp', 'Home']);
 
 function distanceBelowViewport(element: HTMLElement) {
@@ -52,12 +51,8 @@ function hasOpenOverlay() {
   );
 }
 
-function isBusy(journal: HTMLElement, lastPointerMove: number) {
-  return (
-    performance.now() - lastPointerMove < POINTER_REST_MS ||
-    hasSelectionIn(journal) ||
-    hasOpenOverlay()
-  );
+function isBusy(journal: HTMLElement) {
+  return hasSelectionIn(journal) || hasOpenOverlay();
 }
 
 function canGlide(distance: number) {
@@ -94,12 +89,14 @@ export function JournalFollow({
   }
   const isFollowingRef = useRef(false);
   const ignoreScrollUntil = useRef(0);
-  const lastPointerMove = useRef(0);
   const retryTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const glideFrame = useRef<number>(undefined);
+  const velocity = useRef(0);
   const entryCountRef = useRef(entryCount);
 
   const stopGlide = useCallback(() => {
+    velocity.current = 0;
+    clearTimeout(retryTimer.current);
     if (glideFrame.current !== undefined) {
       cancelAnimationFrame(glideFrame.current);
       glideFrame.current = undefined;
@@ -124,29 +121,55 @@ export function JournalFollow({
       if (!journal) {
         return;
       }
-      stopGlide();
       const below = distanceBelowViewport(journal);
+      if (shouldGlide && glideFrame.current !== undefined && canGlide(below)) {
+        return;
+      }
+      stopGlide();
       if (below <= 0) {
         return;
       }
-      const from = window.scrollY;
       if (!shouldGlide || !canGlide(below)) {
-        window.scrollTo({ top: from + below, behavior: 'instant' });
+        window.scrollTo({ top: window.scrollY + below, behavior: 'instant' });
         return;
       }
-      const start = performance.now();
-      const startTop = pageTop(journal);
-      const step = () => {
-        const progress = Math.min(1, (performance.now() - start) / GLIDE_MS);
-        const shifted = pageTop(journal) - startTop;
+      let last = 0;
+      const glide = () => {
+        if (isBusy(journal)) {
+          velocity.current = 0;
+          last = 0;
+          glideFrame.current = undefined;
+          retryTimer.current = setTimeout(() => {
+            glideFrame.current = requestAnimationFrame(glide);
+          }, RETRY_MS);
+          return;
+        }
+        const now = performance.now();
+        const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
+        last = now;
+        const remaining = distanceBelowViewport(journal);
+        if (remaining <= 0.5) {
+          if (remaining > 0) {
+            window.scrollTo({
+              top: window.scrollY + remaining,
+              behavior: 'instant',
+            });
+          }
+          velocity.current = 0;
+          glideFrame.current = undefined;
+          return;
+        }
+        const decay = Math.exp(-SPRING_RATE * dt);
+        const pull = velocity.current - SPRING_RATE * remaining;
+        const offset = (pull * dt - remaining) * decay;
+        velocity.current = (velocity.current - SPRING_RATE * pull * dt) * decay;
         window.scrollTo({
-          top: from + shifted + below * (1 - (1 - progress) ** 3),
+          top: window.scrollY + offset + remaining,
           behavior: 'instant',
         });
-        glideFrame.current =
-          progress < 1 ? requestAnimationFrame(step) : undefined;
+        glideFrame.current = requestAnimationFrame(glide);
       };
-      glideFrame.current = requestAnimationFrame(step);
+      glideFrame.current = requestAnimationFrame(glide);
     },
     [journalRef, stopGlide],
   );
@@ -158,7 +181,7 @@ export function JournalFollow({
       if (!journal || !isFollowingRef.current) {
         return;
       }
-      if (isBusy(journal, lastPointerMove.current)) {
+      if (isBusy(journal)) {
         retryTimer.current = setTimeout(keepUp, RETRY_MS);
         return;
       }
@@ -183,7 +206,7 @@ export function JournalFollow({
       keepUp();
     } else if (isComplete && isFollowingRef.current) {
       setFollowing(false);
-      if (!isBusy(journal, lastPointerMove.current)) {
+      if (!isBusy(journal)) {
         scrollToEnd(false);
       }
     }
@@ -245,20 +268,15 @@ export function JournalFollow({
         setFollowing(false);
       }
     };
-    const onPointerMove = () => {
-      lastPointerMove.current = performance.now();
-    };
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('wheel', onWheel, { passive: true });
     window.addEventListener('keydown', onKeyDown);
-    journal.addEventListener('pointermove', onPointerMove, { passive: true });
     return () => {
       setFollowing(false);
       clearTimeout(retryTimer.current);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
-      journal.removeEventListener('pointermove', onPointerMove);
     };
   }, [isEnabled, journalRef, setFollowing]);
 
