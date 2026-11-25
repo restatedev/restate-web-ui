@@ -5,10 +5,11 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import ts from 'typescript';
 
-const { values: options } = parseArgs({
+const { values: options, positionals } = parseArgs({
   options: { base: { type: 'string' } },
+  allowPositionals: true,
 });
-const SOURCES = ['libs', 'apps/web-ui/app'];
+const SOURCES = positionals.length ? positionals : ['libs', 'apps/web-ui/app'];
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'out-tsc', '.react-router']);
 const SIZED = new Set(['Icon', 'Spinner', 'Button']);
 const PLACEMENT = [
