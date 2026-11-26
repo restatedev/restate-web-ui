@@ -134,7 +134,7 @@ const STATUS_LABEL: Record<InvocationComputedStatus2, string> = {
   failed: 'Failed',
   cancelled: 'Cancelled',
   killed: 'Killed',
-  'backing-off': 'Backing-off',
+  'backing-off': 'Backing off',
   paused: 'Paused',
 };
 

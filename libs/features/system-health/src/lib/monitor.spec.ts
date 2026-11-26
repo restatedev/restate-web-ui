@@ -58,13 +58,13 @@ describe('createSystemHealthMonitor', () => {
 
     await fetchSummary(client, 'all', SUMMARY_WITH_PENDING_BACKLOG);
     expect(issueLabels()).toEqual([
-      "More than 5% of inflight invocations haven't started yet",
+      "More than 5% of unfinished invocations haven't started yet",
     ]);
 
     await fetchSummary(client, 'deployments', DEPLOYMENTS_SUMMARY);
     await fetchSummary(client, 'count', { ...DEPLOYMENTS_SUMMARY, total: 3 });
     expect(issueLabels()).toEqual([
-      "More than 5% of inflight invocations haven't started yet",
+      "More than 5% of unfinished invocations haven't started yet",
     ]);
   });
 });

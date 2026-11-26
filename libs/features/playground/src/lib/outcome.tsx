@@ -189,7 +189,7 @@ const STATE_LABEL: Record<InvocationState, string> = {
   succeeded: 'Succeeded',
   failed: 'Failed',
   running: 'Running',
-  retrying: 'Retrying',
+  retrying: 'Backing off',
   paused: 'Paused',
   scheduled: 'Scheduled',
   ready: 'Waiting to start',

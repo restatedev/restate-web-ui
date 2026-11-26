@@ -289,7 +289,7 @@ const STATUS_INTENT = {
 const STATUS_LABEL: Record<InvocationStatus, string> = {
   running: 'Running',
   suspended: 'Suspended',
-  'backing-off': 'Backing-off',
+  'backing-off': 'Backing off',
   paused: 'Paused',
   succeeded: 'Succeeded',
   failed: 'Failed',

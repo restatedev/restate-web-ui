@@ -30,7 +30,7 @@ export function ServiceType({
         variant="indicator-button"
         className="z-10"
       >
-        {type}
+        {type === 'VirtualObject' ? 'Virtual Object' : type}
       </ServiceTypeExplainer>
     </Badge>
   );

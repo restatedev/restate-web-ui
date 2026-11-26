@@ -67,7 +67,7 @@ const schema = [
       { value: 'scheduled', label: 'Scheduled' },
       { value: 'new', label: 'New' },
       { value: 'running', label: 'Running' },
-      { value: 'backing-off', label: 'Backing-off' },
+      { value: 'backing-off', label: 'Backing off' },
       { value: 'suspended', label: 'Suspended' },
       { value: 'paused', label: 'Paused' },
       { value: 'killed', label: 'Killed' },
