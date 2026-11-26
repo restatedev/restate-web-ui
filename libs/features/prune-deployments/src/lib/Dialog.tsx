@@ -250,7 +250,7 @@ function DeleteDeploymentsDialogContent({
           <DialogTitle>
             {isSelectedMode
               ? 'Delete selected deployments'
-              : 'Prune drained deployments'}
+              : 'Delete drained deployments'}
           </DialogTitle>
           {isLoading ? (
             <DeploymentListSkeleton />
@@ -274,20 +274,24 @@ function DeleteDeploymentsDialogContent({
                         one: 'deployment',
                         other: 'deployments',
                       })}{' '}
-                      below and confirm if you want to delete them.
+                      below and confirm if you want to delete{' '}
+                      {formatPlurals(availableDeploymentIds.length, {
+                        one: 'it',
+                        other: 'them',
+                      })}
+                      .
                     </>
                   ) : (
                     <>
-                      These {formatNumber(availableDeploymentIds.length)}{' '}
-                      drained{' '}
                       {formatPlurals(availableDeploymentIds.length, {
-                        one: 'deployment',
-                        other: 'deployments',
+                        one: 'This drained deployment is',
+                        other: `These ${formatNumber(availableDeploymentIds.length)} drained deployments are`,
                       })}{' '}
-                      are no longer serving traffic. Review the list below and
+                      no longer serving traffic. Review the list below and
                       confirm if you want to proceed.
                     </>
-                  )}
+                  )}{' '}
+                  This removes the deployment registrations from Restate.
                 </p>
                 {activeDeploymentIds.length > 0 && (
                   <Callout intent="warning" title="Active deployments selected">
@@ -344,7 +348,7 @@ function DeleteDeploymentsDialogContent({
                   isPending={isRunning}
                   disabled={!canSubmit}
                 >
-                  {isSelectedMode ? 'Delete deployments' : 'Prune deployments'}
+                  Delete deployments
                 </SubmitButton>
               </div>
             </div>

@@ -501,7 +501,7 @@ function EndpointForm() {
                   <CustomRadio
                     value="http"
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
-                    aria-label="Http endpoint"
+                    aria-label="HTTP endpoint"
                   >
                     <Icon name={IconName.Http} size="md" />
                   </CustomRadio>
@@ -529,7 +529,7 @@ function EndpointForm() {
                   <CustomRadio
                     value="lambda"
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
-                    aria-label="AWS lambda"
+                    aria-label="AWS Lambda"
                   >
                     <Icon name={IconName.Lambda} size="md" />
                   </CustomRadio>

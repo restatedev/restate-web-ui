@@ -138,7 +138,7 @@ export function VirtualObjectInstanceTarget({
         href={showService && serviceHref ? href : undefined}
         aria-label={
           showService && serviceHref && href
-            ? `Virtual object instance ${copyText}`
+            ? `Virtual Object instance ${copyText}`
             : undefined
         }
       >
@@ -166,7 +166,7 @@ export function VirtualObjectInstanceTarget({
         variant={variant}
         density={resolvedDensity}
         href={!showService || !serviceHref ? href : undefined}
-        aria-label={href ? `Virtual object instance ${copyText}` : undefined}
+        aria-label={href ? `Virtual Object instance ${copyText}` : undefined}
         className={containerClassName}
       >
         {chips}

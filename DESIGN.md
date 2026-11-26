@@ -153,7 +153,7 @@ Depth comes from tonal layers, not shadows: `sunken` < `canvas` < `overlay` < `s
 ## Voice & Content Strategy
 
 - **Sentence case everywhere:** headings, buttons, menu items, labels ("Register deployment", "Create key").
-- **Terms match the API, the CLI and the docs.** Rename a term everywhere at once or not at all. To tell two similar things apart, add a qualifier ("admin URL", "ingress URL"), not a new word.
+- **Terms match the API, the CLI and the docs:** use the words in [`TERMINOLOGY.md`](TERMINOLOGY.md). Rename a term everywhere at once or not at all. To tell two similar things apart, add a qualifier ("admin URL", "ingress URL"), not a new word.
 - **Action labels** are a verb plus what it acts on: "Cancel invocation", "Delete deployment". `ActionText` adds "…" when the action opens a follow-up step.
 - **Hover notes:** one short sentence without a final period, no title that repeats the trigger, "Learn more" as a plain link. Explain only terms a reader may not know; don't add (i) icons after every line.
 - **Dialogs:** a create dialog says in one line who or what it's for, then lists what it can do. A delete confirmation lists what happens: when it stops working, what stays, and that it can't be undone.
