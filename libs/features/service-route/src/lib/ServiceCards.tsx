@@ -36,6 +36,7 @@ import {
   CardRow,
 } from '@restate/ui-card';
 import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
 import {
   Popover,
   PopoverContent,
@@ -52,6 +53,10 @@ import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { formatConfigDuration, type ServiceConfig } from './serviceConfig';
 import { Skeleton } from '@restate/ui-loading';
+
+const RETRY_POLICY_DOCS =
+  'https://docs.restate.dev/services/configuration#retries';
+const STATE_DOCS = 'https://docs.restate.dev/services/configuration#state';
 
 const captionStyles = tv({
   base: 'flex min-w-0 items-center gap-1 text-2xs font-medium text-subtle',
@@ -413,6 +418,10 @@ const configPopoverIllustrationStyles = tv({
   defaultVariants: { frame: 'boxed', trailing: false },
 });
 
+const setInCodeStyles = tv({
+  base: 'ml-auto flex shrink-0 items-center gap-1 text-2xs font-medium text-subtle',
+});
+
 function ConfigPopover({
   title,
   editParam,
@@ -423,6 +432,7 @@ function ConfigPopover({
   explanation,
   warnings,
   size,
+  setInCodeDocs,
 }: {
   title: string;
   editParam?: string;
@@ -433,6 +443,7 @@ function ConfigPopover({
   explanation?: ReactNode;
   warnings?: ReactNode[];
   size?: 'default' | 'wide';
+  setInCodeDocs?: string;
 }) {
   const { close } = usePopover();
   const [, setSearchParams] = useSearchParams();
@@ -458,6 +469,12 @@ function ConfigPopover({
             <Icon name={IconName.Pencil} size="xs" />
             Edit
           </Button>
+        )}
+        {setInCodeDocs && (
+          <span className={setInCodeStyles()}>
+            <Icon name={IconName.Code} size="xs" />
+            Set in code
+          </span>
         )}
       </div>
       {warnings?.map((warning, index) => (
@@ -486,7 +503,26 @@ function ConfigPopover({
           {explanation}
         </div>
       )}
+      {setInCodeDocs && <SetInCodeNote href={setInCodeDocs} />}
     </div>
+  );
+}
+
+function SetInCodeNote({ href }: { href: string }) {
+  return (
+    <p className="mx-4 mb-3 w-0 min-w-[calc(100%-2rem)] border-t pt-2.5 text-xs text-muted">
+      <strong className="font-medium text-secondary">To change it:</strong> set
+      it in the service or handler options in your code, then register the new
+      deployment.{' '}
+      <Link
+        href={href}
+        variant="secondary"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Learn more
+      </Link>
+    </p>
   );
 }
 
@@ -813,6 +849,7 @@ export function ConfigurationCard({
             size="wide"
             service={service}
             isReadonly={isReadonly}
+            setInCodeDocs={RETRY_POLICY_DOCS}
             illustration={
               <RetryPolicyIllustration
                 surface="white"
@@ -846,6 +883,7 @@ export function ConfigurationCard({
               illustrationFrame="none"
               service={service}
               isReadonly={isReadonly}
+              setInCodeDocs={STATE_DOCS}
               illustration={
                 <StateLoadingIllustration lazy={isLazyState} explanation />
               }
