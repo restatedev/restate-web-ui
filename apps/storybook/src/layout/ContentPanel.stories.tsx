@@ -52,7 +52,7 @@ const instances: Instance[] = [
 const columns: PanelTableColumn[] = [
   {
     id: 'identity',
-    name: 'Virtual object instance',
+    name: 'Virtual Object instance',
     isRowHeader: true,
     minWidth: 320,
   },
@@ -81,7 +81,7 @@ function InstancesTable() {
               right="straight"
               size="lg"
               href={`/virtual-objects/Cart/${item.id}`}
-              aria-label={`Virtual object instance Cart/${item.id}`}
+              aria-label={`Virtual Object instance Cart/${item.id}`}
             >
               <ChipSegment tone="raised">
                 <Icon name={IconName.VirtualObject} size="xs" />

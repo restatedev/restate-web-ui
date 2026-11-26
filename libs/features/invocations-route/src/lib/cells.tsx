@@ -8,7 +8,10 @@ import { TruncateWithTooltip } from '@restate/ui-tooltip';
 import { ColumnKey } from './columns';
 import { ComponentType, useState } from 'react';
 import { Badge } from '@restate/ui-badge';
-import { ServiceTypeExplainer } from '@restate/features-explainers';
+import {
+  SERVICE_TYPE_LABELS,
+  ServiceTypeExplainer,
+} from '@restate/features-explainers';
 import { CellProps } from './cells/types';
 import { formatNumber, formatPlurals } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
@@ -138,7 +141,7 @@ function Type({ invocation }: CellProps) {
   const type = SERVICE_TYPE_NAME[invocation.target_service_ty];
   return (
     <Badge className="max-w-full bg-muted/80">
-      <span className="truncate">{type}</span>
+      <span className="truncate">{SERVICE_TYPE_LABELS[type]}</span>
       <ServiceTypeExplainer
         type={type}
         variant="indicator-button"

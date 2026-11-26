@@ -19,7 +19,7 @@ export const FEATURE_FLAG_METADATA: Record<FeatureFlag, FeatureFlagMetadata> = {
   FEATURE_INDEXES_V1: {
     title: 'Index tables',
     description:
-      "Use the server's secondary index tables for invocation lists sorted by last transition, virtual object details, and flow control.",
+      "Use the server's secondary index tables for invocation lists sorted by last transition, Virtual Object details, and flow control.",
     serverFeature: 'indexes_v1',
   },
   FEATURE_NEW_PLAYGROUND: {

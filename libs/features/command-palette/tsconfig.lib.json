@@ -73,6 +73,9 @@
       "path": "../invocations-route/tsconfig.lib.json"
     },
     {
+      "path": "../explainers/tsconfig.lib.json"
+    },
+    {
       "path": "../deployment/tsconfig.lib.json"
     },
     {

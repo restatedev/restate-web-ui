@@ -147,7 +147,7 @@ function getObjectIdentityColumnName(
     return 'Workflow run';
   }
   if (serviceType === 'virtual_object') {
-    return 'Virtual object instance';
+    return 'Virtual Object instance';
   }
   return getObjectKeyColumnName(serviceType);
 }

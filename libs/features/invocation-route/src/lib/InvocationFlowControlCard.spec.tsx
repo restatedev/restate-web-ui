@@ -326,7 +326,7 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.getByText('has lock on')).toBeTruthy();
     expect(screen.getByRole('link', { name: holderId })).toBeTruthy();
     const objectTarget = screen.getByRole('link', {
-      name: `Virtual object instance ${lockName.replace('/', ' / ')}`,
+      name: `Virtual Object instance ${lockName.replace('/', ' / ')}`,
     });
     expect(objectTarget.getAttribute('href')).toBe(
       '/virtual-objects/ActionSequentialRunner/4d1b3796-21f7-4105-bd7c-d936ab8f72a1',
@@ -405,7 +405,7 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.getByRole('link', { name: holderId })).toBeTruthy();
     expect(
       screen.getByRole('link', {
-        name: `Virtual object instance ${lockName.replace('/', ' / ')}`,
+        name: `Virtual Object instance ${lockName.replace('/', ' / ')}`,
       }),
     ).toBeTruthy();
   });

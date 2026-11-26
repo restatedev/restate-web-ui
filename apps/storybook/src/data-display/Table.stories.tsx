@@ -810,7 +810,7 @@ const stateObjects: StateObject[] = [
 const stateColumns: PanelTableColumn<StateColumn>[] = [
   {
     id: 'object_key',
-    name: 'Virtual object instance',
+    name: 'Virtual Object instance',
     isRowHeader: true,
     defaultWidth: 220,
     minWidth: 180,

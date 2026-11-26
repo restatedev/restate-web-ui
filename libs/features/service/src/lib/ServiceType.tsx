@@ -1,5 +1,8 @@
 import type { ServiceType } from '@restate/data-access-admin-api-spec';
-import { ServiceTypeExplainer } from '@restate/features-explainers';
+import {
+  SERVICE_TYPE_LABELS,
+  ServiceTypeExplainer,
+} from '@restate/features-explainers';
 import { Badge } from '@restate/ui-badge';
 import { tv } from '@restate/util-styles';
 
@@ -30,7 +33,7 @@ export function ServiceType({
         variant="indicator-button"
         className="z-10"
       >
-        {type === 'VirtualObject' ? 'Virtual Object' : type}
+        {type && SERVICE_TYPE_LABELS[type]}
       </ServiceTypeExplainer>
     </Badge>
   );

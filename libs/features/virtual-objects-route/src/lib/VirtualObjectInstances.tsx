@@ -104,7 +104,7 @@ const identityColumn: PanelTableColumn<ColumnId> = {
   id: 'identity',
   name: (
     <span>
-      Virtual object instance{' '}
+      Virtual Object instance{' '}
       <span className="font-normal text-muted">
         (with in-flight invocations)
       </span>
@@ -116,7 +116,7 @@ const identityColumn: PanelTableColumn<ColumnId> = {
 
 const statsIdentityColumn: PanelTableColumn<ColumnId> = {
   ...identityColumn,
-  name: 'Virtual object instance',
+  name: 'Virtual Object instance',
 };
 
 const columns: PanelTableColumn<ColumnId>[] = [
@@ -398,7 +398,7 @@ export function VirtualObjectInstances({
     isServicesPending || (Boolean(service) && isInstancesFetching);
   const filteredResultsCaption = hasFilters ? (
     <FilteredResultsCaption
-      noun="virtual object instances"
+      noun="Virtual Object instances"
       className="m-0 h-9 w-full shrink-0 rounded-xl px-2.5"
       onClear={() =>
         setSearchParams(writeVirtualObjectFilters(searchParams, []), {
@@ -537,18 +537,18 @@ export function VirtualObjectInstances({
                     title={
                       listsFromStats
                         ? hasFilters
-                          ? 'No virtual objects match this filter'
-                          : 'No virtual objects'
+                          ? 'No Virtual Objects match this filter'
+                          : 'No Virtual Objects'
                         : hasFilters
-                          ? 'No virtual objects with in-flight invocations match this filter'
-                          : 'No virtual objects with in-flight invocations'
+                          ? 'No Virtual Objects with in-flight invocations match this filter'
+                          : 'No Virtual Objects with in-flight invocations'
                     }
                     description={
                       hasFilters
                         ? 'Try adjusting the active filters.'
                         : listsFromStats
-                          ? 'Virtual objects appear here once they have invocations. Use “Go to instance” to open one by key.'
-                          : 'Virtual objects appear here while they have in-flight invocations. Use “Go to instance” to open one by key.'
+                          ? 'Virtual Objects appear here once they have invocations. Use “Go to instance” to open one by key.'
+                          : 'Virtual Objects appear here while they have in-flight invocations. Use “Go to instance” to open one by key.'
                     }
                   />
                 )
