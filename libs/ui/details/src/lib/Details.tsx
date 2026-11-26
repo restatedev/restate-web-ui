@@ -13,7 +13,7 @@ const styles = tv({
   slots: {
     root: 'group/details details rounded-xl border bg-surface p-1 text-primary shadow-xs has-[+.details]:rounded-b-none has-[+.details]:border-b-0 [&+.details]:rounded-t-none',
     content:
-      '-m-1 rounded-b-xl border-t bg-subtle px-4 py-6 group-has-[+.details]/details:rounded-b-none',
+      '-m-1 rounded-b-xl border-t bg-subtle px-4 py-6 [.details:has(+.details)_&]:rounded-b-none',
   },
   variants: {
     isDisabled: {
