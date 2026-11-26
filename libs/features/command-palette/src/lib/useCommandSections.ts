@@ -420,9 +420,9 @@ export function useCommandSections(
       },
       {
         id: 'action:prune',
-        label: 'Prune drained deployments',
+        label: 'Delete drained deployments',
         icon: IconName.Trash,
-        keywords: ['remove', 'delete', 'clean', 'deployments'],
+        keywords: ['remove', 'prune', 'clean', 'deployments'],
         href: toPage(
           `${baseUrl}/overview?view=deployments&${PRUNE_DRAINED_DEPLOYMENTS_QUERY}=true`,
         ),
