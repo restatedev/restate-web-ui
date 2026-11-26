@@ -7,18 +7,18 @@ import {
   useState,
 } from 'react';
 
-const MIN_OVERSCAN = 24;
-const SCROLL_AHEAD = 100;
-const IDLE_ROWS_ABOVE = 100;
-const IDLE_ROWS_BELOW = 300;
-const MOUNTS_ACROSS_FRAMES =
-  typeof CSS !== 'undefined' && CSS.supports('-moz-appearance', 'none');
-const STEP = MOUNTS_ACROSS_FRAMES ? 5 : 25;
-const MAX_GROWTH = MOUNTS_ACROSS_FRAMES ? 20 : Infinity;
-const IDLE_STEP = 50;
-const MAX_ROWS = IDLE_ROWS_ABOVE + IDLE_ROWS_BELOW + 100;
 const IDLE_STEP_DELAY_MS = 30;
 const NOT_READY_RETRY_MS = 300;
+
+export type RenderWindowOptions = {
+  overscan: number;
+  scrollAhead: number;
+  idleRowsAbove: number;
+  idleRowsBelow: number;
+  step: number;
+  maxGrowth: number;
+  idleStep: number;
+};
 
 type Bounds = { start: number; end: number };
 type RenderWindow = Bounds & { indexes: number[]; version: number };
@@ -27,6 +27,7 @@ type Target = Bounds & { fromVersion: number };
 type ScrollDirection = 'forward' | 'backward' | null;
 
 export type RenderWindowHandle = {
+  options: RenderWindowOptions;
   rangeExtractor: (range: Range) => number[];
   scrollStateRef: { current: { scrollDirection: ScrollDirection } | null };
   visibleRef: { current: (Bounds & { count: number }) | null };
@@ -42,7 +43,9 @@ function toWindow(start: number, end: number, version: number): RenderWindow {
   return { start, end, indexes, version };
 }
 
-export function useRenderWindow(): RenderWindowHandle {
+export function useRenderWindow(
+  options: RenderWindowOptions,
+): RenderWindowHandle {
   const windowRef = useRef<RenderWindow | null>(null);
   const visibleRef = useRef<(Bounds & { count: number }) | null>(null);
   const appliedTargetRef = useRef<Target | null>(null);
@@ -50,10 +53,20 @@ export function useRenderWindow(): RenderWindowHandle {
     null,
   );
   const [target, setTarget] = useState<Target | null>(null);
+  const { overscan, scrollAhead, step, maxGrowth } = options;
+  const idleRowsAbove = Math.max(options.idleRowsAbove, overscan + step);
+  const idleRowsBelow = Math.max(options.idleRowsBelow, overscan + step);
 
   const rangeExtractor = useCallback(
     (range: Range) => {
       const last = range.count - 1;
+      const maxRows =
+        range.endIndex -
+        range.startIndex +
+        1 +
+        idleRowsAbove +
+        idleRowsBelow +
+        scrollAhead;
       visibleRef.current = {
         start: range.startIndex,
         end: range.endIndex,
@@ -62,13 +75,11 @@ export function useRenderWindow(): RenderWindowHandle {
       const direction = scrollStateRef.current?.scrollDirection;
       const neededStart = Math.max(
         0,
-        range.startIndex -
-          (direction === 'backward' ? SCROLL_AHEAD : MIN_OVERSCAN),
+        range.startIndex - (direction === 'backward' ? scrollAhead : overscan),
       );
       const neededEnd = Math.min(
         last,
-        range.endIndex +
-          (direction === 'forward' ? SCROLL_AHEAD : MIN_OVERSCAN),
+        range.endIndex + (direction === 'forward' ? scrollAhead : overscan),
       );
       const current = windowRef.current;
       const base =
@@ -82,24 +93,24 @@ export function useRenderWindow(): RenderWindowHandle {
       let start = base?.start ?? neededStart;
       let end = Math.min(last, base?.end ?? neededEnd);
       if (end < neededStart || start > neededEnd) {
-        start = Math.max(0, range.startIndex - MIN_OVERSCAN);
-        end = Math.min(last, range.endIndex + MIN_OVERSCAN);
+        start = Math.max(0, range.startIndex - overscan);
+        end = Math.min(last, range.endIndex + overscan);
       } else {
         if (neededStart < start) {
           start = Math.max(
             0,
-            neededStart - STEP,
-            Math.min(range.startIndex - MIN_OVERSCAN, start - MAX_GROWTH),
+            neededStart - step,
+            Math.min(range.startIndex - overscan, start - maxGrowth),
           );
-          end = Math.min(end, start + MAX_ROWS - 1);
+          end = Math.min(end, start + maxRows - 1);
         }
         if (neededEnd > end) {
           end = Math.min(
             last,
-            neededEnd + STEP,
-            Math.max(range.endIndex + MIN_OVERSCAN, end + MAX_GROWTH),
+            neededEnd + step,
+            Math.max(range.endIndex + overscan, end + maxGrowth),
           );
-          start = Math.max(start, end - MAX_ROWS + 1);
+          start = Math.max(start, end - maxRows + 1);
         }
       }
 
@@ -108,10 +119,25 @@ export function useRenderWindow(): RenderWindowHandle {
       }
       return windowRef.current?.indexes ?? [];
     },
-    [target],
+    [
+      target,
+      overscan,
+      scrollAhead,
+      step,
+      maxGrowth,
+      idleRowsAbove,
+      idleRowsBelow,
+    ],
   );
 
-  return { rangeExtractor, scrollStateRef, visibleRef, windowRef, setTarget };
+  return {
+    options: { ...options, idleRowsAbove, idleRowsBelow },
+    rangeExtractor,
+    scrollStateRef,
+    visibleRef,
+    windowRef,
+    setTarget,
+  };
 }
 
 function getNextIdleBounds(
@@ -119,6 +145,7 @@ function getNextIdleBounds(
   current: Bounds,
   rowsAbove: number,
   rowsBelow: number,
+  idleStep: number,
 ): Bounds | undefined {
   const last = visible.count - 1;
   const targetStart = Math.max(0, visible.start - rowsAbove);
@@ -131,32 +158,33 @@ function getNextIdleBounds(
     (before <= after || current.end >= targetEnd)
   ) {
     return {
-      start: Math.max(targetStart, current.start - IDLE_STEP),
+      start: Math.max(targetStart, current.start - idleStep),
       end: current.end,
     };
   }
   if (current.end < targetEnd) {
     return {
       start: current.start,
-      end: Math.min(targetEnd, current.end + IDLE_STEP),
+      end: Math.min(targetEnd, current.end + idleStep),
     };
   }
-  if (current.start < targetStart - IDLE_STEP) {
-    return { start: current.start + IDLE_STEP, end: current.end };
+  if (current.start < targetStart - idleStep) {
+    return { start: current.start + idleStep, end: current.end };
   }
-  if (current.end > targetEnd + IDLE_STEP) {
-    return { start: current.start, end: current.end - IDLE_STEP };
+  if (current.end > targetEnd + idleStep) {
+    return { start: current.start, end: current.end - idleStep };
   }
   return undefined;
 }
 
 export function useGrowRenderWindowWhenIdle(
-  { visibleRef, windowRef, setTarget }: RenderWindowHandle,
+  { options, visibleRef, windowRef, setTarget }: RenderWindowHandle,
   isScrolling: boolean,
   count: number,
   isLive: boolean,
 ) {
   const [step, setStep] = useState(0);
+  const { idleRowsAbove, idleRowsBelow, idleStep } = options;
 
   useEffect(() => {
     if (count === 0) {
@@ -178,8 +206,9 @@ export function useGrowRenderWindowWhenIdle(
       const next = getNextIdleBounds(
         visible,
         current,
-        isLive ? 0 : IDLE_ROWS_ABOVE,
-        isLive ? 0 : IDLE_ROWS_BELOW,
+        isLive ? 0 : idleRowsAbove,
+        isLive ? 0 : idleRowsBelow,
+        idleStep,
       );
       if (next) {
         startTransition(() => {
@@ -190,5 +219,16 @@ export function useGrowRenderWindowWhenIdle(
     };
     timeout = setTimeout(grow, IDLE_STEP_DELAY_MS);
     return () => clearTimeout(timeout);
-  }, [isScrolling, isLive, step, count, visibleRef, windowRef, setTarget]);
+  }, [
+    isScrolling,
+    isLive,
+    step,
+    count,
+    visibleRef,
+    windowRef,
+    setTarget,
+    idleRowsAbove,
+    idleRowsBelow,
+    idleStep,
+  ]);
 }
