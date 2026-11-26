@@ -29,7 +29,7 @@ type ScrollDirection = 'forward' | 'backward' | null;
 export type RenderWindowHandle = {
   options: RenderWindowOptions;
   rangeExtractor: (range: Range) => number[];
-  follow: (range: Range, lead: number) => number[];
+  follow: (range: Range, lead: number, maxNewRows?: number) => number[];
   scrollStateRef: { current: { scrollDirection: ScrollDirection } | null };
   visibleRef: { current: (Bounds & { count: number }) | null };
   windowRef: { current: RenderWindow | null };
@@ -131,9 +131,8 @@ export function useRenderWindow(
     ],
   );
 
-  // While scrolling fast: add only the rows the viewport reached plus `lead` rows ahead, a few per frame.
   const follow = useCallback(
-    (range: Range, lead: number) => {
+    (range: Range, lead: number, maxNewRows = Infinity) => {
       const last = range.count - 1;
       visibleRef.current = {
         start: range.startIndex,
@@ -170,6 +169,13 @@ export function useRenderWindow(
       if (end - start + 1 > maxRows) {
         if (direction === 'backward') end = start + maxRows - 1;
         else start = end - maxRows + 1;
+      }
+      if (current) {
+        const kept = Math.max(
+          0,
+          Math.min(end, current.end) - Math.max(start, current.start) + 1,
+        );
+        if (end - start + 1 - kept > maxNewRows) return current.indexes;
       }
       windowRef.current = toWindow(start, end, (previous?.version ?? 0) + 1);
       return windowRef.current.indexes;

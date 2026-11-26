@@ -75,6 +75,18 @@ describe('useRenderWindow', () => {
     expect([jumped[0], jumped.at(-1)]).toEqual([199, 226]);
   });
 
+  it('keeps the window when following would add more rows than allowed', () => {
+    const { result } = renderHook(() => useRenderWindow(WIDE_ROWS));
+    result.current.rangeExtractor(range(0, 20));
+    result.current.scrollStateRef.current = { scrollDirection: 'forward' };
+
+    const ahead = result.current.follow(range(30, 50), 6, 25);
+    expect([ahead[0], ahead.at(-1)]).toEqual([0, 56]);
+
+    expect(result.current.follow(range(200, 220), 6, 25)).toBe(ahead);
+    expect(result.current.windowRef.current?.end).toBe(56);
+  });
+
   it('drops rows behind a long fast scroll once the window is full', () => {
     const { result } = renderHook(() => useRenderWindow(WIDE_ROWS));
     result.current.rangeExtractor(range(0, 20));
@@ -86,7 +98,6 @@ describe('useRenderWindow', () => {
     }
 
     expect(indexes.at(-1)).toBe(176);
-    // visible rows + idle rows above and below (at least overscan + step) + scroll ahead
     expect(indexes.length).toBe(21 + 17 + 17 + 40);
     expect(indexes[0]).toBe(176 - indexes.length + 1);
   });

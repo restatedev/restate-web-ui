@@ -1114,6 +1114,59 @@ describe('PanelTable windowed', () => {
     expect(document.activeElement).toBe(rowOf('Item 299'));
   });
 
+  const manyItems = Array.from({ length: 300 }, (_, index) => ({
+    id: `item-${index}`,
+    name: `Item ${index}`,
+  }));
+  const jumpTo = (scrollY: number) =>
+    act(() => {
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(scrollY);
+      window.dispatchEvent(new Event('scroll'));
+    });
+
+  it('renders the rows a fast scroll reaches on narrow tables', () => {
+    render(renderWindowed({ items: manyItems }));
+    expect(screen.queryByText('Item 185')).toBeNull();
+
+    jumpTo(8000);
+
+    expect(screen.queryByText('Item 185')).not.toBeNull();
+  });
+
+  const wideTable = () =>
+    renderWindowed({
+      items: manyItems,
+      columns: Array.from({ length: 10 }, (_, index) => ({
+        id: `column-${index}`,
+        name: `Column ${index}`,
+        isRowHeader: index === 0,
+      })),
+      renderCell: (row, column) => (
+        <Cell>{column.id === 'column-0' ? row.name : null}</Cell>
+      ),
+    });
+
+  it('follows a fast scroll on wide tables while each frame adds few rows', () => {
+    render(wideTable());
+
+    for (const scrollY of [650, 1300, 1950, 2600]) jumpTo(scrollY);
+
+    expect(screen.queryByText('Item 70')).not.toBeNull();
+    expect(screen.queryByText('Item 95')).toBeNull();
+  });
+
+  it('shows stubs while a fast scroll needs more new cells than a frame allows', async () => {
+    render(wideTable());
+    expect(screen.queryByText('Item 115')).toBeNull();
+
+    jumpTo(5000);
+
+    expect(screen.queryByText('Item 115')).toBeNull();
+    await waitFor(() => expect(screen.queryByText('Item 115')).not.toBeNull(), {
+      timeout: 3000,
+    });
+  });
+
   it('renders static cell content with the default collection renderer', () => {
     function RendererProbe() {
       const renderer = useContext(CollectionRendererContext);

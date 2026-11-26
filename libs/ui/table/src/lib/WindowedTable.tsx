@@ -47,6 +47,7 @@ import { WindowedCellsContext } from './window/WindowedCellsContext';
 const IDLE_CELLS_PER_SIDE = 800;
 const IDLE_CELLS_PER_STEP = 80;
 const FAST_SCROLL_LEAD_ROWS = 6;
+const FAST_SCROLL_NEW_CELLS_PER_FRAME = 240;
 const MAX_IDLE_ROWS = 1000;
 const MAX_IDLE_STEP = 20;
 const SKIP_FAR_ROW_PAINT =
@@ -776,7 +777,13 @@ function WindowedRows({
   const rangeExtractor = useCallback(
     (range: Range) => {
       let indexes: number[];
-      if (catchUp >= 0 && windowRef.current && isScrollingFast()) {
+      const current = windowRef.current;
+      if (
+        catchUp >= 0 &&
+        current &&
+        current.end < range.count &&
+        isScrollingFast()
+      ) {
         if (!isCatchUpScheduledRef.current) {
           isCatchUpScheduledRef.current = true;
           afterFastScroll(() => {
@@ -784,7 +791,13 @@ function WindowedRows({
             setCatchUp((value) => value + 1);
           });
         }
-        indexes = follow(range, FAST_SCROLL_LEAD_ROWS);
+        indexes = follow(
+          range,
+          FAST_SCROLL_LEAD_ROWS,
+          Math.floor(
+            FAST_SCROLL_NEW_CELLS_PER_FRAME / Math.max(1, cellsPerRow),
+          ),
+        );
       } else {
         indexes = windowRangeExtractor(range);
       }
@@ -815,7 +828,14 @@ function WindowedRows({
       }
       return result;
     },
-    [windowRangeExtractor, follow, windowRef, persistedIndexes, catchUp],
+    [
+      windowRangeExtractor,
+      follow,
+      windowRef,
+      persistedIndexes,
+      catchUp,
+      cellsPerRow,
+    ],
   );
   const getItemKey = useCallback(
     (index: number) => rows[index]?.key ?? index,
