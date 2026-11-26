@@ -269,6 +269,7 @@ function PausedLastError({ invocationId }: { invocationId: string }) {
         data.stack,
       )
     : undefined;
+  const isManualPause = Boolean(data) && !error;
 
   return (
     <LastError
@@ -278,8 +279,12 @@ function PausedLastError({ invocationId }: { invocationId: string }) {
       queryError={queryError}
       isLoading={isOpen && isPending}
       loadingMessage="Loading paused error…"
-      emptyMessage="No paused error was recorded."
-      popoverTitle="Paused after"
+      emptyMessage={
+        isManualPause
+          ? 'No failure led to this pause.'
+          : 'No paused error was recorded.'
+      }
+      popoverTitle={isManualPause ? 'Paused manually' : 'Paused after'}
       label="after…"
       onOpenChange={setIsOpen}
     />

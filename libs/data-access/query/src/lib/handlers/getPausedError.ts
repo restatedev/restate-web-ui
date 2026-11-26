@@ -2,7 +2,7 @@ import { type QueryContext } from './shared.js';
 
 interface PausedEventJson {
   ty: 'Paused';
-  last_failure: {
+  last_failure?: {
     error_code: number;
     error_message: string;
     error_stacktrace: string;
@@ -46,13 +46,13 @@ export async function getPausedError(this: QueryContext, invocationId: string) {
 
   return new Response(
     JSON.stringify({
-      message: lastFailure.error_message,
-      stack: lastFailure.error_stacktrace,
-      code: lastFailure.error_code,
-      relatedCommandName: lastFailure.related_command_name,
-      relatedCommandType: lastFailure.related_command_type,
-      relatedRestateErrorCode: lastFailure.restate_doc_error_code,
-      relatedCommandIndex: lastFailure.related_command_index,
+      message: lastFailure?.error_message,
+      stack: lastFailure?.error_stacktrace,
+      code: lastFailure?.error_code,
+      relatedCommandName: lastFailure?.related_command_name,
+      relatedCommandType: lastFailure?.related_command_type,
+      relatedRestateErrorCode: lastFailure?.restate_doc_error_code,
+      relatedCommandIndex: lastFailure?.related_command_index,
       pausedAt: pausedEvent.appended_at,
     }),
     {
