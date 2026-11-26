@@ -45,7 +45,8 @@ import { internalCellKey } from './keys';
 import { WindowedCellsContext } from './window/WindowedCellsContext';
 
 const IDLE_CELLS_PER_SIDE = 800;
-const IDLE_CELLS_PER_STEP = 200;
+const IDLE_CELLS_PER_STEP = 80;
+const FAST_SCROLL_LEAD_ROWS = 6;
 const MAX_IDLE_ROWS = 1000;
 const MAX_IDLE_STEP = 20;
 const SKIP_FAR_ROW_PAINT =
@@ -765,20 +766,17 @@ function WindowedRows({
     persisted: number[];
     result: number[];
   } | null>(null);
-  const windowRangeExtractor = renderWindow.rangeExtractor;
+  const {
+    rangeExtractor: windowRangeExtractor,
+    follow,
+    windowRef,
+  } = renderWindow;
   const [catchUp, setCatchUp] = useState(0);
-  const renderedIndexesRef = useRef<number[] | null>(null);
   const isCatchUpScheduledRef = useRef(false);
-  const count = rows.length;
   const rangeExtractor = useCallback(
     (range: Range) => {
-      const rendered = renderedIndexesRef.current;
-      if (
-        catchUp >= 0 &&
-        rendered &&
-        (rendered.at(-1) ?? -1) < count &&
-        isScrollingFast()
-      ) {
+      let indexes: number[];
+      if (catchUp >= 0 && windowRef.current && isScrollingFast()) {
         if (!isCatchUpScheduledRef.current) {
           isCatchUpScheduledRef.current = true;
           afterFastScroll(() => {
@@ -786,15 +784,10 @@ function WindowedRows({
             setCatchUp((value) => value + 1);
           });
         }
-        const missing = persistedIndexes.filter(
-          (index) => index < count && !rendered.includes(index),
-        );
-        if (!missing.length) return rendered;
-        const result = [...rendered, ...missing].sort((a, b) => a - b);
-        renderedIndexesRef.current = result;
-        return result;
+        indexes = follow(range, FAST_SCROLL_LEAD_ROWS);
+      } else {
+        indexes = windowRangeExtractor(range);
       }
-      const indexes = windowRangeExtractor(range);
       let result = indexes;
       if (persistedIndexes.length) {
         const merged = mergedRef.current;
@@ -820,10 +813,9 @@ function WindowedRows({
           };
         }
       }
-      renderedIndexesRef.current = result;
       return result;
     },
-    [windowRangeExtractor, persistedIndexes, count, catchUp],
+    [windowRangeExtractor, follow, windowRef, persistedIndexes, catchUp],
   );
   const getItemKey = useCallback(
     (index: number) => rows[index]?.key ?? index,

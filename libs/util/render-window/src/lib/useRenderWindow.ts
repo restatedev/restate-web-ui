@@ -29,6 +29,7 @@ type ScrollDirection = 'forward' | 'backward' | null;
 export type RenderWindowHandle = {
   options: RenderWindowOptions;
   rangeExtractor: (range: Range) => number[];
+  follow: (range: Range, lead: number) => number[];
   scrollStateRef: { current: { scrollDirection: ScrollDirection } | null };
   visibleRef: { current: (Bounds & { count: number }) | null };
   windowRef: { current: RenderWindow | null };
@@ -130,9 +131,56 @@ export function useRenderWindow(
     ],
   );
 
+  // While scrolling fast: add only the rows the viewport reached plus `lead` rows ahead, a few per frame.
+  const follow = useCallback(
+    (range: Range, lead: number) => {
+      const last = range.count - 1;
+      visibleRef.current = {
+        start: range.startIndex,
+        end: range.endIndex,
+        count: range.count,
+      };
+      const direction = scrollStateRef.current?.scrollDirection;
+      const neededStart = Math.max(
+        0,
+        range.startIndex - (direction === 'backward' ? lead : 1),
+      );
+      const neededEnd = Math.min(
+        last,
+        range.endIndex + (direction === 'forward' ? lead : 1),
+      );
+      const previous = windowRef.current;
+      const current = previous && previous.end <= last ? previous : null;
+      if (current && neededStart >= current.start && neededEnd <= current.end) {
+        return current.indexes;
+      }
+      let start = neededStart;
+      let end = neededEnd;
+      if (current && neededEnd >= current.start && neededStart <= current.end) {
+        start = Math.min(start, current.start);
+        end = Math.max(end, current.end);
+      }
+      const maxRows =
+        range.endIndex -
+        range.startIndex +
+        1 +
+        idleRowsAbove +
+        idleRowsBelow +
+        scrollAhead;
+      if (end - start + 1 > maxRows) {
+        if (direction === 'backward') end = start + maxRows - 1;
+        else start = end - maxRows + 1;
+      }
+      windowRef.current = toWindow(start, end, (previous?.version ?? 0) + 1);
+      return windowRef.current.indexes;
+    },
+    [idleRowsAbove, idleRowsBelow, scrollAhead],
+  );
+
   return {
     options: { ...options, idleRowsAbove, idleRowsBelow },
     rangeExtractor,
+    follow,
     scrollStateRef,
     visibleRef,
     windowRef,

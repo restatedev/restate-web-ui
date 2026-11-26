@@ -59,4 +59,35 @@ describe('useRenderWindow', () => {
     expect(new Set(windows.slice(-20))).toEqual(new Set([windows.at(-1)]));
     expect(windows.at(-1)).toBe('83-137');
   });
+
+  it('follows a fast scroll with the visible rows and a few rows ahead', () => {
+    const { result } = renderHook(() => useRenderWindow(WIDE_ROWS));
+    result.current.rangeExtractor(range(0, 20));
+    result.current.scrollStateRef.current = { scrollDirection: 'forward' };
+
+    const inside = result.current.follow(range(5, 25), 6);
+    expect([inside[0], inside.at(-1)]).toEqual([0, 32]);
+
+    const ahead = result.current.follow(range(30, 50), 6);
+    expect([ahead[0], ahead.at(-1)]).toEqual([0, 56]);
+
+    const jumped = result.current.follow(range(200, 220), 6);
+    expect([jumped[0], jumped.at(-1)]).toEqual([199, 226]);
+  });
+
+  it('drops rows behind a long fast scroll once the window is full', () => {
+    const { result } = renderHook(() => useRenderWindow(WIDE_ROWS));
+    result.current.rangeExtractor(range(0, 20));
+    result.current.scrollStateRef.current = { scrollDirection: 'forward' };
+
+    let indexes: number[] = [];
+    for (let start = 0; start <= 150; start += 5) {
+      indexes = result.current.follow(range(start, start + 20), 6);
+    }
+
+    expect(indexes.at(-1)).toBe(176);
+    // visible rows + idle rows above and below (at least overscan + step) + scroll ahead
+    expect(indexes.length).toBe(21 + 17 + 17 + 40);
+    expect(indexes[0]).toBe(176 - indexes.length + 1);
+  });
 });
