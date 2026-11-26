@@ -549,7 +549,7 @@ export function FormFieldMultiCombobox<
               {tagOverflowStrategy === 'partial' ? '+' : ''}
               {selectedList.items.length} {overflowItemLabel}
               {selectedList.items.length === 1 ? '' : 's'}
-              <Icon name={IconName.ChevronDown} size="sm" />
+              <Icon name={IconName.ChevronsUpDown} size="sm" />
             </span>
           )}
           {hiddenItems.length > 0 && (
@@ -571,7 +571,7 @@ export function FormFieldMultiCombobox<
                   {areAllTagsCollapsed ? '' : '+'}
                   {hiddenItems.length} {overflowItemLabel}
                   {hiddenItems.length === 1 ? '' : 's'}
-                  <Icon name={IconName.ChevronDown} size="sm" />
+                  <Icon name={IconName.ChevronsUpDown} size="sm" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent
