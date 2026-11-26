@@ -12,7 +12,8 @@
         "env": {
           "MIMALLOC_PURGE_DELAY": "0",
           "ROLLDOWN_WORKER_THREADS": "4",
-          "RAYON_NUM_THREADS": "4"
+          "RAYON_NUM_THREADS": "4",
+          "MallocSpaceEfficient": "1"
         }
       }
     },
