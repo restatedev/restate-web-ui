@@ -48,10 +48,8 @@ export function Retention({
     return (
       <Badge className={styles({ className })}>
         <span className="w-full truncate">
-          <span className="">
-            {prefixForCompletion}
-            {isPast ? 'ended' : 'ends'} {!isPast && 'in '}
-          </span>
+          {prefixForCompletion}
+          {isPast ? 'ended' : 'ends'} {!isPast && 'in '}
           {isDurationZero ? (
             <span>at completion</span>
           ) : (
@@ -63,7 +61,7 @@ export function Retention({
               >
                 {duration}
               </DateTooltip>
-              <span className="">{isPast && ' ago'}</span>
+              {isPast && ' ago'}
             </>
           )}
           <RetentionExplainer
@@ -77,13 +75,11 @@ export function Retention({
     return (
       <Badge className={styles({ className })}>
         <span className="w-full truncate">
-          <span className="">{prefixForInProgress}for </span>
+          {prefixForInProgress}for{' '}
           <span className="value font-medium text-muted">
             {formatDurations(durationObject)}{' '}
           </span>
-          <span className="">
-            after completion {isDurationZero ? '(no retention)' : ''}
-          </span>
+          after completion {isDurationZero ? '(no retention)' : ''}
           <RetentionExplainer
             variant="indicator-button"
             className="ml-0 -translate-y-px align-middle"
