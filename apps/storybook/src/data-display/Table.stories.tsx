@@ -289,7 +289,7 @@ const STATUS_INTENT = {
 const STATUS_LABEL: Record<InvocationStatus, string> = {
   running: 'Running',
   suspended: 'Suspended',
-  'backing-off': 'Backing-off',
+  'backing-off': 'Backing off',
   paused: 'Paused',
   succeeded: 'Succeeded',
   failed: 'Failed',
@@ -810,7 +810,7 @@ const stateObjects: StateObject[] = [
 const stateColumns: PanelTableColumn<StateColumn>[] = [
   {
     id: 'object_key',
-    name: 'Virtual object instance',
+    name: 'Virtual Object instance',
     isRowHeader: true,
     defaultWidth: 220,
     minWidth: 180,

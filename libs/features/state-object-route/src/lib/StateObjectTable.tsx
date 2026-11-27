@@ -132,10 +132,10 @@ export function getObjectKeyColumnName(
   serviceType: StateServiceType | undefined,
 ) {
   if (serviceType === 'workflow') {
-    return 'Workflow id';
+    return 'Workflow ID';
   }
   if (serviceType === 'virtual_object') {
-    return 'Virtual object key';
+    return 'Object key';
   }
   return 'Service key';
 }
@@ -147,7 +147,7 @@ function getObjectIdentityColumnName(
     return 'Workflow run';
   }
   if (serviceType === 'virtual_object') {
-    return 'Virtual object instance';
+    return 'Virtual Object instance';
   }
   return getObjectKeyColumnName(serviceType);
 }

@@ -8,13 +8,13 @@ import {
 import {
   type Deployment,
   type FilterItem,
-  type Service,
   getEndpoint,
   isPublicHandler,
   isPublicService,
 } from '@restate/data-access-admin-api-spec';
 import { useBatchOperations } from '@restate/features-batch-operations';
 import { resolveDeploymentEndpoint } from '@restate/features-deployment';
+import { SERVICE_TYPE_LABELS } from '@restate/features-explainers';
 import { useInvocationFilterSchema } from '@restate/features-invocations-route';
 import {
   INTROSPECTION_QUERY_PARAM,
@@ -93,12 +93,6 @@ const SECTION_LIMITS: Record<SectionId, number> = {
   flowControl: 3,
   recentQueries: 5,
   usefulQueries: 8,
-};
-
-const SERVICE_TYPE_LABELS: Record<Service['ty'], string> = {
-  Service: 'Service',
-  VirtualObject: 'Virtual Object',
-  Workflow: 'Workflow',
 };
 
 const PRESET_KEYWORDS: Record<string, string[]> = {
@@ -420,9 +414,9 @@ export function useCommandSections(
       },
       {
         id: 'action:prune',
-        label: 'Prune drained deployments',
+        label: 'Delete drained deployments',
         icon: IconName.Trash,
-        keywords: ['remove', 'delete', 'clean', 'deployments'],
+        keywords: ['remove', 'prune', 'clean', 'deployments'],
         href: toPage(
           `${baseUrl}/overview?view=deployments&${PRUNE_DRAINED_DEPLOYMENTS_QUERY}=true`,
         ),

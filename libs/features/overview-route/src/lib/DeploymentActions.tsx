@@ -38,7 +38,7 @@ export function DeploymentActions() {
           </DropdownItem>
           <DropdownItem value={PRUNE_DRAINED_DEPLOYMENTS_QUERY} destructive>
             <Icon name={IconName.Trash} size="sm" />
-            Prune drained deployments
+            Delete drained deployments
           </DropdownItem>
         </>
       }

@@ -162,7 +162,7 @@ export function EditRetentionDialog() {
                 }
                 label={
                   <WorkflowRetentionExplainer variant="indicator-button">
-                    Workflow completion
+                    Workflow retention
                   </WorkflowRetentionExplainer>
                 }
                 name="workflow_completion_retention"
@@ -185,7 +185,7 @@ export function EditRetentionDialog() {
                   variant="indicator-button"
                   isWorkflow={isWorkflow}
                 >
-                  Idempotency completion
+                  Idempotency retention
                 </IdempotencyRetentionExplainer>
               }
               name="idempotency_retention"

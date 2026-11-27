@@ -5,10 +5,33 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import ts from 'typescript';
 
-const { values: options } = parseArgs({
+const args = process.argv.slice(2);
+const { values: options, positionals } = parseArgs({
+  args: args[0] === '--' ? args.slice(1) : args,
   options: { base: { type: 'string' } },
+  allowPositionals: true,
 });
-const SOURCES = ['libs', 'apps/web-ui/app'];
+const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+  encoding: 'utf8',
+}).trim();
+if (fs.realpathSync('.') !== fs.realpathSync(ROOT)) {
+  fail(`Run it from the repository root, ${ROOT}.`);
+}
+const SOURCES = (
+  positionals.length ? positionals : ['libs', 'apps/web-ui/app']
+).map((folder) => {
+  const relative = path.relative(ROOT, path.resolve(folder));
+  if (
+    relative.startsWith('..') ||
+    path.isAbsolute(relative) ||
+    !fs.statSync(folder, { throwIfNoEntry: false })?.isDirectory()
+  ) {
+    fail(
+      `${folder} isn't a folder in this repository. Pass the folders to scan, relative to its root.`,
+    );
+  }
+  return relative || '.';
+});
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'out-tsc', '.react-router']);
 const SIZED = new Set(['Icon', 'Spinner', 'Button']);
 const PLACEMENT = [
@@ -28,6 +51,11 @@ const PLACEMENT = [
   /^(w|h|size)-full$/,
 ];
 const SIZING = /^(min-|max-)?(w|h|size)-/;
+
+function fail(message) {
+  console.error(message);
+  process.exit(1);
+}
 
 function files(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -178,10 +206,16 @@ function measureBase(ref) {
   const commit = execFileSync('git', ['merge-base', ref, 'HEAD'], {
     encoding: 'utf8',
   }).trim();
+  const present = SOURCES.filter((folder) =>
+    execFileSync('git', ['ls-tree', commit, '--', folder], {
+      encoding: 'utf8',
+    }).trim(),
+  );
+  if (!present.length) return new Map();
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'design-system-base-'));
   try {
     const archive = path.join(dir, 'base.tar');
-    execFileSync('git', ['archive', '-o', archive, commit, ...SOURCES]);
+    execFileSync('git', ['archive', '-o', archive, commit, ...present]);
     execFileSync('tar', ['-xf', archive, '-C', dir]);
     return measure(dir);
   } finally {

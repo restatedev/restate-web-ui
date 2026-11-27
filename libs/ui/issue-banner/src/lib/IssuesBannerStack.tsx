@@ -10,6 +10,16 @@ import { tv } from '@restate/util-styles';
 import { issueBannerStyles } from './styles';
 import { IssueBannerPill } from './IssueBannerPill';
 
+const chevronStyles = tv({
+  base: 'text-inverse-secondary transition-transform',
+  variants: {
+    expanded: {
+      true: 'rotate-180',
+      false: '',
+    },
+  },
+});
+
 const stackStyles = tv({
   base: 'duration-300 animate-in fade-in zoom-in-95',
   variants: {
@@ -48,6 +58,7 @@ export function IssuesBannerStack({ className }: { className?: string }) {
           variant="icon"
           className={issueBannerStyles({ interactive: true, elevated: true })}
           onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
         >
           <span className="relative flex h-4 w-4 shrink-0">
             <Icon
@@ -69,9 +80,9 @@ export function IssuesBannerStack({ className }: { className?: string }) {
             detected that may need your attention
           </span>
           <Icon
-            name={IconName.ChevronsUpDown}
+            name={IconName.ChevronDown}
             size="sm"
-            className="text-inverse-secondary"
+            className={chevronStyles({ expanded })}
           />
         </Button>
         {Array.from({ length: stackCount - 1 }, (_, i) => {

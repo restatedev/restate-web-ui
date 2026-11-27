@@ -36,7 +36,7 @@ describe('ServiceTarget', () => {
     expect(screen.getByText('tenant-a')).toBeTruthy();
     expect(screen.queryByText('/')).toBeNull();
     const identityLinks = screen.getAllByRole('link', {
-      name: 'Open virtual object instance Counter / user-1',
+      name: 'Open Virtual Object instance Counter / user-1',
     });
     expect(identityLinks).toHaveLength(2);
     identityLinks.forEach((link) =>
@@ -361,7 +361,7 @@ describe('Target', () => {
     expect(
       screen
         .getAllByRole('link', {
-          name: 'Open virtual object instance Counter / customer/eu',
+          name: 'Open Virtual Object instance Counter / customer/eu',
         })
         .at(0)
         ?.getAttribute('href'),

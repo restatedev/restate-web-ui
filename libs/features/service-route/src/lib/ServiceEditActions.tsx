@@ -28,6 +28,7 @@ const styles = tv({
     trigger:
       'flex items-center gap-1 rounded-lg px-2 py-0.5 text-[0.9375rem] text-accent disabled:text-subtle',
     chevron: 'h-[1em] w-[1em] shrink-0 text-muted',
+    pencil: 'h-[0.9em] w-[0.9em] shrink-0',
   },
 });
 
@@ -50,6 +51,7 @@ export function ServiceEditActions({
       disabled={isReadonly}
       aria-label="Edit configuration"
     >
+      <Icon name={IconName.Pencil} tone="dimmed" className={s.pencil()} />
       <span>Edit</span>
       <Icon name={IconName.ChevronsUpDown} className={s.chevron()} />
     </Button>

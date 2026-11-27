@@ -16,7 +16,7 @@ const lowIssues: ServiceIssue[] = [
   {
     kind: 'sla',
     severity: 'low',
-    label: 'More than 1% of inflight invocations are paused',
+    label: 'More than 1% of unfinished invocations are paused',
     status: 'paused',
   },
 ];
@@ -25,13 +25,13 @@ const highIssues: ServiceIssue[] = [
   {
     kind: 'sla',
     severity: 'high',
-    label: 'More than 10% of inflight invocations are backing-off',
+    label: 'More than 10% of unfinished invocations are backing off',
     status: 'backing-off',
   },
   {
     kind: 'sla',
     severity: 'low',
-    label: 'More than 1% of inflight invocations are paused',
+    label: 'More than 1% of unfinished invocations are paused',
     status: 'paused',
   },
   {
@@ -69,10 +69,10 @@ export const Pill: Story = {
   render: () => (
     <div className="flex flex-col items-start gap-2">
       <IssueBannerPill severity="high">
-        More than 10% of inflight invocations are backing-off
+        More than 10% of unfinished invocations are backing off
       </IssueBannerPill>
       <IssueBannerPill severity="low">
-        More than 1% of inflight invocations are paused
+        More than 1% of unfinished invocations are paused
       </IssueBannerPill>
     </div>
   ),
@@ -109,22 +109,22 @@ function IssueFeed({
 const singleIssue: IssueContent[] = [
   {
     severity: 'low',
-    label: 'More than 1% of inflight invocations are paused',
+    label: 'More than 1% of unfinished invocations are paused',
   },
 ];
 
 const severalIssues: IssueContent[] = [
   {
     severity: 'high',
-    label: 'More than 10% of inflight invocations are backing-off',
+    label: 'More than 10% of unfinished invocations are backing off',
   },
   {
     severity: 'low',
-    label: 'More than 1% of inflight invocations are paused',
+    label: 'More than 1% of unfinished invocations are paused',
   },
   {
     severity: 'low',
-    label: 'More than 1% of inflight invocations are pending',
+    label: "More than 1% of unfinished invocations haven't started yet",
   },
 ];
 

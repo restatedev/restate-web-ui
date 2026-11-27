@@ -118,10 +118,20 @@ const styles = tv({
 const secondaryStyles = tv({
   base: '',
   variants: {
-    mini: { true: 'hidden', false: 'contents', md: 'hidden md:contents' },
+    mini: { true: 'hidden', md: 'hidden md:contents' },
   },
-  defaultVariants: { mini: false },
 });
+
+function StatusSecondary({
+  mini,
+  children,
+}: PropsWithChildren<{ mini: boolean | 'md' }>) {
+  return mini ? (
+    <span className={secondaryStyles({ mini })}>{children}</span>
+  ) : (
+    children
+  );
+}
 
 const STATUS_LABEL: Record<InvocationComputedStatus2, string> = {
   new: 'New',
@@ -134,7 +144,7 @@ const STATUS_LABEL: Record<InvocationComputedStatus2, string> = {
   failed: 'Failed',
   cancelled: 'Cancelled',
   killed: 'Killed',
-  'backing-off': 'Backing-off',
+  'backing-off': 'Backing off',
   paused: 'Paused',
 };
 
@@ -210,7 +220,7 @@ export function Status({
             below `md` so the status stays a single compact pill where space
             is tight (e.g. the invocation header). md:contents keeps these as
             inline children of the badge at md+. */}
-        <span className={secondaryStyles({ mini })}>
+        <StatusSecondary mini={mini}>
           {(status === 'failed' || isRetrying) &&
             (isRetrying && !invocation.last_failure ? (
               <TransientLastError invocation={invocation} error={error} />
@@ -240,12 +250,12 @@ export function Status({
               isPending
             />
           )}
-        </span>
+        </StatusSecondary>
       </InvocationStatusBadge>
       {timeline && (
-        <span className={secondaryStyles({ mini })}>
+        <StatusSecondary mini={mini}>
           <StatusTimeline invocation={invocation} />
-        </span>
+        </StatusSecondary>
       )}
     </div>
   );

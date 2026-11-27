@@ -133,12 +133,9 @@ export function TruncateWithTooltip({
         })}
         ref={containerRef}
       >
-        <TruncateTooltipTrigger
-          ref={triggerRef}
-          overflowVisible={overflowVisible}
-        >
+        <span data-truncate-tooltip="true" ref={triggerRef}>
           {children}
-        </TruncateTooltipTrigger>
+        </span>
       </span>
       <TooltipContent size={size} offset={5} triggerRef={containerRef}>
         <div

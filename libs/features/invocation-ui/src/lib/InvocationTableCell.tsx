@@ -191,19 +191,18 @@ export function InvocationTableDate({
   }
   const { isPast, ...parts } = durationSinceLastSnapshot(value);
   const duration = formatDurations(parts);
+  const prefix = isPast ? pastPrefix : 'in ';
 
   return (
     <Badge borderless className="w-full bg-transparent pl-0">
       <span className="w-full truncate">
-        <span className="font-normal text-muted">
-          {isPast ? pastPrefix : 'in '}
-        </span>
+        {prefix && <span className="font-normal text-muted">{prefix}</span>}
         <DateTooltip date={new Date(value)} title={tooltipTitle}>
           {duration}
         </DateTooltip>
-        <span className="text-2xs font-normal text-subtle">
-          {isPast && ' ago'}
-        </span>
+        {isPast && (
+          <span className="text-2xs font-normal text-subtle"> ago</span>
+        )}
       </span>
     </Badge>
   );

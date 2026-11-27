@@ -60,7 +60,7 @@ describe('VirtualObjectInstanceTarget', () => {
     expect(
       screen
         .getByRole('link', {
-          name: 'Virtual object instance Counter / user-1',
+          name: 'Virtual Object instance Counter / user-1',
         })
         .getAttribute('href'),
     ).toBe('/objects/Counter/user-1');
