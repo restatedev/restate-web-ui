@@ -41,7 +41,13 @@
       "path": "../user-preference/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/query-builder/tsconfig.lib.json"
+    },
+    {
       "path": "../../data-access/admin-api/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/notification/tsconfig.lib.json"
     },
     {
       "path": "../../util/panel/tsconfig.lib.json"
@@ -110,37 +116,37 @@
       "path": "../../util/snapshot-time/tsconfig.lib.json"
     },
     {
-      "path": "../../ui/tooltip/tsconfig.lib.json"
-    },
-    {
-      "path": "../../data-access/query/tsconfig.lib.json"
-    },
-    {
-      "path": "../../ui/table/tsconfig.lib.json"
+      "path": "../../data-access/admin-api-spec/tsconfig.lib.json"
     },
     {
       "path": "../../data-access/admin-api-hooks/tsconfig.lib.json"
     },
     {
-      "path": "../../util/sidebar-nav/tsconfig.lib.json"
-    },
-    {
-      "path": "../../ui/icons/tsconfig.lib.json"
+      "path": "../../data-access/query/tsconfig.lib.json"
     },
     {
       "path": "../../util/styles/tsconfig.lib.json"
     },
     {
-      "path": "../../data-access/admin-api-spec/tsconfig.lib.json"
+      "path": "../../ui/tabs/tsconfig.lib.json"
     },
     {
-      "path": "../../ui/button/tsconfig.lib.json"
+      "path": "../../ui/tooltip/tsconfig.lib.json"
     },
     {
       "path": "../../ui/dropdown/tsconfig.lib.json"
     },
     {
-      "path": "../../ui/query-builder/tsconfig.lib.json"
+      "path": "../../ui/button/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/sidebar-nav/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/table/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/icons/tsconfig.lib.json"
     },
     {
       "path": "../../ui/filter-builder/tsconfig.lib.json"

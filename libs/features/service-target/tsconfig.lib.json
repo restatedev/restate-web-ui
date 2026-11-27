@@ -65,6 +65,9 @@
       "path": "../restate-context/tsconfig.lib.json"
     },
     {
+      "path": "../explainers/tsconfig.lib.json"
+    },
+    {
       "path": "../../data-access/admin-api-hooks/tsconfig.lib.json"
     },
     {

@@ -30,25 +30,25 @@ export const SLA_THRESHOLDS: Record<string, SlaThreshold> = {
   'backing-off': {
     low: 0.05,
     high: 0.1,
-    lowLabel: 'More than 5% of inflight invocations are backing-off',
-    highLabel: 'More than 10% of inflight invocations are backing-off',
+    lowLabel: 'More than 5% of unfinished invocations are backing off',
+    highLabel: 'More than 10% of unfinished invocations are backing off',
   },
   paused: {
     low: 0.01,
     high: 0.05,
-    lowLabel: 'More than 1% of inflight invocations are paused',
-    highLabel: 'More than 5% of inflight invocations are paused',
+    lowLabel: 'More than 1% of unfinished invocations are paused',
+    highLabel: 'More than 5% of unfinished invocations are paused',
   },
-  pending: {
+  new: {
     low: 0.01,
     high: 0.05,
-    lowLabel: 'More than 1% of inflight invocations are pending',
-    highLabel: 'More than 5% of inflight invocations are pending',
+    lowLabel: "More than 1% of unfinished invocations haven't started yet",
+    highLabel: "More than 5% of unfinished invocations haven't started yet",
   },
   ready: {
     low: 0.01,
     high: 0.05,
-    lowLabel: 'More than 1% of inflight invocations are waiting to run',
-    highLabel: 'More than 5% of inflight invocations are waiting to run',
+    lowLabel: 'More than 1% of unfinished invocations are waiting to run',
+    highLabel: 'More than 5% of unfinished invocations are waiting to run',
   },
 };

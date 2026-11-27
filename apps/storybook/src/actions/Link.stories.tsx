@@ -1,0 +1,107 @@
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Link } from '@restate/ui-link';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Callout } from '@restate/ui-callout';
+
+const meta: Meta<typeof Link> = {
+  title: 'Actions/Link',
+  component: Link,
+  args: { href: '/invocations', children: 'View invocations' },
+  argTypes: {
+    variant: {
+      control: 'inline-radio',
+      options: [
+        'primary',
+        'secondary',
+        'button',
+        'secondary-button',
+        'destructive-button',
+        'icon',
+      ],
+    },
+    intent: {
+      control: 'inline-radio',
+      options: ['info', 'success', 'warning', 'danger'],
+    },
+    size: { control: 'inline-radio', options: ['xs', 'sm', 'md'] },
+  },
+  decorators: [
+    (Story) => (
+      <div className="text-sm">
+        <Story />
+      </div>
+    ),
+  ],
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Primary: Story = { args: { variant: 'primary' } };
+
+export const Secondary: Story = { args: { variant: 'secondary' } };
+
+export const Variants: Story = {
+  render: (args) => (
+    <div className="flex flex-wrap items-center gap-4">
+      <Link {...args} variant="primary">
+        Primary
+      </Link>
+      <Link {...args} variant="secondary">
+        Secondary
+      </Link>
+      <Link {...args} variant="button">
+        Button
+      </Link>
+      <Link {...args} variant="secondary-button">
+        Secondary button
+      </Link>
+      <Link {...args} variant="destructive-button">
+        Destructive button
+      </Link>
+      <Link {...args} variant="icon" aria-label="Open in a new tab">
+        <Icon name={IconName.ExternalLink} size="md" />
+      </Link>
+    </div>
+  ),
+};
+
+export const ButtonSizes: Story = {
+  render: (args) => (
+    <div className="flex items-end gap-4">
+      {(['xs', 'sm', 'md'] as const).map((size) => (
+        <span key={size} className="flex flex-col items-center gap-2">
+          <Link {...args} variant="secondary-button" size={size}>
+            View invocations
+          </Link>
+          <code className="font-mono text-2xs text-tertiary">{size}</code>
+        </span>
+      ))}
+    </div>
+  ),
+};
+
+export const External: Story = {
+  args: {
+    href: 'https://docs.restate.dev',
+    target: '_blank',
+    rel: 'noopener noreferrer',
+    children: 'Restate documentation',
+  },
+};
+
+export const InCallouts: Story = {
+  render: () => (
+    <div className="flex max-w-lg flex-col gap-3">
+      {(['info', 'success', 'warning', 'danger'] as const).map((intent) => (
+        <Callout key={intent} intent={intent}>
+          Cancellation frees held resources and lets your handler roll back its
+          changes.{' '}
+          <Link href="https://docs.restate.dev" intent={intent} target="_blank">
+            Learn more…
+          </Link>
+        </Callout>
+      ))}
+    </div>
+  ),
+};

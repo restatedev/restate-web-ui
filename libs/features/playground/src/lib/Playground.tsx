@@ -12,7 +12,7 @@ import type {
   ServiceContract,
 } from '@restate/util-openapi';
 import { toolDraftName, toolId, type InvocationLookup } from './names';
-import { SegmentedControl } from './SegmentedControl';
+import { SegmentedControl } from '@restate/ui-tabs';
 import {
   CodeView,
   handlerClient,
@@ -41,6 +41,7 @@ import {
 import { Hint, runHint } from './floating';
 import { RunResult } from './outcome';
 import { useHandlerRun, useOperationRun } from './useHandlerRun';
+import { Heading } from '@restate/ui-heading';
 
 export interface PlaygroundProps {
   service: string;
@@ -411,7 +412,7 @@ function Workspace({
                 {run.runner.isSending && (
                   <Button
                     variant="secondary"
-                    className="rounded-lg px-3 py-1.5 text-sm"
+                    size="sm"
                     onClick={run.runner.cancel}
                   >
                     Cancel
@@ -506,9 +507,9 @@ function ToolWorkspace({
             />
           </div>
           {hasRail && (
-            <h2 className="hidden text-sm font-semibold text-primary md:block">
+            <Heading level={2} size="sm" className="hidden md:block">
               {TOOL_LABEL[tool.kind]}
-            </h2>
+            </Heading>
           )}
           {headerActions && (
             <div className="ml-auto flex shrink-0 items-center gap-1.5">
@@ -629,11 +630,7 @@ function ToolRunner({
             ⌘ or Ctrl + Enter
           </span>
           {run.runner.isSending && (
-            <Button
-              variant="secondary"
-              className="rounded-lg px-3 py-1.5 text-sm"
-              onClick={run.runner.cancel}
-            >
+            <Button variant="secondary" size="sm" onClick={run.runner.cancel}>
               Cancel
             </Button>
           )}

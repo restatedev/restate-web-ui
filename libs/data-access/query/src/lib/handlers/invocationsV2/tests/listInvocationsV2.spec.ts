@@ -67,6 +67,36 @@ describe('POST /query/v2/invocations', () => {
             field: 'status',
             type: 'STRING',
             operation: 'EQUALS',
+            value: 'new',
+          },
+          {
+            field: 'target_service_name',
+            type: 'STRING_LIST',
+            operation: 'IN',
+            value: ['myService'],
+          },
+        ],
+      });
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                ss.id AS id
+              FROM sys_invocation_status ss
+              WHERE ss.status = 'inboxed'
+                AND ss.target_service_name IN ('myService')
+              LIMIT 250",
+        ]
+      `);
+    });
+
+    it('still accepts the old pending status name', async () => {
+      await post('/v2/invocations', {
+        filters: [
+          {
+            field: 'status',
+            type: 'STRING',
+            operation: 'EQUALS',
             value: 'pending',
           },
           {
@@ -114,7 +144,7 @@ describe('POST /query/v2/invocations', () => {
                 v.entry_id AS id
               FROM sys_vqueues v
               WHERE v.stage IN ('inbox', 'running')
-                AND ((v.stage = 'inbox' AND v.status IN ('backing-off', 'started', 'yielded')) OR v.stage = 'running')
+                AND ((v.stage = 'inbox' AND v.status IN ('backing-off', 'started', 'ready', 'yielded')) OR v.stage = 'running')
                 AND v.created_at > '2026-01-01T00:00:00.000Z'
               LIMIT 250",
         ]
@@ -160,7 +190,7 @@ describe('POST /query/v2/invocations', () => {
             field: 'status',
             type: 'STRING_LIST',
             operation: 'IN',
-            value: ['pending', 'backing-off', 'paused', 'ready', 'yielded'],
+            value: ['new', 'backing-off', 'paused', 'ready', 'yielded'],
           },
         ],
         sort: { field: 'transitioned_at', order: 'ASC' },
@@ -172,7 +202,7 @@ describe('POST /query/v2/invocations', () => {
                 v.entry_id AS id
               FROM sys_vqueues v
               WHERE v.stage IN ('inbox', 'paused')
-                AND ((v.stage = 'inbox' AND v.status IN ('new', 'backing-off', 'started', 'yielded')) OR v.stage = 'paused')
+                AND ((v.stage = 'inbox' AND v.status IN ('new', 'backing-off', 'started', 'ready', 'yielded')) OR v.stage = 'paused')
               ORDER BY v.transitioned_at ASC NULLS LAST
               LIMIT 250",
         ]
@@ -198,7 +228,7 @@ describe('POST /query/v2/invocations', () => {
                 v.entry_id AS id
               FROM sys_vqueues v
               WHERE v.stage IN ('inbox', 'running', 'suspended', 'paused')
-                AND ((v.stage = 'inbox' AND v.status IN ('new', 'backing-off', 'started', 'yielded')) OR v.stage = 'running' OR v.stage = 'suspended' OR v.stage = 'paused')
+                AND ((v.stage = 'inbox' AND v.status IN ('new', 'backing-off', 'started', 'ready', 'yielded')) OR v.stage = 'running' OR v.stage = 'suspended' OR v.stage = 'paused')
               ORDER BY v.created_at DESC NULLS LAST
               LIMIT 250",
         ]
@@ -261,7 +291,7 @@ describe('POST /query/v2/invocations', () => {
             field: 'status',
             type: 'STRING_LIST',
             operation: 'IN',
-            value: ['pending', 'backing-off', 'paused', 'ready'],
+            value: ['new', 'backing-off', 'paused', 'ready'],
           },
           {
             field: 'target_service_name',
@@ -295,7 +325,7 @@ describe('POST /query/v2/invocations', () => {
                 LIMIT 100000
               )
                 AND v.stage IN ('inbox', 'paused')
-                AND ((v.stage = 'inbox' AND v.status IN ('new', 'backing-off', 'started')) OR v.stage = 'paused')
+                AND ((v.stage = 'inbox' AND v.status IN ('new', 'backing-off', 'started', 'ready')) OR v.stage = 'paused')
               ORDER BY v.transitioned_at DESC NULLS LAST
               LIMIT 250",
           "SELECT
@@ -633,7 +663,7 @@ describe('POST /query/v2/invocations', () => {
             field: 'status',
             type: 'STRING_LIST',
             operation: 'IN',
-            value: ['succeeded', 'pending', 'backing-off'],
+            value: ['succeeded', 'new', 'backing-off'],
           },
         ],
         sort: { field: 'created_at', order: 'DESC' },
@@ -695,7 +725,7 @@ describe('POST /query/v2/invocations', () => {
             field: 'status',
             type: 'STRING',
             operation: 'EQUALS',
-            value: 'pending',
+            value: 'new',
           },
           {
             field: 'status',
@@ -1644,7 +1674,7 @@ describe('POST /query/v2/invocations', () => {
                   LIMIT 50000
                 ) v
               WHERE v.stage IN ('inbox', 'running')
-                AND ((v.stage = 'inbox' AND v.status IN ('started')) OR v.stage = 'running')
+                AND ((v.stage = 'inbox' AND v.status IN ('started', 'ready')) OR v.stage = 'running')
               LIMIT 250",
         ]
       `);

@@ -275,7 +275,7 @@ function WaitingQueuesCell({ value }: { value?: number | null }) {
   }
   return (
     <Badge
-      variant="warning"
+      intent="warning"
       size="sm"
       className="min-w-7 justify-center font-semibold tabular-nums"
       aria-label={`${formatNumber(count)} waiting VQueues`}
@@ -293,7 +293,7 @@ function renderCounterCell(
   switch (column.id) {
     case 'counter':
       return (
-        <Cell className="overflow-visible">
+        <Cell overflow="visible">
           {row.identity ? (
             <LimitCounterTarget
               {...row.identity}
@@ -333,7 +333,7 @@ function renderCounterCell(
       );
     case 'pattern':
       return (
-        <Cell className="overflow-visible">
+        <Cell overflow="visible">
           {row.rule_pattern ? (
             <LimitRuleTarget
               pattern={row.rule_pattern}
@@ -351,7 +351,7 @@ function renderCounterCell(
               variant="secondary"
               className="inline-flex items-center gap-1 text-0.5xs text-muted no-underline hover:text-secondary"
             >
-              <Icon name={IconName.Plus} className="h-3 w-3" />
+              <Icon name={IconName.Plus} size="xs" />
               Create rule
             </Link>
           ) : (
@@ -409,6 +409,7 @@ export function CounterTable({
       aria-label={ariaLabel}
       bodyKey={bodyKey}
       columns={columns}
+      columnWidthsStorageKey="counters-user-col-widths"
       items={rows}
       isLoading={isLoading}
       error={error}

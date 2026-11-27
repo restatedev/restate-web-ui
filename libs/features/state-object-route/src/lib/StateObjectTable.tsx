@@ -7,7 +7,7 @@ import { Cell, PanelTable, PanelTableColumn, Row } from '@restate/ui-table';
 import { ErrorBanner } from '@restate/ui-error';
 import { DropdownItem, DropdownSection } from '@restate/ui-dropdown';
 import { Icon, IconName } from '@restate/ui-icons';
-import { Spinner } from '@restate/ui-loading';
+import { Spinner, Skeleton } from '@restate/ui-loading';
 import { formatBytes } from '@restate/util-intl';
 import {
   Popover,
@@ -114,8 +114,6 @@ const stateObjectStyles = tv({
     collapsedPreviewValue:
       'inline-block max-w-[28ch] truncate align-bottom text-muted',
     collapsedPreviewPunctuation: 'shrink-0 text-subtle',
-    previewSkeleton:
-      'block h-4 w-44 max-w-full animate-pulse rounded-md bg-emphasis/80',
     refreshingStatus:
       'flex min-w-0 items-center gap-1.5 text-xs text-subtle italic',
     childStatus: 'flex min-w-0 items-center gap-1.5 text-xs text-muted',
@@ -134,10 +132,10 @@ export function getObjectKeyColumnName(
   serviceType: StateServiceType | undefined,
 ) {
   if (serviceType === 'workflow') {
-    return 'Workflow id';
+    return 'Workflow ID';
   }
   if (serviceType === 'virtual_object') {
-    return 'Virtual object key';
+    return 'Object key';
   }
   return 'Service key';
 }
@@ -149,7 +147,7 @@ function getObjectIdentityColumnName(
     return 'Workflow run';
   }
   if (serviceType === 'virtual_object') {
-    return 'Virtual object instance';
+    return 'Virtual Object instance';
   }
   return getObjectKeyColumnName(serviceType);
 }
@@ -263,6 +261,7 @@ export function StateObjectTable({
     <PanelTable
       aria-label="State"
       columns={columns}
+      columnWidthsStorageKey="state-objects-user-col-widths"
       items={items}
       isLoading={isLoading}
       numOfRows={numOfRows}
@@ -389,6 +388,7 @@ export function StateEntriesTable({
     <PanelTable
       aria-label="State"
       columns={columns}
+      columnWidthsStorageKey="state-entries-user-col-widths"
       items={items}
       isLoading={entriesQuery.isPending}
       error={entriesQuery.error}
@@ -613,7 +613,7 @@ function StateObjectRefreshingStatus({
 
   return (
     <span className={refreshingStatus()}>
-      <Spinner className="h-3.5 w-3.5 shrink-0" />
+      <Spinner size="sm" />
       Refreshing keys…
     </span>
   );
@@ -636,7 +636,6 @@ function StateObjectCollapsedPreview({
     collapsedPreviewKey,
     collapsedPreviewValue,
     collapsedPreviewPunctuation,
-    previewSkeleton,
   } = stateObjectStyles();
   const { entriesQuery, loadedEntries } = useStateObjectEntries(
     serviceName,
@@ -646,7 +645,7 @@ function StateObjectCollapsedPreview({
   const entries = loadedEntries ?? row.state;
 
   if (isLoadingPreview && !loadedEntries && row.state.length === 0) {
-    return <span className={previewSkeleton()} />;
+    return <Skeleton shape="block" className="block h-4 w-44 max-w-full" />;
   }
   const previewState = entries.slice(0, COLLAPSED_STATE_PREVIEW_KEYS);
   const isComplete = Boolean(loadedEntries) && !entriesQuery.hasNextPage;
@@ -828,7 +827,7 @@ function StateChildCell({
         <Cell className={loadMoreCell()}>
           {child.status === 'loading' ? (
             <span className={childStatus({ className: 'pl-7' })}>
-              <Spinner className="h-3.5 w-3.5 shrink-0" />
+              <Spinner size="sm" />
               Loading keys…
             </span>
           ) : child.status === 'empty' ? (
@@ -913,7 +912,7 @@ function StateLoadMoreCell({
       >
         {isFetchingNextPage ? (
           <>
-            <Spinner className="h-3.5 w-3.5 shrink-0" />
+            <Spinner size="sm" />
             Loading more keys…
           </>
         ) : (
@@ -1096,7 +1095,7 @@ function StateValuePreview({
                 className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
               >
                 Edit
-                <Icon name={IconName.ExternalLink} className="h-3 w-3" />
+                <Icon name={IconName.ExternalLink} size="xs" />
               </EditStateTrigger>
             </div>
           }
@@ -1113,10 +1112,7 @@ function StateValuePreview({
             </StaticCodecOptionsProvider>
           ) : valueQuery.error ? (
             <div className="py-3 pr-4">
-              <ErrorBanner
-                error={valueQuery.error}
-                className="w-full rounded-xl text-left"
-              />
+              <ErrorBanner error={valueQuery.error} className="w-full" />
             </div>
           ) : (
             <div className={valueStatus()}>

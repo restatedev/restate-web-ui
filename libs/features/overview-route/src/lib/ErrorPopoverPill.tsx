@@ -19,17 +19,19 @@ export function ErrorPopoverPill({
         >
           <Icon
             name={IconName.TriangleAlert}
-            className="h-3.5 w-3.5 fill-danger-emphasis text-danger"
+            size="sm"
+            className="fill-danger-emphasis text-danger"
           />
           {label}
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 text-danger-subtle"
+            size="sm"
+            className="text-danger-subtle"
           />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-sm">
-        <ErrorBanner error={error} className="rounded-xl" />
+        <ErrorBanner error={error} />
       </PopoverContent>
     </Popover>
   );

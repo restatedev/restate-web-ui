@@ -229,7 +229,8 @@ export function EntryExpression({
             >
               <Icon
                 name={mode === 'paused' ? IconName.Pause : IconName.ClockAlert}
-                className="h-3 w-3 opacity-80"
+                size="xs"
+                tone="dimmed"
               />
             </HoverTooltip>
           )}

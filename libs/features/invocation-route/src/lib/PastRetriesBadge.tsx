@@ -52,7 +52,7 @@ export function PastRetriesBadge({
         aria-expanded={isExpanded}
         className={styles({ isExpanded })}
       >
-        <Icon name={IconName.Retry} className="h-3 w-3" />
+        <Icon name={IconName.Retry} size="xs" />
         {formatNumber(count)}
       </Button>
     </HoverTooltip>

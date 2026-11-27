@@ -17,9 +17,10 @@ vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
 
 interface ErrorQueryResult {
   data?: {
-    message: string;
+    message?: string;
     relatedRestateErrorCode?: string;
     stack?: string;
+    pausedAt?: string;
   };
   error: Error | null;
   isPending: boolean;
@@ -175,3 +176,17 @@ describe.each<LazyErrorKind>(['paused', 'transient'])(
     });
   },
 );
+
+it('says a pause without a failure was manual', async () => {
+  setResult('paused', {
+    data: { pausedAt: '2026-11-25T15:42:16.165Z' },
+    error: null,
+    isPending: false,
+  });
+  renderStatus('paused');
+
+  fireEvent.click(screen.getByRole('button', { name: triggerName('paused') }));
+
+  expect(await screen.findByText('Paused manually')).toBeTruthy();
+  expect(screen.getByText('No failure led to this pause.')).toBeTruthy();
+});

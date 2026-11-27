@@ -1,4 +1,5 @@
 import { getEndpoint } from '@restate/data-access-admin-api-spec';
+import { SERVICE_TYPE_LABELS } from '@restate/features-explainers';
 import {
   useListDeployments,
   useListSubscriptions,
@@ -47,9 +48,9 @@ export function useSchema() {
         type: 'STRING_LIST',
         options: [
           { value: 'scheduled', label: 'Scheduled' },
-          { value: 'pending', label: 'Pending' },
+          { value: 'new', label: 'New', description: 'Was Pending' },
           { value: 'running', label: 'Running' },
-          { value: 'backing-off', label: 'Backing-off' },
+          { value: 'backing-off', label: 'Backing off' },
           { value: 'suspended', label: 'Suspended' },
           { value: 'paused', label: 'Paused' },
           { value: 'killed', label: 'Killed' },
@@ -111,9 +112,12 @@ export function useSchema() {
         ],
         type: 'STRING_LIST',
         options: [
-          { value: 'service', label: 'Service' },
-          { value: 'virtual_object', label: 'Virtual Object' },
-          { value: 'workflow', label: 'Workflow' },
+          { value: 'service', label: SERVICE_TYPE_LABELS.Service },
+          {
+            value: 'virtual_object',
+            label: SERVICE_TYPE_LABELS.VirtualObject,
+          },
+          { value: 'workflow', label: SERVICE_TYPE_LABELS.Workflow },
         ],
       },
       {

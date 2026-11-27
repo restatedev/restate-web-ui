@@ -57,10 +57,7 @@ export function AllRevisions({ serviceName }: { serviceName: string }) {
           className="relative inline-flex items-center gap-1 rounded-xl px-1 py-0.5 text-0.5xs hover:bg-tint-subtle"
         >
           <Revision revision={latest.revision} />
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 text-subtle"
-          />
+          <Icon name={IconName.ChevronsUpDown} size="sm" tone="subtle" />
         </Button>
       </DropdownTrigger>
       <DropdownPopover>

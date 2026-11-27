@@ -2,12 +2,14 @@ import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import {
   addChildProblems,
   filterJournalRows,
+  findOwnPauseOrRetry,
   findProblems,
   findJournalProblems,
   getChildIdsToCheck,
   getInvocationRetryKey,
   getPastRetries,
   getPausedCommands,
+  getProblemRowKey,
   getProblemStats,
   getRecoveredRows,
   getRetriedCommands,
@@ -63,6 +65,13 @@ function pausedEvent(
 
 function manualPause(index: number): JournalEntryV2 {
   return { index, category: 'event', type: 'Event: Paused' } as JournalEntryV2;
+}
+
+function lifecycle(
+  type: string,
+  fields: Record<string, unknown> = {},
+): JournalEntryV2 {
+  return { category: 'event', type, ...fields } as JournalEntryV2;
 }
 
 function row(
@@ -595,6 +604,56 @@ describe('paused invocations', () => {
   });
 });
 
+describe('findOwnPauseOrRetry', () => {
+  const steps = [command(0, { type: 'Input' }), command(1)];
+  const pause = (fields: Record<string, unknown> = {}) =>
+    lifecycle('Paused', {
+      index: 9,
+      isPending: true,
+      message: 'connection refused',
+      ...fields,
+    });
+
+  it('finds the current pause or next retry when no step failed', () => {
+    const paused = pause();
+    const retrying = lifecycle('Retrying');
+
+    expect(findOwnPauseOrRetry([...steps, paused])).toBe(paused);
+    expect(findOwnPauseOrRetry([...steps, retrying])).toBe(retrying);
+  });
+
+  it('treats a failure on a command missing from the journal as its own', () => {
+    const paused = pause({ relatedCommandIndex: 7 });
+    const retrying = lifecycle('Retrying');
+
+    expect(findOwnPauseOrRetry([...steps, paused])).toBe(paused);
+    expect(findOwnPauseOrRetry([...steps, retrying], 7)).toBe(retrying);
+  });
+
+  it('leaves failures on a step or the input, past and manual pauses', () => {
+    const retrying = [...steps, lifecycle('Retrying')];
+
+    expect(findOwnPauseOrRetry(retrying, 1)).toBeUndefined();
+    expect(findOwnPauseOrRetry(retrying, 0)).toBeUndefined();
+    for (const fields of [
+      { relatedCommandIndex: 1 },
+      { relatedCommandIndex: 0 },
+      { isPending: false },
+      { message: undefined },
+    ]) {
+      expect(findOwnPauseOrRetry([...steps, pause(fields)])).toBeUndefined();
+    }
+  });
+});
+
+describe('getProblemRowKey', () => {
+  it('tells lifecycle rows without an index apart', () => {
+    expect(getProblemRowKey(row(lifecycle('Running')))).not.toBe(
+      getProblemRowKey(row(lifecycle('Retrying'))),
+    );
+  });
+});
+
 describe('waiting notifications', () => {
   it('flags only notifications that are still pending', () => {
     const awaited = (isPending: boolean) =>
@@ -643,6 +702,19 @@ describe('filterJournalRows', () => {
 
     expect(shown.map(({ entry }) => entry?.index)).toEqual([0, 2, 3]);
     expect(matches).toBe(1);
+  });
+
+  it('keeps the row that shows the problem of the invocation itself', () => {
+    const paused = [...rows, row(lifecycle('Paused', { index: 9 }))];
+    const shownIndexes = (invocationProblemRow?: number) =>
+      filterJournalRows(
+        paused,
+        { problemsOnly: true, query: '', invocationProblemRow },
+        kindByRow,
+      ).rows.map(({ entry }) => entry?.index);
+
+    expect(shownIndexes()).toEqual([0, 2, 3]);
+    expect(shownIndexes(5)).toEqual([0, 2, 3, 9]);
   });
 
   it('keeps the lifecycle rows of an invocation without commands', () => {

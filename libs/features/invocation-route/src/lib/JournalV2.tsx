@@ -38,7 +38,7 @@ import {
   JournalContextProvider,
   useJournalTimelineContext,
 } from '@restate/features-invocation-ui';
-import { Indicator, Spinner } from '@restate/ui-loading';
+import { Spinner, StatusDot } from '@restate/ui-loading';
 import { Entry } from '@restate/features-invocation-ui';
 import { useFailureRelatedCommandIndex } from '@restate/features-invocation-ui';
 import { Input } from '@restate/features-invocation-ui';
@@ -103,6 +103,7 @@ import {
   findLineRow,
   getLineHash,
   getRowLinePath,
+  LAST_FAILURE_HASH,
   parseLineHash,
 } from './journalLineLinks';
 import {
@@ -117,6 +118,7 @@ import {
   type JournalDetail,
 } from '@restate/features-invocation-ui';
 import { JournalDetailToggle } from './JournalDetailToggle';
+import { JournalFollow } from './JournalFollow';
 import { useHiddenEntryMatchers } from './hiddenEntries';
 import {
   JournalSplitSeparator,
@@ -278,7 +280,8 @@ export function JournalV2({
   showIntrospection = true,
 }: JournalV2Props) {
   const [isLive, setIsLive] = useState(true);
-  const isScrollingRef = useRef(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const isUserScrollingRef = useRef(false);
   const [searchParams] = useSearchParams();
   const [invocationIds, setInvocationIds] = useState(() =>
     withTimeline
@@ -300,7 +303,7 @@ export function JournalV2({
     refetchInterval(query) {
       if (
         isLive &&
-        !isScrollingRef.current &&
+        !isUserScrollingRef.current &&
         query.state.status === 'success' &&
         hasPendingJournalUpdates(query.state.data)
       ) {
@@ -413,6 +416,10 @@ export function JournalV2({
       )
     : 0;
 
+  const { commandIndex: failureCommandIndex } = useFailureRelatedCommandIndex(
+    journalAndInvocationData,
+    { enabled: withTimeline },
+  );
   const journalProblems = useJournalProblems({
     enabled: Boolean(withTimeline),
     invocationId,
@@ -420,6 +427,7 @@ export function JournalV2({
     rows: entriesWithoutInputUnfiltered,
     inputEntry,
     showErrors: Boolean(detail.errors),
+    failureCommandIndex,
   });
   const entriesWithoutInput = journalProblems.entries;
   const shownProblemRows = journalProblems.navigableRows;
@@ -446,6 +454,16 @@ export function JournalV2({
     () => getRowChunks(entriesWithoutInput),
     [entriesWithoutInput],
   );
+  const rootEntries = journalAndInvocationData?.journal?.entries;
+  const rootCommandCount = useMemo(
+    () =>
+      rootEntries?.reduce(
+        (count, entry) => (entry.category === 'command' ? count + 1 : count),
+        0,
+      ) ?? 0,
+    [rootEntries],
+  );
+  const journalEndRef = useRef<HTMLDivElement>(null);
   const entriesListRef = useRef<HTMLDivElement>(null);
   const [entriesListCallbackRef, scrollMargin] =
     useWindowScrollMargin(entriesListRef);
@@ -458,8 +476,9 @@ export function JournalV2({
     rangeExtractor: renderWindow.rangeExtractor,
   });
   renderWindow.scrollStateRef.current = virtualizer;
+  const isUserScrolling = virtualizer.isScrolling && !isFollowing;
   useLayoutEffect(() => {
-    isScrollingRef.current = virtualizer.isScrolling;
+    isUserScrollingRef.current = isUserScrolling;
   });
   useGrowRenderWindowWhenIdle(
     renderWindow,
@@ -470,14 +489,19 @@ export function JournalV2({
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
 
-  const { commandIndex: failureCommandIndex } = useFailureRelatedCommandIndex(
-    journalAndInvocationData,
-    { enabled: withTimeline },
-  );
+  const { ownFailureEntry } = journalProblems;
   const failureRowIndex = useMemo(
     () =>
-      findCommandRow(entriesWithoutInput, invocationId, failureCommandIndex),
-    [entriesWithoutInput, invocationId, failureCommandIndex],
+      ownFailureEntry
+        ? entriesWithoutInput.findLastIndex(
+            (row) => row.entry === ownFailureEntry,
+          )
+        : findCommandRow(
+            entriesWithoutInput,
+            invocationId,
+            failureCommandIndex,
+          ),
+    [entriesWithoutInput, invocationId, failureCommandIndex, ownFailureEntry],
   );
   const failureRow =
     failureRowIndex >= 0
@@ -498,9 +522,15 @@ export function JournalV2({
         : undefined,
     [linePath, entriesWithoutInputUnfiltered],
   );
+  const isFailureHash = Boolean(withTimeline) && hash === LAST_FAILURE_HASH;
   const selectedRowIndex = useMemo(
-    () => (linePath ? findLineRow(entriesWithoutInput, linePath).index : -1),
-    [linePath, entriesWithoutInput],
+    () =>
+      linePath
+        ? findLineRow(entriesWithoutInput, linePath).index
+        : isFailureHash
+          ? failureRowIndex
+          : -1,
+    [linePath, entriesWithoutInput, isFailureHash, failureRowIndex],
   );
   const lineParent =
     lineRow && linePath && lineRow.depth < linePath.length
@@ -557,7 +587,7 @@ export function JournalV2({
       return;
     }
     if (
-      linePath &&
+      (linePath || isFailureHash) &&
       (isLineCollapsed || invocationIds.some((id) => isPending[id]))
     ) {
       return;
@@ -588,6 +618,7 @@ export function JournalV2({
     hash,
     locationKey,
     linePath,
+    isFailureHash,
     isLineCollapsed,
     selectedRowIndex,
     invocationIds,
@@ -634,7 +665,7 @@ export function JournalV2({
   useEffect(() => {
     const row = virtualizer.measurementsCache[focusRowIndex];
     const list = entriesListRef.current;
-    if (linePath && !hasScrolledToFocus.current) {
+    if ((linePath || isFailureHash) && !hasScrolledToFocus.current) {
       hasScrolledToFocus.current = true;
       return;
     }
@@ -650,7 +681,14 @@ export function JournalV2({
         scrollMargin -
         window.innerHeight / 3,
     });
-  }, [withTimeline, focusRowIndex, virtualizer, scrollMargin, linePath]);
+  }, [
+    withTimeline,
+    focusRowIndex,
+    virtualizer,
+    scrollMargin,
+    linePath,
+    isFailureHash,
+  ]);
   const rowCenter = (index: number) => {
     const row = virtualizer.measurementsCache[index];
     return row ? row.start - scrollMargin + row.size / 2 : index * 36;
@@ -724,7 +762,7 @@ export function JournalV2({
       getEventRelatedInvocationIds(journalAndInvocationData?.journal?.entries),
     [journalAndInvocationData],
   );
-  const referencedInvocationIds = virtualizer.isScrolling
+  const referencedInvocationIds = isUserScrolling
     ? []
     : [
         ...new Set([
@@ -749,7 +787,7 @@ export function JournalV2({
     refetchInterval(query) {
       if (
         isLive &&
-        !isScrollingRef.current &&
+        !isUserScrollingRef.current &&
         hasNonCompletedReferencedInvocations(
           referencedInvocationIds,
           query.state.data?.invocations,
@@ -770,10 +808,7 @@ export function JournalV2({
     return (
       <ContentPanelSection>
         <div className="px-2">
-          <ErrorBanner
-            error={invocationApiError}
-            className="flex-none rounded-xl"
-          />
+          <ErrorBanner error={invocationApiError} className="flex-none" />
         </div>
       </ContentPanelSection>
     );
@@ -782,7 +817,7 @@ export function JournalV2({
   if (isPending[invocationId]) {
     const loading = (
       <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-muted">
-        <Spinner className="h-4 w-4" />
+        <Spinner size="md" />
         Loading…
       </div>
     );
@@ -808,7 +843,7 @@ export function JournalV2({
           invocationIds={journalProblems.childCheck.invocationIds}
           referenceInvocationId={invocationId}
           isLive={isLive}
-          isScrolling={virtualizer.isScrolling}
+          isScrolling={isUserScrolling}
           onProgress={journalProblems.childCheck.onProgress}
         />
       )}
@@ -847,7 +882,7 @@ export function JournalV2({
               fallback={
                 <ContentPanelSection>
                   <div className="flex items-center gap-1.5 p-4 text-sm text-muted">
-                    <Spinner className="h-4 w-4" />
+                    <Spinner size="md" />
                     Loading…
                   </div>
                 </ContentPanelSection>
@@ -887,8 +922,12 @@ export function JournalV2({
                     />
                     {areAllInvocationsCompleted && (
                       <HoverTooltip content="Refresh">
-                        <Button variant="icon" onClick={refetch}>
-                          <Icon name={IconName.Retry} className="h-4 w-4" />
+                        <Button
+                          aria-label="Refresh"
+                          variant="icon"
+                          onClick={refetch}
+                        >
+                          <Icon name={IconName.Retry} size="md" />
                         </Button>
                       </HoverTooltip>
                     )}
@@ -896,13 +935,11 @@ export function JournalV2({
                       <HoverTooltip content="Introspect">
                         <Link
                           variant="icon"
+                          aria-label="Introspect"
                           href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.id}'`}
                           target="_blank"
                         >
-                          <Icon
-                            name={IconName.ScanSearch}
-                            className="h-4 w-4"
-                          />
+                          <Icon name={IconName.ScanSearch} size="md" />
                         </Link>
                       </HoverTooltip>
                     )}
@@ -980,7 +1017,10 @@ export function JournalV2({
                 </ContentPanelHeader>
               )}
               {withTimeline ? (
-                <div className="relative flex min-h-0 flex-1 flex-col">
+                <div
+                  ref={journalEndRef}
+                  className="relative flex min-h-0 flex-1 flex-col"
+                >
                   {isJournalEmpty ? (
                     <JournalPurgedMessage />
                   ) : (
@@ -1106,6 +1146,20 @@ export function JournalV2({
                     </div>
                   )}
                   <div data-last-failure-fallback aria-hidden className="h-0" />
+                  <JournalFollow
+                    journalRef={journalEndRef}
+                    onFollowingChange={setIsFollowing}
+                    isEnabled={
+                      isLive &&
+                      !areAllInvocationsCompleted &&
+                      !isJournalEmpty &&
+                      !journalProblems.isProblemsOnly &&
+                      !journalProblems.findText.trim()
+                    }
+                    isComplete={areAllInvocationsCompleted}
+                    contentSize={totalSize}
+                    entryCount={rootCommandCount}
+                  />
                 </div>
               ) : (
                 <div className={className}>
@@ -1150,7 +1204,7 @@ export function JournalV2({
                       className="flex items-center justify-center gap-1 py-3 text-xs text-accent hover:text-accent-strong"
                     >
                       View all entries
-                      <Icon name={IconName.ChevronRight} className="h-3 w-3" />
+                      <Icon name={IconName.ChevronRight} size="xs" />
                     </Link>
                   )}
                   <div data-last-failure-fallback aria-hidden className="h-0" />
@@ -1276,7 +1330,7 @@ function ReturnToLiveButton({
         onClick={() => setIsLive(true)}
       >
         <div className="">Live</div>
-        <Icon name={IconName.Play} className="mb-px h-2.5 w-2.5 fill-current" />
+        <Icon name={IconName.Play} size="2xs" className="mb-px fill-current" />
       </Button>
     );
   }
@@ -1294,7 +1348,7 @@ function ReturnToLiveButton({
         <div className="w-[8ch] text-right font-mono tabular-nums">
           {lagLabel}
         </div>
-        <Indicator status="INFO" className="mb-0.5" />
+        <StatusDot intent="info" pulse className="mb-0.5" />
       </Button>
     );
   }
@@ -1306,7 +1360,7 @@ function ReturnToLiveButton({
       onClick={() => setIsLive(false)}
     >
       <div className="">Live</div>
-      <Indicator status="INFO" className="mb-0.5" />
+      <StatusDot intent="info" pulse className="mb-0.5" />
     </Button>
   );
 }
@@ -1679,7 +1733,7 @@ const TimelineRow = memo(function TimelineRow({
 function JournalPurgedMessage() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-12 text-center">
-      <Icon name={IconName.Trash} className="h-5 w-5 text-subtle" />
+      <Icon name={IconName.Trash} size="lg" tone="subtle" />
       <div className="text-sm font-medium text-secondary">
         Journal was purged
       </div>
@@ -1740,7 +1794,7 @@ function HiddenEntriesChip({
       }
     >
       <span className={hiddenEntriesChipStyles()}>
-        <Icon name={IconName.EyeOff} className="h-3 w-3 text-subtle" />
+        <Icon name={IconName.EyeOff} size="xs" tone="subtle" />
         {count}
       </span>
     </HoverTooltip>

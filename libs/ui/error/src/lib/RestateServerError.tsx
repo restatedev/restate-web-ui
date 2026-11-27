@@ -9,17 +9,13 @@ import {
 import { Fragment, PropsWithChildren } from 'react';
 import Markdown from 'react-markdown';
 import { tv } from '@restate/util-styles';
-import {
-  Button as RACButton,
-  Disclosure,
-  DisclosurePanel,
-  Heading,
-} from 'react-aria-components';
+import { Button as RACButton, Heading } from 'react-aria-components';
+import { Disclosure, DisclosurePanel } from '@restate/ui-disclosure';
 
 const UI_CODES = new Set<string>(Object.values(UI_ERROR_CODES));
 
 const styles = tv({
-  base: 'relative flex max-h-[28rem] min-h-0 w-full flex-auto flex-col gap-2 overflow-auto rounded-xl p-3 text-sm',
+  base: 'relative flex max-h-[28rem] min-h-0 w-full flex-auto flex-col gap-2 overflow-auto rounded-xl p-3 text-left text-sm',
   variants: {
     isTransient: {
       true: 'bg-warning-subtle',

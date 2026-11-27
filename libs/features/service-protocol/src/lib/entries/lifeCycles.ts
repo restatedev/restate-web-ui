@@ -41,7 +41,7 @@ export function lifeCycles(
       start: invocation.inboxed_at,
       category: 'event',
       end: invocation.running_at,
-      isPending: invocation.status === 'pending',
+      isPending: invocation.status === 'new',
       index: -2,
     });
   }

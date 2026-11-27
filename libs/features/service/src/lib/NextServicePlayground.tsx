@@ -58,7 +58,7 @@ function Playground(props: ComponentProps<typeof LazyPlayground>) {
       <Suspense
         fallback={
           <PlaygroundStatus headerActions={props.headerActions}>
-            <Spinner className="h-4 w-4" />
+            <Spinner size="md" />
             Loading playground…
           </PlaygroundStatus>
         }
@@ -118,7 +118,7 @@ export function HeaderButton({
           aria-label={label}
           className="flex h-7 w-7 items-center justify-center rounded-full p-0"
         >
-          <Icon name={icon} className="h-3.5 w-3.5 text-muted" />
+          <Icon name={icon} size="sm" tone="muted" />
         </Button>
       </TooltipTrigger>
       <TooltipContent size="sm">{label}</TooltipContent>

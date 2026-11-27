@@ -47,7 +47,7 @@ function getBadgeVariant(
   switch (status) {
     case 'succeeded':
       return 'success';
-    case 'pending':
+    case 'new':
     case 'paused':
       return 'warning';
     case 'running':
@@ -56,7 +56,7 @@ function getBadgeVariant(
       return 'danger';
 
     default:
-      return 'default';
+      return 'neutral';
   }
 }
 
@@ -67,12 +67,11 @@ const styles = tv({
       success: '',
       danger: '',
       warning: '',
-      default: 'bg-muted',
+      neutral: 'bg-muted',
       info: '',
     },
     status: {
-      pending:
-        'border-dashed border-pending bg-transparent text-pending-strong',
+      new: 'border-dashed border-pending bg-transparent text-pending-strong',
       scheduled: 'border-dashed border-neutral/60 bg-transparent',
       ready: 'border-dashed border-strong bg-transparent text-muted',
       yielded: 'border-dashed border-strong bg-transparent text-muted',
@@ -135,7 +134,7 @@ function StatusSecondary({
 }
 
 const STATUS_LABEL: Record<InvocationComputedStatus2, string> = {
-  pending: 'Pending',
+  new: 'New',
   scheduled: 'Scheduled',
   ready: 'Ready',
   yielded: 'Yielded',
@@ -145,7 +144,7 @@ const STATUS_LABEL: Record<InvocationComputedStatus2, string> = {
   failed: 'Failed',
   cancelled: 'Cancelled',
   killed: 'Killed',
-  'backing-off': 'Backing-off',
+  'backing-off': 'Backing off',
   paused: 'Paused',
 };
 
@@ -170,7 +169,7 @@ export function InvocationStatusBadge({
   const variant = getBadgeVariant(status, isRetrying);
   return (
     <Badge
-      variant={variant}
+      intent={variant}
       className={styles({
         className,
         status,
@@ -280,6 +279,7 @@ function PausedLastError({ invocationId }: { invocationId: string }) {
         data.stack,
       )
     : undefined;
+  const isManualPause = Boolean(data) && !error;
 
   return (
     <LastError
@@ -289,8 +289,12 @@ function PausedLastError({ invocationId }: { invocationId: string }) {
       queryError={queryError}
       isLoading={isOpen && isPending}
       loadingMessage="Loading paused error…"
-      emptyMessage="No paused error was recorded."
-      popoverTitle="Paused after"
+      emptyMessage={
+        isManualPause
+          ? 'No failure led to this pause.'
+          : 'No paused error was recorded.'
+      }
+      popoverTitle={isManualPause ? 'Paused manually' : 'Paused after'}
       label="after…"
       onOpenChange={setIsOpen}
     />
@@ -458,10 +462,7 @@ export function LastError({
             </span>
           ) : null}
           {canOpen && (
-            <Icon
-              name={IconName.ChevronsUpDown}
-              className="h-3 w-3 shrink-0 text-muted"
-            />
+            <Icon name={IconName.ChevronsUpDown} size="xs" tone="muted" />
           )}
         </Button>
       </PopoverTrigger>
@@ -480,7 +481,7 @@ export function LastError({
                   'flex min-h-20 items-center justify-center gap-2 p-4 text-xs text-muted',
               })}
             >
-              <Spinner className="h-4 w-4" />
+              <Spinner size="md" />
               {loadingMessage ?? 'Loading error…'}
             </div>
           ) : queryError ? (

@@ -5,6 +5,7 @@ import type {
 import type { QueryContext } from '../shared.js';
 import {
   badRequest,
+  normalizeInvocationStatusFilters,
   resolveInvocationModeV2,
   validateInvocationFiltersV2,
 } from './shared.js';
@@ -32,13 +33,14 @@ export type SummaryInvocationsV2Args =
 export async function summaryInvocationsV2(
   this: QueryContext,
   {
-    filters = [],
+    filters: requestedFilters = [],
     highlightFields = [],
     mode: requestedMode,
     view = 'all',
   }: SummaryInvocationsV2Args,
 ): Promise<Response> {
   const queryStartedAt = performance.now();
+  const filters = normalizeInvocationStatusFilters(requestedFilters);
   const filterError = validateInvocationFiltersV2(filters);
   if (filterError) return badRequest(filterError);
 

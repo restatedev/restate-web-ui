@@ -1,0 +1,28 @@
+{
+  "name": "storybook",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/storybook/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node_modules/.bin/storybook dev --config-dir apps/storybook/.storybook --port=${STORYBOOK_PORT:-6006} --no-open",
+        "env": {
+          "MIMALLOC_PURGE_DELAY": "0",
+          "ROLLDOWN_WORKER_THREADS": "4",
+          "RAYON_NUM_THREADS": "4",
+          "MallocSpaceEfficient": "1"
+        }
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/apps/storybook"],
+      "options": {
+        "command": "node_modules/.bin/storybook build --config-dir apps/storybook/.storybook --output-dir dist/apps/storybook --quiet"
+      }
+    }
+  }
+}

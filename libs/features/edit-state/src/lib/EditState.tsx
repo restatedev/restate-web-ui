@@ -3,9 +3,10 @@ import {
   DialogClose,
   DialogContent,
   DialogFooter,
+  DialogTitle,
 } from '@restate/ui-dialog';
 import { Form } from 'react-router';
-import { Disclosure, DisclosurePanel, Heading } from 'react-aria-components';
+import { Disclosure, DisclosurePanel } from '@restate/ui-disclosure';
 import { Button, SubmitButton } from '@restate/ui-button';
 import { ErrorBanner } from '@restate/ui-error';
 import {
@@ -34,32 +35,12 @@ import {
 } from '@restate/data-access-admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui-notification';
 import { Icon, IconName } from '@restate/ui-icons';
+import { Callout } from '@restate/ui-callout';
 import { tv } from '@restate/util-styles';
 import { useQueryClient } from '@tanstack/react-query';
-import { Spinner } from '@restate/ui-loading';
 import { TruncateWithTooltip } from '@restate/ui-tooltip';
 import { Badge } from '@restate/ui-badge';
 import { useEditState, type EditStateValue } from './useEditState';
-
-const styles = tv({
-  base: '',
-  slots: {
-    banner: 'mt-2 flex gap-2 rounded-xl p-3 text-0.5xs',
-    bannerIcon: 'h-5 w-5 shrink-0',
-  },
-  variants: {
-    isWarning: {
-      true: {
-        banner: 'border border-warning bg-warning-subtle text-warning',
-        bannerIcon: 'fill-warning text-on-warning',
-      },
-      false: {
-        banner: 'border border-info bg-info-subtle text-info',
-        bannerIcon: 'fill-info text-on-info',
-      },
-    },
-  },
-});
 
 const valueFormatStyles = tv({
   base: 'shrink-0 [&_button]:gap-1 [&_button]:border-none [&_button]:bg-transparent [&_button]:px-1.5 [&_button]:py-1 [&_button]:text-xs [&_button]:font-normal [&_button]:text-muted [&_button]:shadow-none [&_button_[data-description]]:hidden [&_button:hover]:bg-tint-subtle [&_button:hover]:text-secondary [&>div]:rounded-lg [&>div]:border-none [&>div]:bg-transparent [&>div]:p-0 [&>div]:shadow-none',
@@ -298,7 +279,8 @@ function EditStateInner({
               Update{' '}
               <Badge
                 size="sm"
-                className="align-middle font-mono text-base font-medium"
+                mono
+                className="align-middle text-base font-medium"
               >
                 {key}
               </Badge>
@@ -315,7 +297,8 @@ function EditStateInner({
               <span className="text-muted">in</span>
               <Badge
                 size="sm"
-                className="max-w-[20ch] min-w-0 align-middle font-mono"
+                mono
+                className="max-w-[20ch] min-w-0 align-middle"
               >
                 <TruncateWithTooltip copyText={service}>
                   {service}
@@ -329,7 +312,8 @@ function EditStateInner({
               <span className="text-muted">key</span>
               <Badge
                 size="sm"
-                className="max-w-[20ch] min-w-0 align-middle font-mono"
+                mono
+                className="max-w-[20ch] min-w-0 align-middle"
               >
                 <TruncateWithTooltip copyText={objectKey}>
                   {objectKey}
@@ -345,7 +329,8 @@ function EditStateInner({
                   <span className="text-muted">scope</span>
                   <Badge
                     size="sm"
-                    className="max-w-[20ch] min-w-0 align-middle font-mono"
+                    mono
+                    className="max-w-[20ch] min-w-0 align-middle"
                   >
                     <TruncateWithTooltip copyText={scope}>
                       {scope}
@@ -493,9 +478,10 @@ function StateFormRows({
           ]);
           scrollRowsToBottom();
         }}
-        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border-dashed bg-transparent px-3 py-1.5 text-sm text-muted shadow-none hover:bg-subtle"
+        size="sm"
+        className="mt-2 flex w-full items-center justify-center gap-1.5 border-dashed bg-transparent text-muted shadow-none hover:bg-subtle"
       >
-        <Icon name={IconName.Plus} className="h-3.5 w-3.5" /> Add key
+        <Icon name={IconName.Plus} size="sm" /> Add key
       </Button>
     </>
   );
@@ -531,8 +517,8 @@ function StateFormRow({
 
   return (
     <Disclosure
-      isExpanded={isExpanded}
-      onExpandedChange={(expanded) => {
+      open={isExpanded}
+      onOpenChange={(expanded) => {
         setIsExpanded(expanded);
         if (expanded) {
           setHasMountedEditor(true);
@@ -576,7 +562,8 @@ function StateFormRow({
         >
           <Icon
             name={IconName.ChevronDown}
-            className="h-4 w-4 transition-transform group-expanded:rotate-180"
+            size="md"
+            className="transition-transform group-expanded:rotate-180"
           />
         </span>
         <Button
@@ -586,7 +573,7 @@ function StateFormRow({
           aria-label={name ? `Remove ${name}` : 'Remove key'}
           className="relative z-10 shrink-0 rounded-md p-1.5 text-subtle hover:bg-danger-subtle hover:text-danger"
         >
-          <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
+          <Icon name={IconName.Trash} size="sm" />
         </Button>
       </div>
       <DisclosurePanel className="border-t border-default/70 bg-subtle">
@@ -696,9 +683,7 @@ function StateDialogContent({
   error?: Error | null;
 }>) {
   const isPartial = typeof key === 'string';
-  const { banner, bannerIcon } = styles({
-    isWarning: (hasActiveInvocations && isPartial) || !isPartial,
-  });
+  const isWarning = (hasActiveInvocations && isPartial) || !isPartial;
 
   const formId = useId();
 
@@ -706,62 +691,44 @@ function StateDialogContent({
     <DialogContent className="max-w-2xl" surface="edit-state">
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
-          <Heading
-            slot="title"
-            level={3}
-            className="text-lg leading-6 font-medium text-primary"
-          >
-            {title}
-          </Heading>
+          <DialogTitle>{title}</DialogTitle>
           {subtitle && (
             <div className="flex flex-wrap items-center gap-1.5 text-0.5xs text-tertiary">
               {subtitle}
             </div>
           )}
         </div>
-        <div className={banner()}>
-          {isFetching ? (
-            <div className="h-5 w-5 shrink-0 px-0.5">
-              <Spinner className="h-full w-full text-warning-subtle" />
-            </div>
-          ) : (
-            <Icon
-              className={bannerIcon()}
-              name={
-                (hasActiveInvocations && isPartial) || !isPartial
-                  ? IconName.TriangleAlert
-                  : IconName.Info
-              }
-            />
+        <Callout
+          intent={isWarning ? 'warning' : 'info'}
+          isPending={isFetching}
+          className="mt-2"
+        >
+          {hasActiveInvocations
+            ? 'Currently, there are active invocations associated with this key. This mutation will be queued for processing once those invocations are complete.'
+            : 'This mutation will be enqueued to be processed after any active invocations on this key.'}
+          {hasActiveInvocations && isPartial && (
+            <>
+              <br />
+              If the state of this key changes before this mutation is
+              processed, the mutation will be discarded.
+            </>
           )}
-          <span className="block">
-            {hasActiveInvocations
-              ? 'Currently, there are active invocations associated with this key. This mutation will be queued for processing once those invocations are complete.'
-              : 'This mutation will be enqueued to be processed after any active invocations on this key.'}
-            {hasActiveInvocations && isPartial && (
-              <>
-                <br />
-                If the state of this key changes before this mutation is
-                processed, the mutation will be discarded.
-              </>
-            )}
-            {!isPartial && (
-              <>
-                <br />
-                {isDeleting ? (
-                  <>
-                    All state for this key will be <strong>deleted</strong>.
-                  </>
-                ) : (
-                  <>
-                    The new state will <strong>replace</strong> the previous
-                    state.
-                  </>
-                )}
-              </>
-            )}
-          </span>
-        </div>
+          {!isPartial && (
+            <>
+              <br />
+              {isDeleting ? (
+                <>
+                  All state for this key will be <strong>deleted</strong>.
+                </>
+              ) : (
+                <>
+                  The new state will <strong>replace</strong> the previous
+                  state.
+                </>
+              )}
+            </>
+          )}
+        </Callout>
         <Form
           id={formId}
           method="POST"

@@ -75,7 +75,7 @@ export interface WithConfirmationConfig<
   submitText?: string;
   icon?: ConfirmationDialogProps['icon'];
   iconClassName?: string;
-  alertType?: ConfirmationDialogProps['alertType'];
+  alertIntent?: ConfirmationDialogProps['alertIntent'];
   alertContent?: ReactNode;
   submitVariant?: ConfirmationDialogProps['submitVariant'];
   formMethod?: ConfirmationDialogProps['formMethod'];
@@ -146,7 +146,7 @@ export function withConfirmation<
         submitText={config.submitText ?? 'Submit'}
         icon={config.icon}
         iconClassName={config.iconClassName}
-        alertType={config.alertType}
+        alertIntent={config.alertIntent}
         alertContent={config.alertContent}
         submitVariant={config.submitVariant}
         formMethod={config.formMethod}

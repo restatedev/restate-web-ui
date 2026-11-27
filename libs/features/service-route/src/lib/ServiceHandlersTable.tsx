@@ -111,7 +111,7 @@ export function ServiceHandlersTable({
       renderCell={(row, column) => {
         if (column.id === 'handler') {
           return (
-            <Cell className="[&&&]:overflow-visible">
+            <Cell overflow="visible">
               <div className="flex min-w-0 items-center gap-1.5">
                 <ServiceHandler
                   handler={row.handler}
@@ -145,7 +145,7 @@ export function ServiceHandlersTable({
                 className={invocationsLinkStyles()}
               >
                 View invocations
-                <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                <Icon name={IconName.ChevronRight} size="md" />
               </Link>
             </Cell>
           );

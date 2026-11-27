@@ -1,5 +1,6 @@
 import type { ServiceType } from '@restate/data-access-admin-api-spec';
 import { useServiceCatalog } from '@restate/data-access-admin-api-hooks';
+import { SERVICE_TYPE_LABELS } from '@restate/features-explainers';
 import { useRestateContext } from '@restate/features-restate-context';
 import { virtualObjectInstanceHref } from '@restate/features-virtual-object-instance';
 import { Scope } from '@restate/features-vqueue-ui';
@@ -126,7 +127,9 @@ function TargetLinkChevron({ isMarked = false }: { isMarked?: boolean }) {
   return (
     <Icon
       name={IconName.ChevronRight}
-      className="-mr-1 h-3.5 w-3.5 shrink-0 text-subtle"
+      size="sm"
+      tone="subtle"
+      className="-mr-1"
       {...(isMarked && { 'data-target-link-chevron': true })}
     />
   );
@@ -154,7 +157,7 @@ export function getServiceTargetEntityLink({
           key: serviceKey,
           ...identityScope,
         }),
-        ariaLabel: `Open virtual object instance ${service} / ${serviceKey}`,
+        ariaLabel: `Open Virtual Object instance ${service} / ${serviceKey}`,
       }
     : resolvedServiceType === 'Workflow'
       ? {
@@ -302,11 +305,11 @@ export function ServiceTargetContent({
   });
   const { root: tooltip, term, description } = tooltipStyles();
   const serviceLabel =
+    resolvedServiceType === 'Service' ||
+    resolvedServiceType === 'VirtualObject' ||
     resolvedServiceType === 'Workflow'
-      ? 'Workflow'
-      : resolvedServiceType === 'VirtualObject'
-        ? 'Virtual Object'
-        : 'Service';
+      ? SERVICE_TYPE_LABELS[resolvedServiceType]
+      : 'Service';
   const keyLabel =
     resolvedServiceType === 'Workflow'
       ? 'Workflow ID'

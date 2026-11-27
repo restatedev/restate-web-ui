@@ -243,7 +243,8 @@ function AnchoredHint({
           >
             <Icon
               name={IconName.X}
-              className="h-3.5 w-3.5 text-inverse-secondary"
+              size="sm"
+              className="text-inverse-secondary"
             />
           </Button>
         </FloatingLayer>
@@ -423,7 +424,7 @@ export function Peek({
           setIsOpen(next);
         }}
       >
-        <Icon name={IconName.Info} className="h-3.5 w-3.5" />
+        <Icon name={IconName.Info} size="sm" />
       </button>
       {isOpen && (
         <FloatingLayer

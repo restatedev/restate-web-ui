@@ -58,7 +58,7 @@ export const STATUS_STYLE: Record<
     ...DASHED,
     color: 'var(--background-color-info)',
   },
-  pending: {
+  new: {
     fill: 'var(--background-color-queued)',
     fillLight: 'var(--background-color-queued)',
     fillDark: 'var(--background-color-queued-end)',
@@ -184,7 +184,7 @@ export const STATUS_LABELS: Record<string, string> = {
   inbox: 'Inbox',
   running: 'Running',
   processing: 'Processing',
-  pending: 'Pending',
+  new: 'New',
   ready: 'Ready',
   yielded: 'Yielded',
   waiting: 'Ready, yielded or backing off',
@@ -207,7 +207,7 @@ for (const status of Object.keys(STATUS_STYLE)) {
 export const STATUS_ORDER = [
   'inbox',
   'scheduled',
-  'pending',
+  'new',
   'yielded',
   'ready',
   'waiting',

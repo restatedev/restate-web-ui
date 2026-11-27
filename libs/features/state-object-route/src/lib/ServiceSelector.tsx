@@ -226,10 +226,7 @@ export function ServiceSelector() {
           <span className="font-mono">is</span>
           <span className="truncate font-semibold">{serviceParam}</span>
           {isStateOnlyService && <StateOnlyServiceWarningIcon />}
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="ml-2 h-3.5 w-3.5 shrink-0"
-          />
+          <Icon name={IconName.ChevronsUpDown} size="sm" className="ml-2" />
         </Button>
       </DropdownTrigger>
       <DropdownPopover placement="top">

@@ -21,12 +21,7 @@ export function IssueBannerPill({
         <span className={issueDotStyles({ severity })} />
       </span>
       <span className="min-w-0 truncate">{children}</span>
-      {details && (
-        <Icon
-          name={IconName.Info}
-          className="h-3.5 w-3.5 shrink-0 text-subtle"
-        />
-      )}
+      {details && <Icon name={IconName.Info} size="sm" tone="subtle" />}
     </div>
   );
 
@@ -44,10 +39,7 @@ export function IssueBannerPill({
             <span className={issueDotStyles({ severity })} />
           </span>
           <span className="min-w-0 truncate">{children}</span>
-          <Icon
-            name={IconName.Info}
-            className="h-3.5 w-3.5 shrink-0 text-subtle"
-          />
+          <Icon name={IconName.Info} size="sm" tone="subtle" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-md">

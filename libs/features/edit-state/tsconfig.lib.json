@@ -59,10 +59,10 @@
       "path": "../../ui/tooltip/tsconfig.lib.json"
     },
     {
-      "path": "../../ui/loading/tsconfig.lib.json"
+      "path": "../../util/styles/tsconfig.lib.json"
     },
     {
-      "path": "../../util/styles/tsconfig.lib.json"
+      "path": "../../ui/callout/tsconfig.lib.json"
     },
     {
       "path": "../../ui/icons/tsconfig.lib.json"
@@ -84,6 +84,9 @@
     },
     {
       "path": "../../ui/button/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/disclosure/tsconfig.lib.json"
     },
     {
       "path": "../../ui/dialog/tsconfig.lib.json"

@@ -33,12 +33,12 @@ export function DeploymentActions() {
       menus={
         <>
           <DropdownItem href={`?${REGISTER_DEPLOYMENT_QUERY}=true`}>
-            <Icon name={IconName.Plus} className="h-3.5 w-3.5 shrink-0" />
+            <Icon name={IconName.Plus} size="sm" />
             Register deployment
           </DropdownItem>
           <DropdownItem value={PRUNE_DRAINED_DEPLOYMENTS_QUERY} destructive>
-            <Icon name={IconName.Trash} className="h-3.5 w-3.5 shrink-0" />
-            Prune drained deployments
+            <Icon name={IconName.Trash} size="sm" />
+            Delete drained deployments
           </DropdownItem>
         </>
       }

@@ -1,0 +1,160 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "out-tsc/app",
+    "tsBuildInfoFile": "out-tsc/app/tsconfig.app.tsbuildinfo",
+    "types": ["node", "vite/client"]
+  },
+  "include": [
+    ".storybook/*.ts",
+    ".storybook/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "references": [
+    {
+      "path": "../../libs/ui/action-text/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/dialog/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/breadcrumbs/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/disclosure/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/header/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/card/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/nav/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/heading/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/listbox/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/filter-builder/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/editor/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/radio-group/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/form-field/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/wave-animation/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/restate-server/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/notification/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/system-health/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/issue-banner/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/util/errors/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/util/snapshot-time/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/tooltip/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/table/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/error/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/empty-state/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/content-panel/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/badge/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/metric-comparison/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/json-schema/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/section/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/details/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/tabs/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/code/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/chip/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/util/styles/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/util/intl/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/loading/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/charts/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/popover/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/api/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/dropdown/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/split-button/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/callout/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/link/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/layout/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/keyboard/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/copy/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/icons/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/button/tsconfig.lib.json"
+    }
+  ]
+}

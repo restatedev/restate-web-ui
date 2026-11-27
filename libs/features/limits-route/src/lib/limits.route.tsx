@@ -233,7 +233,9 @@ function CounterSummaryCell({
       </span>
       <Icon
         name={IconName.ChevronRight}
-        className="mr-1 h-3 w-3 shrink-0 text-subtle"
+        size="xs"
+        tone="subtle"
+        className="mr-1"
       />
     </Link>
   );
@@ -241,7 +243,7 @@ function CounterSummaryCell({
 
 function RuleStatusBadge({ disabled }: { disabled: boolean }) {
   return (
-    <Badge size="sm" variant={disabled ? 'default' : 'info'}>
+    <Badge size="sm" intent={disabled ? 'neutral' : 'info'}>
       {disabled ? 'Disabled' : 'Enabled'}
     </Badge>
   );
@@ -278,22 +280,17 @@ export function RuleActions({
           <DropdownItem key="toggle" value="toggle">
             <Icon
               name={enabled ? IconName.Pause : IconName.Play}
-              className="h-3.5 w-3.5 shrink-0 opacity-80"
+              size="sm"
+              tone="dimmed"
             />
             {enabled ? 'Disable rule' : 'Enable rule'}
           </DropdownItem>,
           <DropdownItem key="edit" value="edit">
-            <Icon
-              name={IconName.Pencil}
-              className="h-3.5 w-3.5 shrink-0 opacity-80"
-            />
+            <Icon name={IconName.Pencil} size="sm" tone="dimmed" />
             Edit…
           </DropdownItem>,
           <DropdownItem key="delete" value="delete" destructive>
-            <Icon
-              name={IconName.Trash}
-              className="h-3.5 w-3.5 shrink-0 opacity-80"
-            />
+            <Icon name={IconName.Trash} size="sm" tone="dimmed" />
             Delete…
           </DropdownItem>,
         ]}
@@ -322,7 +319,7 @@ function renderRuleCell(
   switch (column.id) {
     case 'pattern':
       return (
-        <Cell className="overflow-visible">
+        <Cell overflow="visible">
           <LimitRuleTarget
             pattern={row.pattern}
             href={row.href}
@@ -372,7 +369,7 @@ function renderRuleCell(
       );
     case 'actions':
       return (
-        <Cell className="[&&&]:overflow-visible">
+        <Cell overflow="visible">
           <RuleActions
             rule={row}
             onToggle={onToggle}
@@ -631,25 +628,10 @@ function Component() {
       >
         <FilterBuilder query={filterQuery} schema={[filterSchema]} multiple>
           <AddFilterTrigger
+            variant="toolbar"
             placeholder="Filter rules…"
             title="Rule filters"
             onItemRemove={scheduleSubmit}
-            inputPrefix={
-              <Icon
-                name={IconName.Search}
-                className="h-4 w-4 shrink-0 text-subtle"
-              />
-            }
-            tagsPlacement="outside"
-            maxVisibleChips="auto"
-            chipOverflowStrategy="all"
-            tagGroupClassName="min-w-0 flex-nowrap"
-            showSectionTitle={false}
-            popoverPlacement="bottom start"
-            popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-surface/95 p-1"
-            optionClassName="gap-2 px-2.5 py-1.5 highlighted:bg-accent-subtle highlighted:text-accent-strong"
-            className="min-h-6.5 w-full justify-end text-primary"
-            inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-surface/70 shadow-xs hover:bg-surface [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-subtle"
           >
             {(props) => (
               <FilterChip
@@ -690,7 +672,7 @@ function Component() {
             type="button"
             variant="icon"
             aria-label={isFetching ? 'Refreshing rules' : 'Refresh rules'}
-            className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+            size="sm"
             onClick={() => {
               void rules.refetch();
               void ruleOptionsQuery.refetch();
@@ -725,12 +707,13 @@ function Component() {
       <FlowControlHeader />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'rules')}>
         <ContentPanelToolbar>{pageToolbar}</ContentPanelToolbar>
-        <ContentPanelBody className="pb-32">
+        <ContentPanelBody bottomSpace>
           <ContentPanelSection flush>
             <PanelTable
               aria-label="Limit rules"
               bodyKey={ruleTableBodyKey}
               columns={RULE_COLUMNS}
+              columnWidthsStorageKey="limit-rules-user-col-widths"
               items={rows}
               isLoading={rules.isFetching}
               error={error as Error | null}

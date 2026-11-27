@@ -21,11 +21,13 @@ import {
   deploymentHref,
   serviceHref,
 } from '@restate/util-panel';
+import { Skeleton } from '@restate/ui-loading';
 
 interface OverviewSidebarItemProps {
   baseUrl?: string;
   disabled?: boolean;
   preserveSearchParams?: boolean | string[];
+  subItems?: (SidebarSubItem & { match: SidebarMatch })[];
 }
 
 type OverviewRecent =
@@ -105,7 +107,7 @@ function DeploymentRecentLabel({ deploymentId }: { deploymentId: string }) {
   const { label, endpoint, isPending } = useDeploymentLabel(deploymentId);
 
   if (isPending) {
-    return <span className="h-3 w-24 animate-pulse rounded bg-emphasis" />;
+    return <Skeleton className="h-3 w-24" />;
   }
   return (
     <RecentTooltip full={endpoint ?? deploymentId}>
@@ -145,6 +147,7 @@ export function OverviewSidebarItem({
   baseUrl = '',
   disabled,
   preserveSearchParams = true,
+  subItems = [],
 }: OverviewSidebarItemProps) {
   const path = `${baseUrl}/overview`;
   const [searchParams] = useSearchParams();
@@ -188,13 +191,15 @@ export function OverviewSidebarItem({
     ? `${path}?view=deployments&${carryQuery}`
     : `${path}?view=deployments`;
 
+  const isOverviewPage = (pathname: string) =>
+    pathname === path || pathname === `${path}/`;
   const servicesMatch: SidebarMatch = (loc) => {
-    if (!loc.pathname.startsWith(path)) return false;
+    if (!isOverviewPage(loc.pathname)) return false;
     const view = loc.searchParams.get('view');
     return !view || view === 'services';
   };
   const deploymentsMatch: SidebarMatch = (loc) =>
-    loc.pathname.startsWith(path) &&
+    isOverviewPage(loc.pathname) &&
     loc.searchParams.get('view') === 'deployments';
 
   const visibleRecent = current ?? recent;
@@ -235,7 +240,10 @@ export function OverviewSidebarItem({
       href={path}
       match={(loc) =>
         loc.pathname.startsWith(path) ||
-        Boolean(currentOverviewDetail(baseUrl, loc.pathname, loc.searchParams))
+        Boolean(
+          currentOverviewDetail(baseUrl, loc.pathname, loc.searchParams),
+        ) ||
+        subItems.some((item) => item.match(loc))
       }
       icon={IconName.House}
       label="Overview"
@@ -266,6 +274,7 @@ export function OverviewSidebarItem({
             preserveSearchParams: true,
           },
         },
+        ...subItems,
       ]}
     />
   );

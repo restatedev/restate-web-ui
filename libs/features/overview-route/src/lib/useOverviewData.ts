@@ -30,6 +30,7 @@ import {
   getOverviewRefetchInterval,
 } from './overviewPolling';
 import type { OverviewService } from './sortServices';
+import { getMetadataKeys } from './serviceGroups';
 
 export function useOverviewData({
   deploymentStatusEnabled,
@@ -66,8 +67,11 @@ export function useOverviewData({
   } = useListDeployments();
   const { data: serviceSummaries, isPending: isServicesPending } =
     useServiceCatalog();
-  const { data: fullServices, isPending: isHandlersPending } =
-    useListServices();
+  const {
+    data: fullServices,
+    isPending: isHandlersPending,
+    isError: isHandlersError,
+  } = useListServices();
   const servicesMap = useMemo(
     () =>
       new Map<string, OverviewService>(
@@ -78,10 +82,15 @@ export function useOverviewData({
             handlers: isHandlersPending
               ? undefined
               : (fullServices.get(name)?.handlers ?? []),
+            metadata: fullServices.get(name)?.metadata,
           },
         ]),
       ),
     [fullServices, isHandlersPending, serviceSummaries],
+  );
+  const metadataKeys = useMemo(
+    () => getMetadataKeys(servicesMap.values()),
+    [servicesMap],
   );
   const summary = useProgressiveInvocationSummaryV2(summaryBody, {
     refetchInterval: (query) => {
@@ -266,5 +275,8 @@ export function useOverviewData({
     error,
     isDeploymentsFetching: isFetching,
     isServicesPending,
+    isServiceDetailsPending: isHandlersPending,
+    isServiceDetailsError: isHandlersError,
+    metadataKeys,
   };
 }

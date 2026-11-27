@@ -78,6 +78,7 @@ const DEFAULT_INVOCATIONS_LIST_OPTIONS: InvocationsListOptions = {
     processing: false,
     stuck: false,
     scheduled: false,
+    suspended: false,
     notcompleted: false,
     custom: false,
   },

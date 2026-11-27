@@ -2,6 +2,7 @@ import { Cell } from '@restate/ui-table';
 import { formatNumber } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
 import type { PropsWithChildren } from 'react';
+import { Skeleton } from '@restate/ui-loading';
 
 const styles = tv({
   slots: {
@@ -34,7 +35,7 @@ export function NotCompletedInvocationsCell({
         className={content()}
       >
         {isLoading ? (
-          <span className="h-5 w-12 animate-pulse rounded-full bg-emphasis/70" />
+          <Skeleton shape="pill" className="h-5 w-12" />
         ) : (
           <span className={countStyles()}>
             {isError ? '—' : formatNumber(count, true)}

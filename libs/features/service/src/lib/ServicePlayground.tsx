@@ -45,6 +45,7 @@ import {
   PrivatePlaygroundSheet,
   useIsPrivateService,
 } from './PrivatePlaygroundNote';
+import { Heading } from '@restate/ui-heading';
 
 const DEFAULT_CATEGORY = 'DEFAULT';
 export function ServicePlayground() {
@@ -329,10 +330,7 @@ function ServicePlaygroundComplementaryContent() {
               }}
               className="flex h-7 w-7 items-center justify-center rounded-full p-0"
             >
-              <Icon
-                name={IconName.Maximize}
-                className="h-3.5 w-3.5 text-muted"
-              />
+              <Icon name={IconName.Maximize} size="sm" tone="muted" />
             </Button>
           </TooltipTrigger>
           <TooltipContent size="sm">Open as sheet</TooltipContent>
@@ -345,7 +343,7 @@ function ServicePlaygroundComplementaryContent() {
               disabled={isFetching}
               className="flex h-7 w-7 items-center justify-center rounded-full p-0"
             >
-              <Icon name={IconName.Retry} className="h-3.5 w-3.5" />
+              <Icon name={IconName.Retry} size="sm" />
             </Button>
           </TooltipTrigger>
           <TooltipContent size="sm">Refresh</TooltipContent>
@@ -360,7 +358,7 @@ function ServicePlaygroundComplementaryContent() {
                 }}
                 className="flex h-7 w-7 items-center justify-center rounded-full p-0"
               >
-                <Icon name={IconName.X} className="h-3.5 w-3.5" />
+                <Icon name={IconName.X} size="sm" />
               </Button>
             </ComplementaryClose>
           </TooltipTrigger>
@@ -368,7 +366,7 @@ function ServicePlaygroundComplementaryContent() {
         </Tooltip>
       </ComplementaryHeader>
       <div className="flex min-h-full flex-col [&_.sl-elements-api>*:first-child]:hidden! [&_.sl-elements-api>*:nth-child(2)]:px-2! [&_.sl-elements-api>*:nth-child(2)>*]:pt-2! [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse! [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0! [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full! [&_.sl-inverted_input]:text-secondary! [&_.sl-pt-8]:pt-2! [&_.sl-rounded-lg]:rounded-xl! [&_.sl-stack--5]:gap-2! [&_.sl-stack--8]:gap-6! [&_.sl-text-lg]:text-0.5xs! [&_[dir=ltr]>[dir=ltr]]:hidden! [&_elements-api_h2]:text-xl! [&_h1]:mb-2! [&_h1]:hidden! [&_h1]:text-2xl! [&_h3]:text-lg! [&_input]:text-sm! [&_p]:text-sm!">
-        <h2 className="mb-0.5 flex items-center gap-2 text-lg leading-6 font-medium text-primary">
+        <Heading level={2} size="lg" className="mb-0.5 flex items-center gap-2">
           <div className="h-10 w-10 shrink-0 text-accent-subtle">
             <Icon
               name={IconName.Function}
@@ -392,7 +390,8 @@ function ServicePlaygroundComplementaryContent() {
                     </span>
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="h-4 w-4 text-muted"
+                      size="md"
+                      tone="muted"
                     />
                   </Button>
                 </DropdownTrigger>
@@ -434,7 +433,7 @@ function ServicePlaygroundComplementaryContent() {
               </Dropdown>
             </div>
           </div>
-        </h2>
+        </Heading>
         {error && (
           <div className="mb-1">
             <ErrorBanner errors={[error]} />
@@ -486,6 +485,7 @@ function ServicePlaygroundSheetContent({ service }: { service: string }) {
         <div className="absolute top-3 right-3 flex items-center gap-2">
           {handlers.size > 0 && (
             <Button
+              aria-label="Minimize"
               variant="icon"
               onClick={() => {
                 const handlerFromUrl = window.location.hash
@@ -507,12 +507,12 @@ function ServicePlaygroundSheetContent({ service }: { service: string }) {
                 );
               }}
             >
-              <Icon name={IconName.Minimize} className="h-5 w-5" />
+              <Icon name={IconName.Minimize} size="lg" />
             </Button>
           )}
           <DialogClose>
-            <Button variant="icon">
-              <Icon name={IconName.X} className="h-5 w-5" />
+            <Button aria-label="Close" variant="icon">
+              <Icon name={IconName.X} size="lg" />
             </Button>
           </DialogClose>
         </div>

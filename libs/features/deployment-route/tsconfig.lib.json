@@ -53,6 +53,9 @@
       "path": "../../ui/breadcrumbs/tsconfig.lib.json"
     },
     {
+      "path": "../register-deployment/tsconfig.lib.json"
+    },
+    {
       "path": "../../util/panel/tsconfig.lib.json"
     },
     {
@@ -83,6 +86,9 @@
       "path": "../../ui/content-panel/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/loading/tsconfig.lib.json"
+    },
+    {
       "path": "../../util/styles/tsconfig.lib.json"
     },
     {
@@ -102,9 +108,6 @@
     },
     {
       "path": "../service-route/tsconfig.lib.json"
-    },
-    {
-      "path": "../register-deployment/tsconfig.lib.json"
     },
     {
       "path": "../options/tsconfig.lib.json"

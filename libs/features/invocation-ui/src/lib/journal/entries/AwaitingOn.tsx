@@ -273,7 +273,7 @@ function AwaitingOnContent({
   if (isLoading && !data) {
     return (
       <div className="flex items-center gap-1.5 p-2 text-2xs text-muted">
-        <Spinner className="h-3 w-3" />
+        <Spinner size="xs" />
         Loading…
       </div>
     );
@@ -366,10 +366,7 @@ export function AwaitingOn({
           className={triggerStyles({ state, className })}
         >
           {label}
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="h-3 w-3 shrink-0 text-muted"
-          />
+          <Icon name={IconName.ChevronsUpDown} size="xs" tone="muted" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-2xl">

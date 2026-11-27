@@ -35,7 +35,7 @@ import { EmptyState } from '@restate/ui-empty-state';
 import { ErrorBanner } from '@restate/ui-error';
 import { Header } from '@restate/ui-header';
 import { Icon, IconName } from '@restate/ui-icons';
-import { Spinner } from '@restate/ui-loading';
+import { Spinner, Skeleton } from '@restate/ui-loading';
 import type {
   QueryClauseSchema,
   QueryClauseType,
@@ -212,10 +212,7 @@ function VQueueBatchActions({
           className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
         >
           Actions
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 opacity-80"
-          />
+          <Icon name={IconName.ChevronsUpDown} size="sm" tone="dimmed" />
         </Button>
       </DropdownTrigger>
       <DropdownPopover>
@@ -255,10 +252,7 @@ function VQueueBatchActions({
                   value={action}
                   destructive={config.destructive}
                 >
-                  <Icon
-                    name={config.icon}
-                    className="h-3.5 w-3.5 shrink-0 opacity-80"
-                  />
+                  <Icon name={config.icon} size="sm" tone="dimmed" />
                   {config.label}
                 </DropdownItem>
               );
@@ -292,7 +286,7 @@ function StageTabLabel({
           {formatNumber(count, true)}
         </span>
       ) : isPending ? (
-        <span className="inline-block h-3 w-5 animate-pulse rounded bg-emphasis" />
+        <Skeleton className="h-3 w-5" />
       ) : null}
       {schedulerData && <InboxSchedulingStatus data={schedulerData} />}
     </span>
@@ -323,7 +317,7 @@ function VQueueHeader({
       icon={IconName.Layers}
       iconLabel="VQueue"
       iconClassName="rotate-[87deg]"
-      variant={identity?.isPaused ? 'warning' : 'default'}
+      intent={identity?.isPaused ? 'warning' : 'neutral'}
       className="min-w-0"
       trail={trail}
     >
@@ -450,10 +444,7 @@ function Component() {
               intent="danger"
               title="Couldn’t load this VQueue"
             >
-              <ErrorBanner
-                error={snapshot.error}
-                className="w-full rounded-xl text-left"
-              />
+              <ErrorBanner error={snapshot.error} className="w-full" />
             </EmptyState>
           </div>
         ) : snapshot.isPending && !data ? (
@@ -461,7 +452,7 @@ function Component() {
             role="status"
             className="flex items-center justify-center gap-2 px-5 py-20 text-sm text-muted"
           >
-            <Spinner className="h-4 w-4" />
+            <Spinner size="md" />
             Loading VQueue…
           </div>
         ) : !data ? (
@@ -492,7 +483,7 @@ function Component() {
                     aria-label={
                       isFetching ? 'Refreshing VQueue' : 'Refresh VQueue'
                     }
-                    className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+                    size="sm"
                     onClick={() => {
                       void Promise.all([snapshot.refetch(), entries.refetch()]);
                     }}
@@ -507,7 +498,7 @@ function Component() {
                 <TooltipContent size="sm">Refresh VQueue</TooltipContent>
               </Tooltip>
             </ContentPanelToolbar>
-            <ContentPanelBody className="pb-32">
+            <ContentPanelBody bottomSpace>
               <ContentPanelSection flush>
                 <VQueueEntriesTable
                   stage={stage}

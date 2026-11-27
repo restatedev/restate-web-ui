@@ -389,7 +389,7 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
   return (
     <div className="rounded-xl border border-info/30 bg-info-subtle/40 p-2.5 text-info-strong transition-all">
       <div className="mb-2.5 flex items-center gap-1.5 px-0.5 font-sans text-sm">
-        <Icon name={IconName.Eye} className="h-4 w-4" />
+        <Icon name={IconName.Eye} size="md" />
         Preview
         {pattern && <RuleLevelBadge level={level} />}
         <span className="ml-auto text-0.5xs font-normal text-info-subtle">
@@ -423,13 +423,13 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
               invalid key
             </Badge>
           ) : result ? (
-            <Badge size="sm" variant="success" className="shrink-0 gap-1">
-              <Icon name={IconName.Check} className="h-3 w-3" />
+            <Badge size="sm" intent="success" className="shrink-0 gap-1">
+              <Icon name={IconName.Check} size="xs" />
               applies at {levelLabel}
             </Badge>
           ) : (
             <Badge size="sm" className="shrink-0 gap-1 text-muted">
-              <Icon name={IconName.Cancel} className="h-3 w-3" />
+              <Icon name={IconName.Cancel} size="xs" />
               no match
             </Badge>
           ))}
@@ -481,7 +481,7 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
               className="mt-1 flex w-full items-center justify-center gap-1 text-0.5xs text-info"
               onClick={() => setOpen(true)}
             >
-              <Icon name={IconName.ChevronDown} className="h-4 w-4" />
+              <Icon name={IconName.ChevronDown} size="md" />
               Show examples
             </Button>
           )}

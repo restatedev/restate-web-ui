@@ -129,7 +129,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
             className={clear()}
             onClick={() => onFindChange('')}
           >
-            <Icon name={IconName.X} className="h-3.5 w-3.5" />
+            <Icon name={IconName.X} size="sm" />
           </Button>
         </>
       ) : (
@@ -176,12 +176,13 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
               <>
                 <Icon
                   name={IconName.TriangleAlert}
-                  className="h-2.5 w-2.5 shrink-0 text-warning-subtle"
+                  size="2xs"
+                  className="text-warning-subtle"
                 />
                 <span className="sr-only">Child check incomplete</span>
               </>
             ) : (
-              checkProgress && <Spinner className="h-3 w-3 text-muted" />
+              checkProgress && <Spinner size="xs" className="text-muted" />
             )}
           </Button>
         </HoverTooltip>
@@ -374,7 +375,7 @@ function ProblemStepButtons({
           disabled={isDisabled}
           aria-label="Previous problem"
         >
-          <Icon name={IconName.ChevronUp} className="h-3.5 w-3.5" />
+          <Icon name={IconName.ChevronUp} size="sm" />
         </Button>
       </HoverTooltip>
       <HoverTooltip content="Next problem">
@@ -385,7 +386,7 @@ function ProblemStepButtons({
           disabled={isDisabled}
           aria-label="Next problem"
         >
-          <Icon name={IconName.ChevronDown} className="h-3.5 w-3.5" />
+          <Icon name={IconName.ChevronDown} size="sm" />
         </Button>
       </HoverTooltip>
     </>

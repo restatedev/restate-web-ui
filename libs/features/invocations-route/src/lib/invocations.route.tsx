@@ -121,7 +121,7 @@ import {
   useInvocationsForm,
   useListInvocationsParameters,
 } from './useInvocationsQueryFilters';
-import { FilterShortcuts } from './FilterShortcuts';
+import { InvocationStatusRow } from './InvocationStatusRow';
 import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
 import {
@@ -142,6 +142,8 @@ import {
   VqueueEntryCell,
 } from '@restate/features-invocation-ui';
 import { InvocationQuickOpen } from './InvocationQuickOpen';
+import { renameLegacyStatusFilterParam } from './statusFilter';
+import { showInfoNotification } from '@restate/ui-notification';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: INVOCATION_TABLE_COLUMN_CONFIG.id.defaultWidth,
@@ -329,11 +331,7 @@ function SlowQueryOverlay({
         {(isComplete || dashboardUrl) && (
           <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
             {isComplete && (
-              <Button
-                variant="primary"
-                onClick={onSwitchToPartial}
-                className="rounded-lg px-3 py-1 text-xs"
-              >
+              <Button variant="primary" onClick={onSwitchToPartial} size="xs">
                 Show a faster partial view
               </Button>
             )}
@@ -347,7 +345,8 @@ function SlowQueryOverlay({
                 Open the dashboard
                 <Icon
                   name={IconName.ExternalLink}
-                  className="h-3 w-3 opacity-70"
+                  size="xs"
+                  className="opacity-70"
                 />
               </a>
             )}
@@ -420,7 +419,6 @@ function Component() {
   const {
     data: summaryData,
     focus: vqueueSummaryFocus,
-    selectedFocus: selectedVqueueSummaryFocus,
     byStage,
     byStatus,
     hasServiceScope,
@@ -446,14 +444,6 @@ function Component() {
   const isStageSummaryLoading = isStageSummaryQueryLoading && !healthError;
   const isSummaryError = isSummaryQueryError || Boolean(healthError);
   const { data: deploymentsData } = useListDeployments();
-  // Href that clears filter_status — drives the legend's leading "All"
-  // reset entry. Simply deletes the key; the loader doesn't auto-restore
-  // unless ?restore=1 is present.
-  const clearStatusFilterHref = useMemo(() => {
-    const out = new URLSearchParams(searchParams);
-    out.delete('filter_status');
-    return `${baseUrl}/invocations?${out.toString()}`;
-  }, [searchParams, baseUrl]);
   const hasActiveFilters = Array.from(searchParams.keys()).some((key) =>
     key.startsWith(FILTER_QUERY_PREFIX),
   );
@@ -604,17 +594,6 @@ function Component() {
     if (!invocationId) return;
     navigate(invocationRouteLocation(baseUrl, invocationId, searchParams));
   }, [baseUrl, navigate, openInvocationId, searchParams]);
-  const changeVqueueSummaryFocus = useCallback(
-    (focus: typeof vqueueSummaryFocus) => {
-      navigate(
-        focus === 'all'
-          ? clearStatusFilterHref
-          : statusHref(focus === 'completed' ? 'finished' : 'not-completed'),
-        { flushSync: true, preventScrollReset: true },
-      );
-    },
-    [clearStatusFilterHref, navigate, statusHref],
-  );
 
   useEffect(() => {
     const isMac = navigator.platform.toUpperCase().includes('MAC');
@@ -699,10 +678,10 @@ function Component() {
       <VQueueStageSummaryBar
         byStage={matchingSummary.byStage}
         byStatus={matchingSummary.byStatus}
-        showFocusCounts={false}
+        focusControl={
+          <InvocationStatusRow searchParams={searchParams} baseUrl={baseUrl} />
+        }
         focus={vqueueSummaryFocus}
-        selectedFocus={selectedVqueueSummaryFocus}
-        onFocusChange={changeVqueueSummaryFocus}
         breakdownMode={countMode}
         canSampleBreakdown={canSampleBreakdown}
         fixedBreakdownMode={fixedBreakdownMode}
@@ -760,7 +739,8 @@ function Component() {
                 >
                   <Icon
                     name={IconName.TableProperties}
-                    className="aspect-square h-3.5 w-3.5 opacity-70"
+                    size="sm"
+                    className="aspect-square opacity-70"
                   />
                   <span className="max-sm:sr-only">Columns</span>
                 </Button>
@@ -798,7 +778,7 @@ function Component() {
               onClick={() => void refetch()}
             />
           </ContentPanelToolbar>
-          <ContentPanelBody className="pb-32">
+          <ContentPanelBody bottomSpace>
             <div className="-mb-1 border-b border-default/80 px-1 pt-9 pb-1.5">
               {summaryContent}
             </div>
@@ -819,6 +799,7 @@ function Component() {
                   </>
                 }
                 columns={panelColumns}
+                columnWidthsStorageKey="invocations-user-col-widths"
                 items={tableItems}
                 selectionMode="multiple"
                 selectedKeys={selectedInvocationIds}
@@ -863,7 +844,7 @@ function Component() {
                       <Button
                         variant="secondary"
                         onClick={sortByCreatedAt}
-                        className="rounded-lg px-3 py-1 text-xs"
+                        size="xs"
                       >
                         Sort by created at
                       </Button>
@@ -874,10 +855,7 @@ function Component() {
                       intent="danger"
                       title="Couldn’t load invocations"
                     >
-                      <ErrorBanner
-                        error={listError}
-                        className="w-full rounded-xl text-left"
-                      />
+                      <ErrorBanner error={listError} className="w-full" />
                     </EmptyState>
                   ) : countsDisagree ? (
                     <CountsDisagreeEmptyState />
@@ -890,7 +868,7 @@ function Component() {
                       <Button
                         variant="primary"
                         onClick={() => setListSampledOverride(false)}
-                        className="rounded-lg px-3 py-1 text-xs"
+                        size="xs"
                       >
                         Run a complete scan
                       </Button>
@@ -1027,14 +1005,6 @@ function InvocationsForm({
           {FilterChip}
         </AddFilterTrigger>
       </FilterBuilder>
-      <div className="absolute right-0 bottom-0 left-0 flex h-8 w-full overflow-hidden rounded-b-xl mask-[linear-gradient(to_right,transparent_0,black_6px,black_calc(100%-192px),transparent_calc(100%-100px))]">
-        <div className="flex [scrollbar-width:thin] items-center gap-2 overflow-auto pb-0.5 pl-1.5">
-          <div className="ml-1 flex h-full shrink-0 items-center text-xs text-inverse-muted">
-            Quick Filters:
-          </div>
-          <FilterShortcuts schema={schema} />
-        </div>
-      </div>
       <SubmitButton
         ref={submitRef}
         isPending={isFetching}
@@ -1220,6 +1190,15 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
           }
         });
     }
+  }
+
+  const statusFilterKey = `${FILTER_QUERY_PREFIX}status`;
+  const renamedStatusFilter = renameLegacyStatusFilterParam(
+    params.get(statusFilterKey),
+  );
+  if (renamedStatusFilter) {
+    params.set(statusFilterKey, renamedStatusFilter);
+    showInfoNotification('Pending is now called New');
   }
 
   if (!isSortValid(params, canSortByTransition) && !isNoSort(params)) {

@@ -309,7 +309,7 @@ describe('getSendTone', () => {
     expect(getSendTone('running')).toBe('info');
     expect(getSendTone('backing-off')).toBe('warning');
     expect(getSendTone('paused')).toBe('warning');
-    expect(getSendTone('pending')).toBe('pending');
+    expect(getSendTone('new')).toBe('pending');
     expect(getSendTone('ready')).toBe('pending');
     expect(getSendTone('yielded')).toBe('pending');
     expect(getSendTone('suspended')).toBe('neutral');

@@ -64,7 +64,8 @@ export function VQueueEntryId({
       <span className={entryStyles.icon()}>
         <Icon
           name={isStateMutation ? IconName.Database : IconName.History}
-          className="h-full w-full p-1 text-muted"
+          tone="muted"
+          className="h-full w-full p-1"
         />
       </span>
       <TruncateWithTooltip

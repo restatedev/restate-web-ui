@@ -22,10 +22,7 @@ export function FilteredResultsCaption({
 }: FilteredResultsCaptionProps) {
   return (
     <div className={filteredResultsCaptionStyles({ className })}>
-      <Icon
-        name={IconName.ListFilter}
-        className="h-3.5 w-3.5 shrink-0 text-accent"
-      />
+      <Icon name={IconName.ListFilter} size="sm" className="text-accent" />
       <span className="shrink-0 font-medium text-secondary">
         Filtered results
       </span>

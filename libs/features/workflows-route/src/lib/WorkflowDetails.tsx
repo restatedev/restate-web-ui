@@ -11,6 +11,7 @@ import { formatNumber } from '@restate/util-intl';
 import { useMemo } from 'react';
 import { WorkflowInteractionTooltip } from './WorkflowInteractionTooltip';
 import { WorkflowInvocationsTable } from './WorkflowInvocationsTable';
+import { Skeleton } from '@restate/ui-loading';
 
 type WorkflowRunDetailsResponse =
   components['schemas']['WorkflowRunDetailsResponse'];
@@ -52,7 +53,7 @@ function InteractionsTabLabel({
           {isTruncated ? '+' : ''}
         </span>
       ) : isPending ? (
-        <span className="inline-block h-3 w-5 animate-pulse rounded bg-emphasis" />
+        <Skeleton className="h-3 w-5" />
       ) : null}
     </span>
   );
@@ -93,7 +94,7 @@ export function WorkflowDetails({
       className="-mt-[calc(var(--cp-toolbar-tuck,0px)-1.5rem)]"
       tabs={tabs}
     >
-      <ContentPanelBody className="pb-32">
+      <ContentPanelBody bottomSpace>
         <ContentPanelSection flush>
           {tab === 'recent' ? (
             <WorkflowInvocationsTable

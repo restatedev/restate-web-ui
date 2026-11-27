@@ -38,6 +38,9 @@
   "references": [
     {
       "path": "../../util/styles/tsconfig.lib.json"
+    },
+    {
+      "path": "../button/tsconfig.lib.json"
     }
   ]
 }

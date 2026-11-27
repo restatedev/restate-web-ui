@@ -14,6 +14,7 @@ import {
   useDeploymentInvocationsTab,
 } from './DeploymentInvocations';
 import { DeploymentServicesTable } from './DeploymentServicesTable';
+import { Skeleton } from '@restate/ui-loading';
 
 export type DeploymentTab = 'services' | 'invocations';
 
@@ -54,7 +55,7 @@ export function DeploymentDetails({
             <span className="flex items-center gap-1.5">
               Services
               {isPending ? (
-                <span className="inline-block h-3 w-5 animate-pulse rounded bg-emphasis" />
+                <Skeleton className="h-3 w-5" />
               ) : (
                 <span className="rounded bg-muted px-1 py-px text-2xs font-medium text-muted tabular-nums">
                   {formatNumber(services.length, true)}
@@ -86,7 +87,7 @@ export function DeploymentDetails({
       tabs={tabs}
     >
       {tab === 'services' ? (
-        <ContentPanelBody className="pb-32">
+        <ContentPanelBody bottomSpace>
           <ContentPanelSection flush>
             <DeploymentServicesTable
               deploymentId={deploymentId}

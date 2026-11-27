@@ -25,7 +25,7 @@ function invocation(
     modified_at: '2026-01-01T00:01:00.000Z',
     scheduled_at: '2026-01-01T00:00:00.000Z',
     invoked_by: 'ingress',
-    status: 'pending',
+    status: 'new',
     target: 'ExampleService/run',
     target_handler_name: 'run',
     target_service_name: 'ExampleService',
@@ -258,8 +258,8 @@ describe('InvocationFlowControlCard', () => {
     expect(
       screen.getByTitle('Blocked duration: 18s; 3× historical average'),
     ).toBeTruthy();
-    expect(screen.queryByText('Pending')).toBeNull();
-    expect(screen.queryByText('Backing-off')).toBeNull();
+    expect(screen.queryByText('New')).toBeNull();
+    expect(screen.queryByText('Backing off')).toBeNull();
   });
 
   it('shows the linked Virtual Object instance and invocation holding its lock', () => {
@@ -326,7 +326,7 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.getByText('has lock on')).toBeTruthy();
     expect(screen.getByRole('link', { name: holderId })).toBeTruthy();
     const objectTarget = screen.getByRole('link', {
-      name: `Virtual object instance ${lockName.replace('/', ' / ')}`,
+      name: `Virtual Object instance ${lockName.replace('/', ' / ')}`,
     });
     expect(objectTarget.getAttribute('href')).toBe(
       '/virtual-objects/ActionSequentialRunner/4d1b3796-21f7-4105-bd7c-d936ab8f72a1',
@@ -405,7 +405,7 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.getByRole('link', { name: holderId })).toBeTruthy();
     expect(
       screen.getByRole('link', {
-        name: `Virtual object instance ${lockName.replace('/', ' / ')}`,
+        name: `Virtual Object instance ${lockName.replace('/', ' / ')}`,
       }),
     ).toBeTruthy();
   });
@@ -524,7 +524,7 @@ describe('InvocationFlowControlCard', () => {
     );
     expect(screen.queryByText('Queueing')).toBeNull();
     expect(screen.getByText('Next attempt')).toBeTruthy();
-    expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText('New')).toBeNull();
     expect(screen.getByText('50s')).toBeTruthy();
     expect(screen.queryByText('Becomes runnable')).toBeNull();
     expect(screen.queryByText('Next transition')).toBeNull();
@@ -692,9 +692,9 @@ describe('InvocationFlowControlCard', () => {
 
     expect(
       screen.getByText('18th attempt').parentElement?.textContent,
-    ).not.toContain('Backing-off');
+    ).not.toContain('Backing off');
     expect(screen.getByText('Next attempt')).toBeTruthy();
-    expect(screen.getByText('Backing-off')).toBeTruthy();
+    expect(screen.getByText('Backing off')).toBeTruthy();
     expect(screen.getByText(/for 30s/)).toBeTruthy();
     expect(screen.queryByText(/entries/)).toBeNull();
     expect(screen.queryByText(/in queue/)).toBeNull();
@@ -721,7 +721,7 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.getAllByRole('button', { name: '#2' })).toHaveLength(2);
   });
 
-  it('shows queue position without relabeling an eligible back-off as Pending', () => {
+  it('shows queue position without relabeling an eligible back-off as New', () => {
     renderCard(
       invocation(
         {
@@ -761,8 +761,8 @@ describe('InvocationFlowControlCard', () => {
       }),
     );
 
-    expect(screen.queryByText('Backing-off')).toBeNull();
-    expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText('Backing off')).toBeNull();
+    expect(screen.queryByText('New')).toBeNull();
     expect(screen.getByText('2 entries')).toBeTruthy();
     const nextAttempt = screen.getByText('Next attempt').parentElement;
     expect(nextAttempt?.textContent).toContain(
@@ -817,8 +817,8 @@ describe('InvocationFlowControlCard', () => {
     expect(nextAttempt?.textContent).toContain('is waiting for5s');
     expect(nextAttempt?.textContent).not.toContain('behind');
     expect(nextAttempt?.className).toContain('whitespace-nowrap');
-    expect(screen.queryByText('Backing-off')).toBeNull();
-    expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText('Backing off')).toBeNull();
+    expect(screen.queryByText('New')).toBeNull();
     expect(screen.queryByText('queued for')).toBeNull();
     expect(
       screen.queryByRole('img', { name: '0.5× historical average' }),
@@ -879,8 +879,8 @@ describe('InvocationFlowControlCard', () => {
     ).toBeNull();
     expect(screen.getByText('Queued')).toBeTruthy();
     expect(screen.queryByText('Became runnable')).toBeNull();
-    expect(screen.queryByText('Backing-off')).toBeNull();
-    expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText('Backing off')).toBeNull();
+    expect(screen.queryByText('New')).toBeNull();
     expect(screen.queryByText(/entries/)).toBeNull();
   });
 
@@ -1106,7 +1106,7 @@ describe('InvocationFlowControlCard', () => {
     expect(
       screen.queryByRole('button', { name: 'Toggle 2 attempts' }),
     ).toBeNull();
-    expect(screen.queryByText('Backing-off')).toBeNull();
+    expect(screen.queryByText('Backing off')).toBeNull();
     expect(screen.queryByText('Retries')).toBeNull();
   });
 
@@ -1149,7 +1149,7 @@ describe('InvocationFlowControlCard', () => {
     expect(
       screen.getByRole('button', { name: 'awaiting 1 entry' }),
     ).toBeTruthy();
-    expect(screen.queryByText('Backing-off')).toBeNull();
+    expect(screen.queryByText('Backing off')).toBeNull();
   });
 
   it('links scheduler-only retries to their transient errors', () => {

@@ -1,5 +1,8 @@
 import type { ServiceType } from '@restate/data-access-admin-api-spec';
-import { ServiceTypeExplainer } from '@restate/features-explainers';
+import {
+  SERVICE_TYPE_LABELS,
+  ServiceTypeExplainer,
+} from '@restate/features-explainers';
 import { Badge } from '@restate/ui-badge';
 import { tv } from '@restate/util-styles';
 
@@ -24,13 +27,13 @@ export function ServiceType({
   className?: string;
 }) {
   return (
-    <Badge variant="info" size="sm" className={styles({ variant, className })}>
+    <Badge intent="info" size="sm" className={styles({ variant, className })}>
       <ServiceTypeExplainer
         type={type}
         variant="indicator-button"
         className="z-10"
       >
-        {type}
+        {type && SERVICE_TYPE_LABELS[type]}
       </ServiceTypeExplainer>
     </Badge>
   );

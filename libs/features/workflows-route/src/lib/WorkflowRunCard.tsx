@@ -36,7 +36,7 @@ export function WorkflowRunUnavailableBanner() {
       className="relative z-40 mx-5 mt-3 flex min-h-12 items-center gap-3 rounded-xl border border-pending/80 bg-pending-subtle px-3 py-2 shadow-xs"
     >
       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-pending-muted text-pending">
-        <Icon name={IconName.ClockAlert} className="h-4 w-4" />
+        <Icon name={IconName.ClockAlert} size="md" />
       </span>
       <div className="min-w-0">
         <div className="text-xs font-medium text-secondary">

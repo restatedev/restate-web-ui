@@ -101,7 +101,7 @@ describe('invocation summary from sys_service_stats', () => {
       ),
     ).toBe(true);
     expect(countsByKey(body.statusBuckets)).toMatchObject({
-      pending: 105,
+      new: 105,
       scheduled: 2,
       'backing-off': 3,
       running: 1,
@@ -152,9 +152,9 @@ describe('invocation summary from sys_service_stats', () => {
         ]),
       ),
     ).toMatchObject({
-      Counter: { pending: 105, suspended: 6, paused: 7, succeeded: 0 },
+      Counter: { new: 105, suspended: 6, paused: 7, succeeded: 0 },
       Greeter: {
-        pending: 0,
+        new: 0,
         scheduled: 2,
         'backing-off': 3,
         running: 1,
@@ -361,7 +361,7 @@ describe('invocation summary from sys_service_stats', () => {
         "SELECT
               ss.target_service_name AS service_name,
               CASE
-                WHEN ss.status = 'inboxed' THEN 'pending'
+                WHEN ss.status = 'inboxed' THEN 'new'
                 WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                 WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                 WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
@@ -375,7 +375,7 @@ describe('invocation summary from sys_service_stats', () => {
             GROUP BY
               ss.target_service_name,
               CASE
-                WHEN ss.status = 'inboxed' THEN 'pending'
+                WHEN ss.status = 'inboxed' THEN 'new'
                 WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
                 WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                 WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'

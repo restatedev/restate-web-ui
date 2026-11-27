@@ -80,7 +80,7 @@ export const FormFieldNumberInput = forwardRef<
               slot="decrement"
               className="absolute top-0 bottom-0 left-0 z-10 flex aspect-square items-center justify-center rounded-lg p-0"
             >
-              <Icon name={IconName.Minus} className="h-4 w-4" />
+              <Icon name={IconName.Minus} size="md" />
             </Button>
             <AriaInput
               className={inputStyles}
@@ -94,7 +94,7 @@ export const FormFieldNumberInput = forwardRef<
               slot="increment"
               className="absolute top-0 right-0 bottom-0 z-10 flex aspect-square items-center justify-center rounded-lg p-0"
             >
-              <Icon name={IconName.Plus} className="h-4 w-4" />
+              <Icon name={IconName.Plus} size="md" />
             </Button>
           </Group>
         </div>

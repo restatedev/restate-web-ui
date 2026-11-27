@@ -331,6 +331,18 @@
     },
     {
       "path": "./libs/features/playground"
+    },
+    {
+      "path": "./apps/storybook"
+    },
+    {
+      "path": "./libs/ui/callout"
+    },
+    {
+      "path": "./libs/ui/disclosure"
+    },
+    {
+      "path": "./libs/ui/heading"
     }
   ]
 }

@@ -19,7 +19,7 @@ export type SendTone =
   | 'neutral';
 
 const SEND_STATUS_LABEL: Record<InvocationStatus, string> = {
-  pending: 'queued',
+  new: 'queued',
   scheduled: 'scheduled',
   ready: 'queued',
   yielded: 'queued',
@@ -54,7 +54,7 @@ export function getSendTone(status?: InvocationStatus): SendTone {
     case 'backing-off':
     case 'paused':
       return 'warning';
-    case 'pending':
+    case 'new':
     case 'ready':
     case 'yielded':
       return 'pending';

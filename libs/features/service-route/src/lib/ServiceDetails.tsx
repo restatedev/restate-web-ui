@@ -26,6 +26,7 @@ import {
   type KeyedServiceTab,
   type ServiceTab,
 } from './serviceTabs';
+import { Skeleton } from '@restate/ui-loading';
 
 const panelStyles = tv({
   base: '-mt-[calc(var(--cp-toolbar-tuck,0px)-1.5rem)]',
@@ -64,7 +65,7 @@ function TabLabel({
           {formatNumber(count, true)}
         </span>
       ) : isPending ? (
-        <span className="inline-block h-3 w-5 animate-pulse rounded bg-emphasis" />
+        <Skeleton className="h-3 w-5" />
       ) : null}
     </span>
   );
@@ -192,9 +193,7 @@ export function ServiceDetails({
       ) : activeTab === 'instances' ? (
         <VirtualObjectInstances service={service} />
       ) : (
-        <ContentPanelBody
-          className={activeTab === 'playground' ? 'pb-0' : 'pb-32'}
-        >
+        <ContentPanelBody bottomSpace={activeTab !== 'playground'}>
           <ContentPanelSection
             flush={activeTab !== 'playground'}
             fadeClassName={activeTab === 'playground' ? 'hidden' : undefined}

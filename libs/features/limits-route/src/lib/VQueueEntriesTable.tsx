@@ -181,14 +181,14 @@ function renderCell(
           invocation={invocation}
         />
       ) : (
-        <Cell className="min-w-0 overflow-visible">
+        <Cell overflow="visible" className="min-w-0">
           <VqueueEntryIdentity entry={entry} />
         </Cell>
       );
     case 'status':
       if (stage === 'finished' && invocation) {
         return (
-          <Cell className="align-top">
+          <Cell align="top">
             <Status invocation={invocation} timeline={false} />
           </Cell>
         );
@@ -206,7 +206,7 @@ function renderCell(
         ({ field }) => field === column.id,
       );
       return (
-        <Cell className="min-w-0 [&&&]:overflow-visible">
+        <Cell overflow="visible" className="min-w-0">
           {column.id === 'nextAt' &&
           snapshot &&
           isVqueueEntryNextTransitionBlocked(entry, snapshot) ? (
@@ -223,7 +223,7 @@ function renderCell(
     }
     case 'actions':
       return (
-        <Cell className="align-top [&&&]:overflow-visible">
+        <Cell align="top" overflow="visible">
           {entry.kind === 'invocation' && (
             <Actions invocation={entry.invocation} />
           )}
@@ -259,6 +259,7 @@ export function VQueueEntriesTable({
       <PanelTable
         aria-label={`${label} VQueue entries`}
         columns={columns}
+        columnWidthsStorageKey="vqueue-entries-user-col-widths"
         items={rows}
         isLoading={isPending}
         error={error}

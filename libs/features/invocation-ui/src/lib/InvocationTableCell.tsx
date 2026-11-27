@@ -161,14 +161,13 @@ export function InvocationHandler({
           <ChipSegment className="max-w-[18rem] px-1.5">
             <Icon
               name={IconName.Function}
-              className="-mr-0.5 h-4 w-4 shrink-0 text-subtle"
+              size="md"
+              tone="subtle"
+              className="-mr-0.5"
             />
             <TruncateTooltipTrigger>{handler}</TruncateTooltipTrigger>
             {service && (
-              <Icon
-                name={IconName.ChevronRight}
-                className="h-3.5 w-3.5 shrink-0 text-subtle"
-              />
+              <Icon name={IconName.ChevronRight} size="sm" tone="subtle" />
             )}
           </ChipSegment>
         </Chip>
@@ -195,7 +194,7 @@ export function InvocationTableDate({
   const prefix = isPast ? pastPrefix : 'in ';
 
   return (
-    <Badge className="w-full border-none bg-transparent pl-0">
+    <Badge borderless className="w-full bg-transparent pl-0">
       <span className="w-full truncate">
         {prefix && <span className="font-normal text-muted">{prefix}</span>}
         <DateTooltip date={new Date(value)} title={tooltipTitle}>

@@ -19,7 +19,7 @@ const summary: components['schemas']['SummaryInvocationsV2Response'] = {
     {
       key: 'inbox',
       label: 'Inbox',
-      statuses: ['pending', 'scheduled', 'ready', 'yielded', 'backing-off'],
+      statuses: ['new', 'scheduled', 'ready', 'yielded', 'backing-off'],
       count: 4,
       breakdownIsPartial: false,
       breakdownCoverage: 'full',
@@ -59,9 +59,9 @@ const summary: components['schemas']['SummaryInvocationsV2Response'] = {
   ],
   statusBuckets: [
     {
-      key: 'pending',
-      label: 'Pending',
-      statuses: ['pending'],
+      key: 'new',
+      label: 'New',
+      statuses: ['new'],
       count: 3,
       isIncluded: true,
     },
@@ -110,7 +110,7 @@ const summary: components['schemas']['SummaryInvocationsV2Response'] = {
         {
           key: 'inbox',
           label: 'Inbox',
-          statuses: ['pending', 'scheduled', 'ready', 'yielded', 'backing-off'],
+          statuses: ['new', 'scheduled', 'ready', 'yielded', 'backing-off'],
           count: 100,
           isIncluded: true,
         },
@@ -149,7 +149,7 @@ describe('invocation V2 status composition', () => {
   it('reads stage and status counts from the unified summary response', () => {
     expect(getInvocationSummaryStageCount(summary, 'finished')).toBe(120);
     expect(getInvocationStatusBreakdownV2(summary)).toEqual([
-      { name: 'pending', count: 3 },
+      { name: 'new', count: 3 },
       { name: 'scheduled', count: 1 },
       { name: 'running', count: 6 },
       { name: 'paused', count: 10 },
@@ -232,14 +232,14 @@ describe('invocation V2 status composition', () => {
         groupBy: 'status',
         total: 100,
         byStatus: [
-          { status: 'pending', count: 80 },
+          { status: 'new', count: 80 },
           { status: 'ready', count: 20 },
         ],
         isPartial: false,
       }),
     ).toEqual(
       new Map([
-        ['pending', 80],
+        ['new', 80],
         ['ready', 20],
         ['running', 20],
         ['paused', 10],

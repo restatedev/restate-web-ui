@@ -44,6 +44,9 @@
       "path": "../focus/tsconfig.lib.json"
     },
     {
+      "path": "../loading/tsconfig.lib.json"
+    },
+    {
       "path": "../error/tsconfig.lib.json"
     },
     {

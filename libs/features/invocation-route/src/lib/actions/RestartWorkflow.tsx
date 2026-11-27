@@ -134,7 +134,7 @@ export const RestartWorkflow = withConfirmation({
   description: (
     <p>Are you sure you want to restart this workflow as a new invocation?</p>
   ),
-  alertType: 'info',
+  alertIntent: 'info',
   alertContent: (
     <>
       This creates a new invocation with the same input as the original, leaving

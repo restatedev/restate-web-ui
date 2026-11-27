@@ -2,7 +2,7 @@ import { InlineTooltip } from '@restate/ui-tooltip';
 import { ComponentProps, PropsWithChildren } from 'react';
 import type { ServiceType } from '@restate/data-access-admin-api-spec';
 
-const TITLES: Record<ServiceType, string> = {
+export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
   Service: 'Basic Service',
   VirtualObject: 'Virtual Object',
   Workflow: 'Workflow',
@@ -39,7 +39,7 @@ export function ServiceTypeExplainer({
     <InlineTooltip
       variant={variant}
       className={className}
-      title={TITLES[type]}
+      title={SERVICE_TYPE_LABELS[type]}
       description={<p>{DESCRIPTIONS[type]}</p>}
       learnMoreHref={LEARN_MORE[type]}
     >

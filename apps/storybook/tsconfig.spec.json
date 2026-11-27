@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "out-tsc/spec",
+    "tsBuildInfoFile": "out-tsc/spec/tsconfig.spec.tsbuildinfo",
+    "types": ["vitest/importMeta", "vite/client", "node"]
+  },
+  "include": ["vitest.config.ts", "vitest.setup.ts", "stories.spec.tsx"],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    }
+  ]
+}

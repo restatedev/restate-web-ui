@@ -231,7 +231,8 @@ export function Sidebar() {
       >
         <Icon
           name={IconName.ChevronRight}
-          className="h-5 w-5 md:h-3.5 md:w-3.5"
+          size="lg"
+          className="md:h-3.5 md:w-3.5"
         />
       </Button>
     </>

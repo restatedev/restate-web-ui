@@ -259,15 +259,21 @@ function RestartInvocationContent() {
                   <div className="h-6 w-6 shrink-0 rounded-md border bg-surface shadow-xs">
                     <Icon
                       name={icon}
-                      className="h-full w-full p-1 text-subtle"
+                      tone="subtle"
+                      className="h-full w-full p-1"
                     />
                   </div>
                   {isTunnel && (
                     <Badge
                       size="xs"
-                      className="max-w-fit min-w-0 grow basis-[12ch] rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
+                      mono
+                      className="max-w-fit min-w-0 grow basis-[12ch] rounded-sm py-0.5 text-2xs leading-3 font-medium"
                     >
-                      <Icon name={IconName.AtSign} className="mr-0.5 h-3 w-3" />
+                      <Icon
+                        name={IconName.AtSign}
+                        size="xs"
+                        className="mr-0.5"
+                      />
 
                       <div className="w-full truncate">{tunnelName}</div>
                     </Badge>
@@ -276,12 +282,12 @@ function RestartInvocationContent() {
                     {deploymentEndpoint}
                   </div>
                   {isCurrent && (
-                    <Badge size="xs" variant="info">
+                    <Badge size="xs" intent="info">
                       CURRENT
                     </Badge>
                   )}
                   {isLatest && !isCurrent && (
-                    <Badge size="xs" variant="info">
+                    <Badge size="xs" intent="info">
                       LATEST
                     </Badge>
                   )}
@@ -405,7 +411,7 @@ export const RestartInvocation = withConfirmation({
   description: (
     <p>Are you sure you want to restart this invocation as a new one?</p>
   ),
-  alertType: 'info',
+  alertIntent: 'info',
   alertContent: <RestartAlert />,
   submitText: 'Restart',
   formMethod: 'PATCH',

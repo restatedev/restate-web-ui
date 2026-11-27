@@ -157,7 +157,7 @@ describe('POST /query/v2/invocations/inbox', () => {
         groupBy: 'status',
         total: 5,
         byStatus: [
-          { status: 'pending', count: 2 },
+          { status: 'new', count: 2 },
           { status: 'yielded', count: 3 },
         ],
         isPartial: false,
@@ -199,7 +199,7 @@ describe('POST /query/v2/invocations/inbox', () => {
         groupBy: 'status',
         total: 50_000,
         byStatus: [
-          { status: 'pending', count: 30_000 },
+          { status: 'new', count: 30_000 },
           { status: 'backing-off', count: 20_000 },
         ],
         isPartial: true,

@@ -182,7 +182,7 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
         }),
         expect.objectContaining({
           id: 'inv_1waiting',
-          status: 'pending',
+          status: 'new',
         }),
       ],
       limit: 50,

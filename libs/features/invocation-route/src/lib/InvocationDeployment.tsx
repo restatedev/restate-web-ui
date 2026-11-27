@@ -17,7 +17,8 @@ function DeploymentId({ deploymentId }: { deploymentId: string }) {
   return (
     <Badge
       size="sm"
-      className="ml-1 max-w-48 min-w-0 py-0 pr-0 align-middle font-mono"
+      mono
+      className="ml-1 max-w-48 min-w-0 py-0 pr-0 align-middle"
     >
       <TruncateWithTooltip
         tooltipContent={deploymentId}
@@ -26,10 +27,7 @@ function DeploymentId({ deploymentId }: { deploymentId: string }) {
       >
         <span className="block truncate">{deploymentId}</span>
       </TruncateWithTooltip>
-      <Copy
-        copyText={deploymentId}
-        className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
-      />
+      <Copy copyText={deploymentId} size="2xs" className="ml-1" />
     </Badge>
   );
 }
@@ -46,7 +44,7 @@ function MissingDeployment({
       <CardRow variant="hero" className="flex-wrap gap-y-2">
         <div className="flex min-w-0 items-center gap-2.5">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-pending-subtle text-pending">
-            <Icon name={IconName.TriangleAlert} className="h-3.5 w-3.5" />
+            <Icon name={IconName.TriangleAlert} size="sm" />
           </span>
           <div className="min-w-0">
             <div className="text-xs font-medium text-tertiary">

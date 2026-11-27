@@ -106,7 +106,7 @@ export function Sort({
           }
           operation={
             isNone ? (
-              <Icon name={IconName.Minus} className="h-3.5 w-3.5" />
+              <Icon name={IconName.Minus} size="sm" />
             ) : (
               <Icon
                 name={
@@ -114,7 +114,7 @@ export function Sort({
                     ? IconName.ArrowUp
                     : IconName.ArrowDown
                 }
-                className="h-3.5 w-3.5"
+                size="sm"
               />
             )
           }

@@ -6,11 +6,8 @@ import {
   formatPercentage,
 } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
-import {
-  SelectionIndicator,
-  ToggleButton,
-  ToggleButtonGroup,
-} from 'react-aria-components';
+import type { ReactNode } from 'react';
+import { SegmentedControl } from '@restate/ui-tabs';
 import {
   DEFAULT_STYLE,
   INBOX_STAGE_GRADIENT,
@@ -19,6 +16,7 @@ import {
 } from './constants';
 import { BreakdownMode } from './BreakdownMode';
 import type { StatusEntry } from './useOrderedStatuses';
+import { Skeleton } from '@restate/ui-loading';
 
 export type VQueueSummaryFocus = 'all' | 'not-completed' | 'completed';
 
@@ -37,7 +35,7 @@ const INBOX_PATTERN = hatchPattern('var(--background-color-hatch-pending)');
 const NEUTRAL_HATCH_PATTERN = hatchPattern('var(--background-color-hatch)');
 const INBOX_HIGHLIGHT =
   'linear-gradient(to bottom, color-mix(in oklab, var(--box-shadow-color-highlight) 12%, transparent), transparent 60%)';
-const styles = tv({
+export const vqueueSummaryStyles = tv({
   slots: {
     container:
       'grid w-full grid-cols-1 items-center gap-y-2.5 md:grid-cols-[auto_minmax(0,1fr)]',
@@ -45,12 +43,6 @@ const styles = tv({
       'col-start-1 row-start-2 mx-auto flex items-center text-2xs text-muted md:row-start-1 md:mx-0 md:justify-self-start',
     breakdownControl:
       'col-start-1 row-start-1 justify-self-center md:col-start-2 md:self-center md:justify-self-end md:pr-1',
-    focusTabList:
-      'relative flex max-w-full gap-0 rounded-xl border-[0.5px] border-tint-subtle bg-tint-subtle shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-default/3%)]',
-    focusTab:
-      'relative isolate flex min-h-0 cursor-default items-baseline justify-center gap-1.5 rounded-xl px-3 py-1.5 font-sans text-xs whitespace-nowrap text-tertiary outline-offset-2 outline-focus transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] hover:text-primary focus-visible:outline-2 pressed:text-primary selected:text-primary',
-    focusIndicator:
-      'absolute inset-0 -z-10 rounded-xl border border-tint bg-raised shadow-xs motion-safe:transition-[translate,width,height] motion-safe:duration-300 motion-safe:ease-out',
     focusCount: 'font-medium text-muted tabular-nums',
     panels:
       'col-start-1 row-start-3 w-full overflow-visible md:col-span-2 md:row-start-2',
@@ -64,10 +56,6 @@ const styles = tv({
       false: {},
     },
   },
-});
-
-const skeletonStyles = tv({
-  base: 'h-7 w-full animate-pulse rounded-md bg-emphasis',
 });
 
 const emptyStyles = tv({
@@ -124,6 +112,20 @@ const runningFlowStyles = tv({
   base: 'pointer-events-none absolute inset-0 animate-runningFlow opacity-20 motion-reduce:animate-none',
 });
 
+type FocusControlProps =
+  | {
+      focusControl: ReactNode;
+      selectedFocus?: never;
+      onFocusChange?: never;
+      showFocusCounts?: never;
+    }
+  | {
+      focusControl?: never;
+      selectedFocus?: VQueueSummaryFocus | null;
+      onFocusChange: (focus: VQueueSummaryFocus) => void;
+      showFocusCounts?: boolean;
+    };
+
 const COMPLETED_LOADING_STAGE: VQueueStageSummaryEntry = {
   name: 'finished',
   label: 'Completed',
@@ -156,12 +158,11 @@ export function VQueueStageSummaryBar({
   isBreakdownLoading,
   isBreakdownError,
   showFocusCounts = true,
+  focusControl,
 }: {
   byStage: VQueueStageSummaryEntry[];
   byStatus: VQueueStatusSummaryEntry[];
   focus: VQueueSummaryFocus;
-  selectedFocus?: VQueueSummaryFocus | null;
-  onFocusChange: (focus: VQueueSummaryFocus) => void;
   breakdownMode: 'estimate' | 'exact';
   canSampleBreakdown: boolean;
   fixedBreakdownMode?: 'estimate' | 'exact';
@@ -179,8 +180,7 @@ export function VQueueStageSummaryBar({
   comparisonScope?: 'all' | 'service';
   isBreakdownLoading?: (stageName: string) => boolean;
   isBreakdownError?: (stageName: string) => boolean;
-  showFocusCounts?: boolean;
-}) {
+} & FocusControlProps) {
   const matchingStageData = new Map(
     byStage.map((stage) => [stage.name, stage]),
   );
@@ -254,19 +254,10 @@ export function VQueueStageSummaryBar({
   const inboxBreakdownLoading = isBreakdownLoading?.('inbox') ?? false;
   const hasInboxBreakdown = visibleInboxStatuses.length > 0;
   const hasCompletedBreakdown = visibleCompletedStatuses.length > 0;
-  const {
-    container,
-    focusRow,
-    breakdownControl,
-    focusTabList,
-    focusTab,
-    focusIndicator,
-    focusCount,
-    panels,
-    rail,
-  } = styles({
-    pulse: Boolean(isFetching),
-  });
+  const { container, focusRow, breakdownControl, focusCount, panels, rail } =
+    vqueueSummaryStyles({
+      pulse: Boolean(isFetching),
+    });
   const percentageScope = `of ${formatNumber(focusedPopulationTotal, true)}`;
   const focusedPopulationDescription = `${
     focus === 'all' ? 'all' : focus
@@ -279,10 +270,7 @@ export function VQueueStageSummaryBar({
   if (isLoading) {
     return (
       <div className={container({ class: className })}>
-        <div
-          className={skeletonStyles({ class: 'col-span-full' })}
-          aria-hidden
-        />
+        <Skeleton shape="block" className="col-span-full block h-7 w-full" />
       </div>
     );
   }
@@ -400,7 +388,7 @@ export function VQueueStageSummaryBar({
                 segment.name === 'inbox'
                   ? `${INBOX_PATTERN}, ${INBOX_HIGHLIGHT}, ${INBOX_STAGE_GRADIENT}`
                   : isGrouped && isInboxStatus
-                    ? `${segment.name === 'pending' ? INBOX_PATTERN : NEUTRAL_HATCH_PATTERN}, ${backgroundGradient}`
+                    ? `${segment.name === 'new' ? INBOX_PATTERN : NEUTRAL_HATCH_PATTERN}, ${backgroundGradient}`
                     : backgroundGradient,
               borderColor: style.stroke,
               borderLeftWidth:
@@ -551,61 +539,61 @@ export function VQueueStageSummaryBar({
         </div>
       )}
       <div className={focusRow()}>
-        <ToggleButtonGroup
-          aria-label="Invocation breakdown"
-          selectionMode="single"
-          disallowEmptySelection
-          selectedKeys={selectedFocus ? [selectedFocus] : []}
-          onSelectionChange={(keys) => {
-            const [nextFocus] = keys;
-            if (nextFocus) onFocusChange(nextFocus as VQueueSummaryFocus);
-          }}
-          className={focusTabList()}
-        >
-          <ToggleButton id="all" className={focusTab()}>
-            <span>All statuses</span>
-            {renderFocusCount(
-              'All-status',
-              populationTotal,
-              countsUnavailable || completedStageIsUnavailable
-                ? 'unavailable'
-                : completedStageIsLoading
-                  ? 'loading'
-                  : areStageCountsPartial && populationTotal === 0
-                    ? 'unknown'
-                    : 'known',
-            )}
-            <SelectionIndicator className={focusIndicator()} />
-          </ToggleButton>
-          <ToggleButton id="not-completed" className={focusTab()}>
-            <span>Not completed</span>
-            {renderFocusCount(
-              'Not-completed',
-              populationNotCompletedCount,
-              countsUnavailable
-                ? 'unavailable'
-                : areStageCountsPartial && populationNotCompletedCount === 0
-                  ? 'unknown'
-                  : 'known',
-            )}
-            <SelectionIndicator className={focusIndicator()} />
-          </ToggleButton>
-          <ToggleButton id="completed" className={focusTab()}>
-            <span>Completed</span>
-            {renderFocusCount(
-              'Completed',
-              populationCompletedCount,
-              countsUnavailable || completedStageIsUnavailable
-                ? 'unavailable'
-                : completedStageIsLoading
-                  ? 'loading'
-                  : areStageCountsPartial && populationCompletedCount === 0
-                    ? 'unknown'
-                    : 'known',
-            )}
-            <SelectionIndicator className={focusIndicator()} />
-          </ToggleButton>
-        </ToggleButtonGroup>
+        {focusControl !== undefined ? (
+          focusControl
+        ) : (
+          <SegmentedControl
+            size="md"
+            label="Invocation breakdown"
+            value={selectedFocus ?? null}
+            onChange={(nextFocus) => onFocusChange?.(nextFocus)}
+            options={[
+              {
+                value: 'all',
+                label: 'All statuses',
+                count: renderFocusCount(
+                  'All-status',
+                  populationTotal,
+                  countsUnavailable || completedStageIsUnavailable
+                    ? 'unavailable'
+                    : completedStageIsLoading
+                      ? 'loading'
+                      : areStageCountsPartial && populationTotal === 0
+                        ? 'unknown'
+                        : 'known',
+                ),
+              },
+              {
+                value: 'not-completed',
+                label: 'Not completed',
+                count: renderFocusCount(
+                  'Not-completed',
+                  populationNotCompletedCount,
+                  countsUnavailable
+                    ? 'unavailable'
+                    : areStageCountsPartial && populationNotCompletedCount === 0
+                      ? 'unknown'
+                      : 'known',
+                ),
+              },
+              {
+                value: 'completed',
+                label: 'Completed',
+                count: renderFocusCount(
+                  'Completed',
+                  populationCompletedCount,
+                  countsUnavailable || completedStageIsUnavailable
+                    ? 'unavailable'
+                    : completedStageIsLoading
+                      ? 'loading'
+                      : areStageCountsPartial && populationCompletedCount === 0
+                        ? 'unknown'
+                        : 'known',
+                ),
+              },
+            ]}
+          />
+        )}
       </div>
       <div className={panels()}>{summaryRail}</div>
     </div>

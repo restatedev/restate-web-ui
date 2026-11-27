@@ -29,7 +29,8 @@ export function Support({ children }: PropsWithChildren) {
             >
               <Icon
                 name={IconName.Docs}
-                className="h-[1.25em] w-[1.25em] text-secondary"
+                tone="secondary"
+                className="h-[1.25em] w-[1.25em]"
               />
               Read documentation…
             </Link>
@@ -42,7 +43,8 @@ export function Support({ children }: PropsWithChildren) {
             >
               <Icon
                 name={IconName.Discord}
-                className="h-[1.25em] w-[1.25em] text-secondary"
+                tone="secondary"
+                className="h-[1.25em] w-[1.25em]"
               />
               Join Discord…
             </Link>
@@ -55,7 +57,8 @@ export function Support({ children }: PropsWithChildren) {
             >
               <Icon
                 name={IconName.Slack}
-                className="h-[1.25em] w-[1.25em] text-secondary"
+                tone="secondary"
+                className="h-[1.25em] w-[1.25em]"
               />
               Join Slack…
             </Link>
@@ -68,7 +71,8 @@ export function Support({ children }: PropsWithChildren) {
             >
               <Icon
                 name={IconName.Github}
-                className="h-[1.25em] w-[1.25em] text-secondary"
+                tone="secondary"
+                className="h-[1.25em] w-[1.25em]"
               />
               Open Github issue…
             </Link>
@@ -90,9 +94,9 @@ function Help() {
         className="fixed bottom-2 left-2 z-50 hidden h-11 w-11 items-center justify-center rounded-full bg-surface/80 p-0 text-secondary shadow-lg shadow-default/5 backdrop-blur-xl backdrop-saturate-200 sm:right-4 sm:bottom-4 md:flex 3xl:bottom-6 3xl:left-[calc(50vw-min(50rem,calc(50vw-400px-2rem))-2rem)] pressed:scale-95 pressed:shadow-xs"
       >
         {isOpen ? (
-          <Icon name={IconName.X} className="h-5 w-5" />
+          <Icon name={IconName.X} size="lg" />
         ) : (
-          <Icon name={IconName.Help} className="h-5 w-5" />
+          <Icon name={IconName.Help} size="lg" />
         )}
       </Button>
     </PopoverTrigger>

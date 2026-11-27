@@ -13,6 +13,7 @@ import {
   VirtualObjectInvocations,
 } from './VirtualObjectInbox';
 import { useMemo } from 'react';
+import { Skeleton } from '@restate/ui-loading';
 
 type InboxResponse = components['schemas']['VirtualObjectInboxResponse'];
 type InvocationsResponse =
@@ -39,7 +40,7 @@ function InboxTabLabel({
           {formatNumber(count, true)}
         </span>
       ) : isPending ? (
-        <span className="inline-block h-3 w-5 animate-pulse rounded bg-emphasis" />
+        <Skeleton className="h-3 w-5" />
       ) : null}
     </span>
   );
@@ -106,7 +107,7 @@ export function VirtualObjectDetails({
       className="-mt-[calc(var(--cp-toolbar-tuck,0px)-1.5rem)]"
       tabs={tabs}
     >
-      <ContentPanelBody className="pb-32">
+      <ContentPanelBody bottomSpace>
         <ContentPanelSection flush>
           {tab === 'state' ? (
             <KeyedServiceState

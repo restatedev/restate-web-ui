@@ -19,11 +19,11 @@ function stage(key: string, statuses: string[], count: number) {
 
 const SUMMARY_WITH_PENDING_BACKLOG = {
   stageBuckets: [
-    stage('inbox', ['pending'], 200),
+    stage('inbox', ['new'], 200),
     stage('running', ['running'], 100),
   ],
   statusBuckets: [
-    { key: 'pending', label: 'Pending', statuses: ['pending'], count: 200 },
+    { key: 'new', label: 'New', statuses: ['new'], count: 200 },
     { key: 'running', label: 'Running', statuses: ['running'], count: 100 },
   ],
   serviceBuckets: [],
@@ -58,13 +58,13 @@ describe('createSystemHealthMonitor', () => {
 
     await fetchSummary(client, 'all', SUMMARY_WITH_PENDING_BACKLOG);
     expect(issueLabels()).toEqual([
-      'More than 5% of inflight invocations are pending',
+      "More than 5% of unfinished invocations haven't started yet",
     ]);
 
     await fetchSummary(client, 'deployments', DEPLOYMENTS_SUMMARY);
     await fetchSummary(client, 'count', { ...DEPLOYMENTS_SUMMARY, total: 3 });
     expect(issueLabels()).toEqual([
-      'More than 5% of inflight invocations are pending',
+      "More than 5% of unfinished invocations haven't started yet",
     ]);
   });
 });

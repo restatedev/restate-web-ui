@@ -21,26 +21,26 @@ export const predefinedQueries = [
     id: 'backlog-by-service-key',
     title: 'Backlog by service / key',
     description:
-      "Services and virtual-object keys with the most invocations waiting to start. Top rows are your hottest queues / most-contended keys. For plain services the key is empty, so the row is that service's total pending backlog.",
+      "Services and virtual-object keys with the most invocations waiting to start. Top rows are your hottest queues / most-contended keys. For plain services the key is empty, so the row is that service's whole backlog.",
     performance: 'safe',
     query: `SELECT target_service_name, target_service_key,
        COUNT(*)        AS waiting,
        MIN(created_at) AS oldest_waiting_at
 FROM sys_invocation
-WHERE status = 'pending'
+WHERE status IN ('pending', 'new')
 GROUP BY target_service_name, target_service_key
 ORDER BY waiting DESC
 LIMIT 20;`,
   },
   {
     id: 'oldest-pending',
-    title: 'Oldest pending',
+    title: 'Oldest waiting to start',
     description:
       'The invocations that have been waiting longest to start. Useful for spotting work stuck at the front of a queue.',
     performance: 'safe',
     query: `SELECT id, target_service_name, target_service_key, target_handler_name, created_at, modified_at
 FROM sys_invocation
-WHERE status = 'pending'
+WHERE status IN ('pending', 'new')
 ORDER BY created_at ASC
 LIMIT 20;`,
   },

@@ -13,12 +13,14 @@ export function EngineCore({
   serverRef,
   status,
   onPress,
+  'aria-label': ariaLabel,
   className,
   belowServer,
 }: {
   serverRef: React.RefObject<HTMLDivElement | null>;
   status: FerrofluidStatus;
   onPress?: () => void;
+  'aria-label'?: string;
   className?: string;
   belowServer?: ReactNode;
 }) {
@@ -29,7 +31,12 @@ export function EngineCore({
         className="relative z-20 h-[79px] w-[79px] @min-[64rem]/hero:h-[92px] @min-[64rem]/hero:w-[92px]"
       >
         <div className="absolute top-1/2 left-1/2 -translate-1/2 scale-[0.6] @min-[64rem]/hero:scale-[0.7]">
-          <RestateServer status={status} onPress={onPress} appearance="solid" />
+          <RestateServer
+            status={status}
+            onPress={onPress}
+            aria-label={ariaLabel}
+            appearance="solid"
+          />
         </div>
       </div>
       {belowServer && (

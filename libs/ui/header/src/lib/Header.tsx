@@ -1,14 +1,6 @@
 import { Icon, type IconName } from '@restate/ui-icons';
-import { tv } from '@restate/util-styles';
+import { tv, type Intent } from '@restate/util-styles';
 import type { PropsWithChildren, ReactNode } from 'react';
-
-export type HeaderVariant =
-  | 'success'
-  | 'danger'
-  | 'warning'
-  | 'pending'
-  | 'info'
-  | 'default';
 
 export type HeaderIconProps =
   | {
@@ -22,7 +14,7 @@ export type HeaderIconProps =
 
 export type HeaderProps = PropsWithChildren<
   {
-    variant?: HeaderVariant;
+    intent?: Intent;
     className?: string;
     iconClassName?: string;
     trail?: ReactNode;
@@ -41,7 +33,7 @@ const headerStyles = tv({
     trailShelf: '-mb-1 flex min-w-0 items-center',
   },
   variants: {
-    variant: {
+    intent: {
       success: {
         base: 'border-success from-success-muted/90 from-0% via-surface/70 via-50% to-success-subtle/60',
       },
@@ -57,10 +49,10 @@ const headerStyles = tv({
       info: {
         base: 'border-info from-info-muted/90 from-0% via-surface/70 via-50% to-info-subtle/60',
       },
-      default: {
+      neutral: {
         base: 'border-default from-muted/90 from-0% via-surface/70 via-50% to-subtle/60',
       },
-    } satisfies Record<HeaderVariant, { base: string }>,
+    } satisfies Record<Intent, { base: string }>,
     hasIcon: {
       true: {
         base: 'max-md:pl-[2.375rem] max-md:[&>:nth-child(2)]:max-w-full max-md:[&>:nth-child(n+3)]:order-2',
@@ -74,7 +66,7 @@ const headerStyles = tv({
       false: {},
     },
   },
-  defaultVariants: { variant: 'default', hasIcon: false, hasTrail: false },
+  defaultVariants: { intent: 'neutral', hasIcon: false, hasTrail: false },
 });
 
 function publishHeaderHeight(header: HTMLElement | null) {
@@ -93,7 +85,7 @@ function publishHeaderHeight(header: HTMLElement | null) {
 }
 
 export function Header({
-  variant = 'default',
+  intent = 'neutral',
   icon,
   iconLabel,
   iconClassName,
@@ -102,7 +94,7 @@ export function Header({
   children,
 }: HeaderProps) {
   const hasTrail = trail !== undefined && trail !== null;
-  const styles = headerStyles({ variant, hasIcon: Boolean(icon), hasTrail });
+  const styles = headerStyles({ intent, hasIcon: Boolean(icon), hasTrail });
   return (
     <>
       {hasTrail && (

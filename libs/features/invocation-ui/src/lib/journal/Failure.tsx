@@ -150,7 +150,9 @@ export function Failure({
           <span className="block w-1 min-w-0" />
           <Icon
             name={IconName.ChevronsUpDown}
-            className="mr-1 h-3 w-3 shrink-0 text-muted"
+            size="xs"
+            tone="muted"
+            className="mr-1"
           />
         </Button>
       </PopoverTrigger>

@@ -128,6 +128,9 @@
       "path": "../batch-operations/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/loading/tsconfig.lib.json"
+    },
+    {
       "path": "../../util/intl/tsconfig.lib.json"
     },
     {

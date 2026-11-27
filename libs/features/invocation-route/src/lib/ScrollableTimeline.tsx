@@ -146,13 +146,13 @@ export function ScrollableTimeline({
       <ZoomControlsPortalContent>
         <div className="flex items-center gap-1">
           <HoverTooltip content="Reset zoom (full trace)">
-            <Button variant="icon" onClick={resetZoom}>
-              <Icon name={IconName.ZoomOut} className="h-4 w-4" />
+            <Button aria-label="Reset zoom" variant="icon" onClick={resetZoom}>
+              <Icon name={IconName.ZoomOut} size="md" />
             </Button>
           </HoverTooltip>
           <HoverTooltip content="Zoom in (2x)">
-            <Button variant="icon" onClick={zoomIn}>
-              <Icon name={IconName.ZoomIn} className="h-4 w-4" />
+            <Button aria-label="Zoom in" variant="icon" onClick={zoomIn}>
+              <Icon name={IconName.ZoomIn} size="md" />
             </Button>
           </HoverTooltip>
         </div>

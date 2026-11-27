@@ -21,13 +21,10 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { formatNumber, formatPlurals } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
+import { Skeleton } from '@restate/ui-loading';
 
 const valueStyles = tv({
   base: 'text-xs text-tertiary tabular-nums',
-});
-
-const skeletonStyles = tv({
-  base: 'inline-block h-4 w-32 animate-pulse rounded-full bg-emphasis/70',
 });
 
 const captionStyles = tv({
@@ -41,18 +38,11 @@ const captionStyles = tv({
   defaultVariants: { tone: 'default' },
 });
 
-function Skeleton() {
-  return <span className={skeletonStyles()} />;
-}
-
 function CopyValue({ value }: { value: string }) {
   return (
-    <Badge size="sm" className="ml-1 min-w-0 py-0 pr-0 align-middle font-mono">
+    <Badge size="sm" mono className="ml-1 min-w-0 py-0 pr-0 align-middle">
       <span className="truncate">{value}</span>
-      <Copy
-        copyText={value}
-        className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
-      />
+      <Copy copyText={value} size="2xs" className="ml-1" />
     </Badge>
   );
 }
@@ -75,10 +65,7 @@ function ServerInfoRows({ info }: { info?: DetailedDeployment['info'] }) {
               className: 'items-start',
             })}
           >
-            <Icon
-              name={IconName.TriangleAlert}
-              className="mt-px h-3 w-3 shrink-0"
-            />
+            <Icon name={IconName.TriangleAlert} size="xs" className="mt-px" />
             <span className="min-w-0 font-normal">
               {item.code && <MonoLabel>{item.code}: </MonoLabel>}
               {item.message}
@@ -108,7 +95,7 @@ export function DetailsCard({
         <DeploymentSdkRow deployment={deployment} />
       ) : (
         <CardRow>
-          <Skeleton />
+          <Skeleton shape="pill" className="h-4 w-32" />
         </CardRow>
       )}
       <DeploymentProtocolRows deployment={deployment} />

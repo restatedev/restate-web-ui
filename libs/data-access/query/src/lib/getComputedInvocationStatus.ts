@@ -75,6 +75,8 @@ export function getComputedInvocationStatus(
 
   switch (invocation.status) {
     case 'pending':
+      return { status: 'new', isRetrying: false };
+    case 'new':
     case 'ready':
     case 'yielded':
     case 'scheduled':

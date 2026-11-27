@@ -321,7 +321,7 @@ function getLineVariant(
       return 'idleWarning';
     case 'backing-off':
       return 'backingOff';
-    case 'pending':
+    case 'new':
     case 'ready':
     case 'yielded':
       return 'idlePending';
@@ -667,7 +667,7 @@ function InnerEntryProgress({
             ) : entryCompletionIsAmbiguous ? (
               <Icon
                 name={mode === 'paused' ? IconName.Pause : IconName.ClockAlert}
-                className="h-3 w-3"
+                size="xs"
               />
             ) : (
               duration

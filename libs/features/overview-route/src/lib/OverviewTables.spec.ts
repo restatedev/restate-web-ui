@@ -124,12 +124,16 @@ describe('overview tables', () => {
     ['service type', 'virtualobject'],
     ['deployment ID', 'dp_checkout'],
     ['deployment endpoint', 'node:9080'],
+    ['metadata key and value', 'tier:critical'],
   ])('searches services by %s', (_field, filter) => {
-    const checkout = service({
-      name: 'Checkout',
-      deploymentId: 'dp_checkout',
-      handlers: [handler('refund'), handler('charge')],
-    });
+    const checkout = {
+      ...service({
+        name: 'Checkout',
+        deploymentId: 'dp_checkout',
+        handlers: [handler('refund'), handler('charge')],
+      }),
+      metadata: { team: 'payments', tier: 'critical' },
+    };
     const checkoutDeployment = deployment({
       id: 'dp_checkout',
       uri: 'http://node:9080',

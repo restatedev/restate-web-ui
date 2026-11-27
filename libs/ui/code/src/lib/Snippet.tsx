@@ -3,7 +3,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { Children, PropsWithChildren, ReactNode, memo, useState } from 'react';
 import { tv } from '@restate/util-styles';
 import { syntaxHighlighter } from './SyntaxHighlighter';
-import { Nav, NavButtonItem } from '@restate/ui-nav';
+import { SegmentedControl } from '@restate/ui-tabs';
 
 interface SnippetProps {
   className?: string;
@@ -21,7 +21,7 @@ const LANGUAGE_LABEL: Record<
   Exclude<SnippetProps['language'], undefined>,
   string
 > = {
-  typescript: 'Typescript',
+  typescript: 'TypeScript',
   java: 'Java',
   json: 'json',
   bash: 'bash',
@@ -83,14 +83,22 @@ export function Snippet({
 interface SnippetCopyProps {
   className?: string;
   copyText: string;
+  size?: 'xs' | 'sm' | 'md';
 }
 
 const snippetCopyStyles = tv({
-  base: 'copy absolute top-1 right-1 items-center gap-1 p-2 text-xs',
+  base: 'copy items-center gap-1',
+  variants: {
+    hasSize: {
+      true: 'ml-auto',
+      false: 'absolute top-1 right-1 p-2 text-xs',
+    },
+  },
 });
 export function SnippetCopy({
   className,
   copyText,
+  size,
   children,
 }: PropsWithChildren<SnippetCopyProps>) {
   const [isCopied, setIsCopied] = useState(false);
@@ -98,7 +106,9 @@ export function SnippetCopy({
   return (
     <Button
       variant="icon"
-      className={snippetCopyStyles({ className })}
+      aria-label={children ? undefined : isCopied ? 'Copied' : 'Copy'}
+      size={size}
+      className={snippetCopyStyles({ hasSize: Boolean(size), className })}
       onClick={() => {
         navigator.clipboard.writeText(copyText);
         setIsCopied(true);
@@ -109,16 +119,16 @@ export function SnippetCopy({
     >
       {children}
       {isCopied ? (
-        <Icon name={IconName.Check} />
+        <Icon name={IconName.Check} size={size} />
       ) : (
-        <Icon name={IconName.Copy} />
+        <Icon name={IconName.Copy} size={size} />
       )}
     </Button>
   );
 }
 
 const snippetTabsStyles = tv({
-  base: '@container relative',
+  base: 'flex flex-col items-start gap-1.5',
 });
 export function SnippetTabs({
   children,
@@ -136,25 +146,17 @@ export function SnippetTabs({
   const [currentLanguage, setCurrentLanguage] =
     useState<(typeof languages)[number]>(defaultLanguage);
   return (
-    <div
-      className={snippetTabsStyles({
-        className,
-      })}
-    >
-      <div className="absolute top-0 right-0 rounded-xl bg-tint-subtle">
-        <Nav ariaCurrentValue="true" className="gap-0">
-          {languages.map((language) => (
-            <NavButtonItem
-              key={language}
-              isActive={language === currentLanguage}
-              onClick={() => setCurrentLanguage(language)}
-            >
-              {LANGUAGE_LABEL[language]}
-            </NavButtonItem>
-          ))}
-        </Nav>
-      </div>
-      <div className="pt-8 @sm:pt-4 @lg:pt-0">{children(currentLanguage)}</div>
+    <div className={snippetTabsStyles({ className })}>
+      <SegmentedControl
+        label="Language"
+        value={currentLanguage}
+        options={languages.map((language) => ({
+          value: language,
+          label: LANGUAGE_LABEL[language],
+        }))}
+        onChange={setCurrentLanguage}
+      />
+      <div className="self-stretch">{children(currentLanguage)}</div>
     </div>
   );
 }

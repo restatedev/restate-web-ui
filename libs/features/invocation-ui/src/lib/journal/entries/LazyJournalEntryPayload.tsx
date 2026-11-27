@@ -31,7 +31,7 @@ import {
   type RestateCodecOptions,
 } from '@restate/features-codec';
 import { ErrorBanner } from '@restate/ui-error';
-import { Nav, NavButtonItem } from '@restate/ui-nav';
+import { SegmentedControl } from '@restate/ui-tabs';
 
 const TARGET_INVOCATION_COMMAND_TYPES = [
   'Call',
@@ -384,10 +384,7 @@ function PayloadPopover({
             <PopoverTrigger>
               <Button className={trigger()} variant="secondary">
                 {!isVoid && (
-                  <Icon
-                    name={IconName.Eye}
-                    className="mx-1.5 h-3 w-3 shrink-0"
-                  />
+                  <Icon name={IconName.Eye} size="xs" className="mx-1.5" />
                 )}
                 <span className={triggerLabelStyle()}>
                   {triggerLabel}
@@ -407,18 +404,15 @@ function PayloadPopover({
               title={
                 <div className="flex min-h-5.5 items-center text-0.5xs">
                   {tabs ? (
-                    <Nav ariaCurrentValue="true" className="gap-0">
-                      {tabs.items.map((tab) => (
-                        <NavButtonItem
-                          key={tab}
-                          isActive={tabs.active === tab}
-                          onClick={() => tabs.onChange(tab)}
-                          className="px-4 [&:not([data-active=true])]:text-muted"
-                        >
-                          {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                        </NavButtonItem>
-                      ))}
-                    </Nav>
+                    <SegmentedControl
+                      label={title}
+                      value={tabs.active}
+                      options={tabs.items.map((tab) => ({
+                        value: tab,
+                        label: tab.charAt(0).toUpperCase() + tab.slice(1),
+                      }))}
+                      onChange={tabs.onChange}
+                    />
                   ) : (
                     <span className="inline-block pl-2">{title}</span>
                   )}
@@ -455,7 +449,7 @@ function PayloadContent({
     <>
       {isPending && (
         <div className="flex items-center gap-1.5 py-2.5 pr-4 text-sm text-muted">
-          <Spinner className="h-4 w-4" />
+          <Spinner size="md" />
           Loading…
         </div>
       )}
@@ -705,7 +699,7 @@ function LazyFailure({
   if (isPending) {
     return (
       <div className={className}>
-        <Spinner className="h-3 w-3" />
+        <Spinner size="xs" />
       </div>
     );
   }

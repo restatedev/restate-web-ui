@@ -11,7 +11,7 @@ import {
   DropdownTrigger,
 } from '@restate/ui-dropdown';
 import { Button } from '@restate/ui-button';
-import { HoverTooltip } from '@restate/ui-tooltip';
+import { HintTooltip, HoverTooltip } from '@restate/ui-tooltip';
 import { useNavExpansion, useSidebar } from './Sidebar';
 
 export interface SidebarLocation {
@@ -39,6 +39,7 @@ export interface SidebarSubItem {
   preserveSearchParams?: boolean | string[];
   disabled?: boolean;
   action?: SidebarSubItemAction;
+  hint?: ReactNode;
 }
 
 export interface SidebarNavItemProps {
@@ -306,16 +307,24 @@ function SidebarSubLink({
   const { closeDrawer } = useSidebar();
   return (
     <div className={s.subRow()}>
-      <Link
-        href={item.href}
-        preserveQueryParams={item.preserveSearchParams ?? false}
+      <HintTooltip
+        hint={item.hint}
+        placement="right"
+        offset={12}
         disabled={disabled}
-        className={s.subLink()}
-        aria-current={isActive ? 'page' : undefined}
-        onClick={closeDrawer}
+        className="min-w-0 flex-auto"
       >
-        {item.label}
-      </Link>
+        <Link
+          href={item.href}
+          preserveQueryParams={item.preserveSearchParams ?? false}
+          disabled={disabled}
+          className={s.subLink()}
+          aria-current={isActive ? 'page' : undefined}
+          onClick={closeDrawer}
+        >
+          {item.label}
+        </Link>
+      </HintTooltip>
       {item.action ? (
         'render' in item.action ? (
           item.action.render({ className: s.subAction() })
@@ -354,11 +363,7 @@ function SidebarOverflow({ items }: { items: SidebarSubItem[] }) {
     <Dropdown>
       <DropdownTrigger>
         <Button variant="secondary" className={s.overflowTrigger()}>
-          <Icon
-            name={IconName.Ellipsis}
-            className="h-4 w-4 shrink-0 text-subtle"
-            aria-hidden
-          />
+          <Icon name={IconName.Ellipsis} size="md" tone="subtle" aria-hidden />
           <span className="min-w-0 flex-auto truncate">More</span>
         </Button>
       </DropdownTrigger>
@@ -366,7 +371,14 @@ function SidebarOverflow({ items }: { items: SidebarSubItem[] }) {
         <DropdownMenu onSelect={closeDrawer}>
           {items.map((item) => (
             <DropdownItem key={item.href} href={item.href} value={item.href}>
-              {item.label}
+              <HintTooltip
+                hint={item.hint}
+                placement="right"
+                offset={16}
+                className="min-w-0 flex-auto"
+              >
+                {item.label}
+              </HintTooltip>
             </DropdownItem>
           ))}
         </DropdownMenu>

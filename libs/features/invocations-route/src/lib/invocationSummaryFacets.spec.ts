@@ -16,7 +16,7 @@ const summary: InvocationSummary = {
     {
       key: 'inbox',
       label: 'Inbox',
-      statuses: ['pending', 'backing-off'],
+      statuses: ['new', 'backing-off'],
       count: 70,
       breakdownIsPartial: false,
       breakdownCoverage: 'full',
@@ -36,9 +36,9 @@ const summary: InvocationSummary = {
   ],
   statusBuckets: [
     {
-      key: 'pending',
-      label: 'Pending',
-      statuses: ['pending'],
+      key: 'new',
+      label: 'New',
+      statuses: ['new'],
       count: 40,
       isIncluded: true,
     },
@@ -66,7 +66,7 @@ const summary: InvocationSummary = {
         {
           key: 'inbox',
           label: 'Inbox',
-          statuses: ['pending', 'backing-off'],
+          statuses: ['new', 'backing-off'],
           count: 50,
           isIncluded: true,
         },
@@ -87,7 +87,7 @@ const summary: InvocationSummary = {
         {
           key: 'inbox',
           label: 'Inbox',
-          statuses: ['pending', 'backing-off'],
+          statuses: ['new', 'backing-off'],
           count: 20,
           isIncluded: true,
         },
@@ -155,7 +155,7 @@ describe('getInvocationSummaryFacets', () => {
         groupBy: 'status',
         total: 50,
         byStatus: [
-          { status: 'pending', count: 30 },
+          { status: 'new', count: 30 },
           { status: 'backing-off', count: 20 },
         ],
         isPartial: true,
@@ -170,7 +170,7 @@ describe('getInvocationSummaryFacets', () => {
     expect(facets.hasServiceFilter).toBe(true);
     expect(facets.byStage.map(({ count }) => count)).toEqual([50, 10]);
     expect(facets.byStatus.map(({ key, count }) => [key, count])).toEqual([
-      ['pending', 30],
+      ['new', 30],
       ['backing-off', 20],
       ['succeeded', 10],
     ]);
@@ -199,7 +199,7 @@ describe('getInvocationSummaryFacets', () => {
           { status: 'ready', count: 10 },
           { status: 'scheduled', count: 10 },
           { status: 'yielded', count: 10 },
-          { status: 'pending', count: 10 },
+          { status: 'new', count: 10 },
         ],
         isPartial: false,
       },
@@ -207,7 +207,7 @@ describe('getInvocationSummaryFacets', () => {
 
     expect(facets.byStatus.map(({ key }) => key)).toEqual([
       'scheduled',
-      'pending',
+      'new',
       'yielded',
       'ready',
       'backing-off',

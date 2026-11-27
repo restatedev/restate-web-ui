@@ -10,6 +10,16 @@ import { tv } from '@restate/util-styles';
 import { issueBannerStyles } from './styles';
 import { IssueBannerPill } from './IssueBannerPill';
 
+const chevronStyles = tv({
+  base: 'text-inverse-secondary transition-transform',
+  variants: {
+    expanded: {
+      true: 'rotate-180',
+      false: '',
+    },
+  },
+});
+
 const stackStyles = tv({
   base: 'duration-300 animate-in fade-in zoom-in-95',
   variants: {
@@ -48,15 +58,18 @@ export function IssuesBannerStack({ className }: { className?: string }) {
           variant="icon"
           className={issueBannerStyles({ interactive: true, elevated: true })}
           onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
         >
           <span className="relative flex h-4 w-4 shrink-0">
             <Icon
               name={IconName.TriangleAlert}
-              className="absolute h-4 w-4 animate-ping fill-pending-strong text-pending-strong opacity-60"
+              size="md"
+              className="absolute animate-ping fill-pending-strong text-pending-strong opacity-60"
             />
             <Icon
               name={IconName.TriangleAlert}
-              className="relative h-4 w-4 fill-pending-strong text-pending-strong"
+              size="md"
+              className="relative fill-pending-strong text-pending-strong"
             />
           </span>
           <span>
@@ -67,8 +80,9 @@ export function IssuesBannerStack({ className }: { className?: string }) {
             detected that may need your attention
           </span>
           <Icon
-            name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 shrink-0 text-inverse-secondary"
+            name={IconName.ChevronDown}
+            size="sm"
+            className={chevronStyles({ expanded })}
           />
         </Button>
         {Array.from({ length: stackCount - 1 }, (_, i) => {

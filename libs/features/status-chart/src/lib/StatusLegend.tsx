@@ -335,13 +335,10 @@ export function StatusLegend({
               <Button
                 variant="icon"
                 aria-label={`Show ${breakdownRow.label} breakdown`}
-                className="h-5 w-5 rounded-md p-0"
+                size="xs"
                 disabled={state !== 'success'}
               >
-                <Icon
-                  name={IconName.ChevronsUpDown}
-                  className="h-3.5 w-3.5 shrink-0 text-subtle"
-                />
+                <Icon name={IconName.ChevronsUpDown} size="sm" tone="subtle" />
               </Button>
             </PopoverTrigger>
             <PopoverContent placement="bottom" className="w-72">
@@ -388,10 +385,7 @@ export function StatusLegend({
                 {formatNumber(allItem.count, true)}
               </span>
             )}
-            <Icon
-              name={IconName.ChevronRight}
-              className="h-3.5 w-3.5 shrink-0 text-subtle"
-            />
+            <Icon name={IconName.ChevronRight} size="sm" tone="subtle" />
           </AriaGridListItem>
         )}
         {visibleRows.map((row) => {
@@ -442,10 +436,7 @@ export function StatusLegend({
                     {formatChip(row)}
                   </span>
                 )}
-                <Icon
-                  name={IconName.ChevronRight}
-                  className="h-3.5 w-3.5 shrink-0 text-subtle"
-                />
+                <Icon name={IconName.ChevronRight} size="sm" tone="subtle" />
               </AriaGridListItem>
             );
           }
@@ -493,10 +484,7 @@ export function StatusLegend({
                 </span>
               )}
               {!isErrorState && (
-                <Icon
-                  name={IconName.ChevronRight}
-                  className="h-3.5 w-3.5 shrink-0 text-subtle"
-                />
+                <Icon name={IconName.ChevronRight} size="sm" tone="subtle" />
               )}
             </AriaGridListItem>
           );

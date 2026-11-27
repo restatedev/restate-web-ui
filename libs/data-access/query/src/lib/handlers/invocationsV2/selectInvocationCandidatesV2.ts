@@ -67,7 +67,7 @@ function storedCandidateStatus(
 ): InvocationStatus | undefined {
   switch (candidate.raw_status) {
     case 'inboxed':
-      return 'pending';
+      return 'new';
     case 'completed': {
       if (candidate.completion_result === 'success') return 'succeeded';
       const failure = candidate.completion_failure?.toLowerCase();

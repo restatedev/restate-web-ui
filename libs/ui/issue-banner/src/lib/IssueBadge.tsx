@@ -51,7 +51,8 @@ export function IssueBadge({
           <span className="font-medium">{issues.length} </span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="block h-3.5 w-3.5 shrink-0 opacity-50"
+            size="sm"
+            className="block opacity-50"
           />
         </Button>
       </PopoverTrigger>
@@ -86,7 +87,8 @@ export function IssueBadge({
                   {href && (
                     <Icon
                       name={IconName.ChevronRight}
-                      className="ml-auto h-3.5 w-3.5 shrink-0 text-inverse-secondary"
+                      size="sm"
+                      className="ml-auto text-inverse-secondary"
                     />
                   )}
                 </>

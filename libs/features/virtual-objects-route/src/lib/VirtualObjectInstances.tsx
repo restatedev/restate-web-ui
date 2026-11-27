@@ -104,7 +104,7 @@ const identityColumn: PanelTableColumn<ColumnId> = {
   id: 'identity',
   name: (
     <span>
-      Virtual object instance{' '}
+      Virtual Object instance{' '}
       <span className="font-normal text-muted">
         (with in-flight invocations)
       </span>
@@ -116,7 +116,7 @@ const identityColumn: PanelTableColumn<ColumnId> = {
 
 const statsIdentityColumn: PanelTableColumn<ColumnId> = {
   ...identityColumn,
-  name: 'Virtual object instance',
+  name: 'Virtual Object instance',
 };
 
 const columns: PanelTableColumn<ColumnId>[] = [
@@ -216,7 +216,8 @@ function LockHolderCell({
             ? IconName.Database
             : IconName.Security
         }
-        className="h-4 w-4 shrink-0 text-subtle"
+        size="md"
+        tone="subtle"
       />
       <span className="shrink-0 text-sm text-tertiary">
         {lockHolder.kind === 'state-mutation' ? 'State mutation' : 'Other'}
@@ -397,7 +398,7 @@ export function VirtualObjectInstances({
     isServicesPending || (Boolean(service) && isInstancesFetching);
   const filteredResultsCaption = hasFilters ? (
     <FilteredResultsCaption
-      noun="virtual object instances"
+      noun="Virtual Object instances"
       className="m-0 h-9 w-full shrink-0 rounded-xl px-2.5"
       onClear={() =>
         setSearchParams(writeVirtualObjectFilters(searchParams, []), {
@@ -408,7 +409,7 @@ export function VirtualObjectInstances({
   ) : undefined;
   return (
     <>
-      <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
+      <ContentPanelToolbar variant="search">
         <Form
           ref={formRef}
           className="hidden min-w-0 flex-auto sm:block"
@@ -427,28 +428,13 @@ export function VirtualObjectInstances({
             multiple
           >
             <AddFilterTrigger
+              variant="toolbar"
               placeholder="Filter Virtual Objects…"
               title="Virtual Object filters"
               disabled={!service}
               onInputSubmit={applyKeyFilter}
               onItemRemove={scheduleSubmit}
               renderOption={renderFilterOption}
-              inputPrefix={
-                <Icon
-                  name={IconName.Search}
-                  className="h-4 w-4 shrink-0 text-subtle"
-                />
-              }
-              tagsPlacement="outside"
-              maxVisibleChips="auto"
-              chipOverflowStrategy="all"
-              tagGroupClassName="min-w-0 flex-nowrap"
-              showSectionTitle={false}
-              popoverPlacement="bottom start"
-              popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-surface/95 p-1"
-              optionClassName="gap-2 px-2.5 py-1.5 highlighted:bg-accent-subtle highlighted:text-accent-strong"
-              className="min-h-6.5 w-full justify-end text-primary"
-              inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-surface/70 shadow-xs hover:bg-surface [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-subtle"
             >
               {(props) => (
                 <FilterChip
@@ -471,7 +457,7 @@ export function VirtualObjectInstances({
                   ? 'Refreshing Virtual Objects'
                   : 'Refresh Virtual Objects'
               }
-              className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+              size="sm"
               onClick={() => void refetchInstances()}
               disabled={!service || isInstancesFetching}
             >
@@ -486,13 +472,14 @@ export function VirtualObjectInstances({
           <TooltipContent size="sm">Refresh Virtual Objects</TooltipContent>
         </Tooltip>
       </ContentPanelToolbar>
-      <ContentPanelBody className="pb-32">
+      <ContentPanelBody bottomSpace>
         <ContentPanelSection flush>
           <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
             <PanelTable
               aria-label="Virtual Object instances"
               bodyHeadingHeight={0}
               columns={visibleColumns}
+              columnWidthsStorageKey="virtual-object-instances-user-col-widths"
               items={items}
               isLoading={isLoading}
               numOfRows={Math.max(items.length, 6)}
@@ -536,10 +523,7 @@ export function VirtualObjectInstances({
                     intent="danger"
                     title="Couldn’t load Virtual Objects"
                   >
-                    <ErrorBanner
-                      error={error}
-                      className="w-full rounded-xl text-left"
-                    />
+                    <ErrorBanner error={error} className="w-full" />
                   </EmptyState>
                 ) : !hasServices ? (
                   <EmptyState
@@ -553,18 +537,18 @@ export function VirtualObjectInstances({
                     title={
                       listsFromStats
                         ? hasFilters
-                          ? 'No virtual objects match this filter'
-                          : 'No virtual objects'
+                          ? 'No Virtual Objects match this filter'
+                          : 'No Virtual Objects'
                         : hasFilters
-                          ? 'No virtual objects with in-flight invocations match this filter'
-                          : 'No virtual objects with in-flight invocations'
+                          ? 'No Virtual Objects with in-flight invocations match this filter'
+                          : 'No Virtual Objects with in-flight invocations'
                     }
                     description={
                       hasFilters
                         ? 'Try adjusting the active filters.'
                         : listsFromStats
-                          ? 'Virtual objects appear here once they have invocations. Use “Go to instance” to open one by key.'
-                          : 'Virtual objects appear here while they have in-flight invocations. Use “Go to instance” to open one by key.'
+                          ? 'Virtual Objects appear here once they have invocations. Use “Go to instance” to open one by key.'
+                          : 'Virtual Objects appear here while they have in-flight invocations. Use “Go to instance” to open one by key.'
                     }
                   />
                 )
@@ -582,7 +566,7 @@ export function VirtualObjectInstances({
                 }
                 if (column.id === 'lockHolder') {
                   return (
-                    <Cell className="overflow-visible">
+                    <Cell overflow="visible">
                       <LockHolderCell lockHolder={item.lockHolder} />
                     </Cell>
                   );
@@ -603,7 +587,7 @@ export function VirtualObjectInstances({
                 }
                 const identity = virtualObjectIdentity(service, item);
                 return (
-                  <Cell className="overflow-visible">
+                  <Cell overflow="visible">
                     <VirtualObjectInstanceTarget
                       identity={identity}
                       href={virtualObjectInstanceRouteHref(
