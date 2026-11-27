@@ -14,7 +14,7 @@ export function TenantSidebar({ scope, header }: TenantSidebarProps) {
     <>
       <SidebarHeader>
         {header ?? (
-          <div className="flex h-14 min-w-0 items-center gap-2 px-2">
+          <div className="flex h-14 min-w-0 items-center gap-2 px-2 @min-[12rem]/sidebar:pr-8">
             <span className="shrink-0">
               <Restate />
             </span>
