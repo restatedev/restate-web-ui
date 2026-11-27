@@ -1028,6 +1028,13 @@ function WindowedRows({
     const blockContextMenu = (event: Event) => {
       if (longPress) event.preventDefault();
     };
+    const keepFocusInStaticRow = (event: FocusEvent) => {
+      const manager = selectionManagerRef.current;
+      const row = getStaticRow(event.target);
+      if (!manager || !row) return;
+      manager.setFocusedKey(row.key);
+      manager.setFocused(true);
+    };
     const replayClick = (event: MouseEvent) => {
       const hit = getStaticTarget(event);
       if (!hit) return;
@@ -1078,6 +1085,7 @@ function WindowedRows({
     container.addEventListener('pointerdown', press, true);
     container.addEventListener('contextmenu', blockContextMenu);
     container.addEventListener('click', replayClick, true);
+    container.addEventListener('focusin', keepFocusInStaticRow, true);
     window.addEventListener('pointerup', release, true);
     window.addEventListener('pointercancel', release, true);
     window.addEventListener('blur', releaseAll);
@@ -1086,6 +1094,7 @@ function WindowedRows({
       container.removeEventListener('pointerdown', press, true);
       container.removeEventListener('contextmenu', blockContextMenu);
       container.removeEventListener('click', replayClick, true);
+      container.removeEventListener('focusin', keepFocusInStaticRow, true);
       window.removeEventListener('pointerup', release, true);
       window.removeEventListener('pointercancel', release, true);
       window.removeEventListener('blur', releaseAll);
@@ -1094,14 +1103,21 @@ function WindowedRows({
   }, []);
 
   const items = virtualizer.getVirtualItems();
+  let staticRowsInUse: ReadonlySet<Key> | null = null;
+  const isStaticRowInUse = (key: Key) => {
+    const container = sizerRef.current?.parentElement;
+    if (!container) return false;
+    staticRowsInUse ??= getStaticRowsInUse(container, rows);
+    return staticRowsInUse.has(key);
+  };
   const renderedRows = items.map((item) => {
     const row = rows[item.index];
     if (!row) return null;
     const offset = item.start - scrollMargin;
     const isLive =
       liveKeys.has(row.key) ||
-      row.key === focusedRowKey ||
-      Boolean(persistedKeys?.has(row.key));
+      ((row.key === focusedRowKey || Boolean(persistedKeys?.has(row.key))) &&
+        !isStaticRowInUse(row.key));
     const nextKey = rows[item.index + 1]?.key;
     if (isLive) {
       return (

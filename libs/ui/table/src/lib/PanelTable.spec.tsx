@@ -1097,6 +1097,32 @@ describe('PanelTable windowed', () => {
     expect(onAction).toHaveBeenCalledWith('item-25', 'kill');
   });
 
+  it('keeps focus on a control focused in a static row', () => {
+    render(
+      renderWindowed({
+        renderCell: (row) => (
+          <Cell>
+            <span>{row.name}</span>
+            <Button>{`Open ${row.name}`}</Button>
+          </Cell>
+        ),
+      }),
+    );
+    expect(isStatic('Item 25')).toBe(true);
+    const button = screen.getByRole('button', { name: 'Open Item 25' });
+
+    act(() => button.focus());
+    expect(document.activeElement).toBe(button);
+
+    act(() => rowOf('Item 1').focus());
+    act(() => rowOf('Item 1').blur());
+    act(() => button.focus());
+    expect(document.activeElement).toBe(button);
+
+    fireEvent.keyDown(button, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(rowOf('Item 26'));
+  });
+
   it('renders the row React Aria focuses while the scroll range is frozen', () => {
     const manyItems = Array.from({ length: 300 }, (_, index) => ({
       id: `item-${index}`,
