@@ -10,7 +10,7 @@ export type PopoverAnimation = 'slide' | 'fade' | 'zoom' | 'none';
 export type PopoverSlideFrom = 'trigger' | 'top' | 'bottom' | 'left' | 'right';
 
 const styles = tv({
-  base: 'max-w-[90%] overflow-auto rounded-xl border border-(--overlay-edge) bg-overlay/80 bg-clip-padding text-secondary shadow-(--overlay-shadow) backdrop-blur-xl backdrop-saturate-200 transition-none',
+  base: 'max-w-[90%] overflow-auto rounded-xl border border-(--overlay-edge) bg-overlay/80 bg-clip-padding text-secondary shadow-(--overlay-shadow) backdrop-blur-xl backdrop-saturate-200 transition-none will-change-transform',
   variants: {
     isEntering: { true: '' },
     isExiting: { true: '' },

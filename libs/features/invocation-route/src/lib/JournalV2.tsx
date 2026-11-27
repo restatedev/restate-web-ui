@@ -152,7 +152,7 @@ const virtualListStyles = tv({
 });
 
 const virtualRowStyles = tv({
-  base: 'isolate',
+  base: 'isolate translate-0',
   variants: {
     isFocused: {
       true: 'bg-accent-subtle/50',
