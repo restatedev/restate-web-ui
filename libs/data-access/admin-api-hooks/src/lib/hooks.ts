@@ -297,9 +297,13 @@ function invalidateServiceCatalog(queryClient: QueryClient, baseUrl: string) {
   ]);
 }
 
-function useServiceCatalogQuery<TData = ServiceCatalogRow[]>(
-  select?: (rows: ServiceCatalogRow[]) => TData,
-) {
+function useServiceCatalogQuery<TData = ServiceCatalogRow[]>({
+  select,
+  notifyOnChangeProps,
+}: Pick<
+  UseQueryOptions<ServiceCatalogRow[], Error, TData>,
+  'select' | 'notifyOnChangeProps'
+> = {}) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
@@ -331,12 +335,17 @@ function useServiceCatalogQuery<TData = ServiceCatalogRow[]>(
       }
     },
     select,
+    notifyOnChangeProps,
     enabled,
   });
 }
 
+function useServiceCatalogRefresh() {
+  useServiceCatalogQuery({ notifyOnChangeProps: [] });
+}
+
 export function useServiceCatalog() {
-  const catalog = useServiceCatalogQuery(serviceCatalogSelector);
+  const catalog = useServiceCatalogQuery({ select: serviceCatalogSelector });
   const fullServices = useListServices({ enabled: catalog.isError });
   const data =
     catalog.data ?? (fullServices.isSuccess ? fullServices.data : undefined);
@@ -352,7 +361,7 @@ export function useListDeployments(options?: ListDeploymentsOptions) {
   const apiEnabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = getListDeploymentsQueryOptions(baseUrl, options);
-  useServiceCatalogQuery();
+  useServiceCatalogRefresh();
 
   const results = useQuery<ListDeploymentsData>({
     ...queryOptions,
@@ -970,7 +979,7 @@ export function useListServices(
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = getListServicesAdminApi(baseUrl);
-  useServiceCatalogQuery();
+  useServiceCatalogRefresh();
 
   const results = useQuery({
     ...queryOptions,
