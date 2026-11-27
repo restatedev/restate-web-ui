@@ -1123,6 +1123,42 @@ describe('PanelTable windowed', () => {
     expect(document.activeElement).toBe(rowOf('Item 26'));
   });
 
+  it('keeps a menu open in a static row when rows are added above it', () => {
+    const renderWithMenus = (rows: typeof items) =>
+      renderWindowed({
+        items: rows,
+        renderCell: (row) => (
+          <Cell>
+            <span>{row.name}</span>
+            <MenuTrigger>
+              <Button>{`Actions for ${row.name}`}</Button>
+              <Popover>
+                <Menu>
+                  <MenuItem id="kill">Kill</MenuItem>
+                </Menu>
+              </Popover>
+            </MenuTrigger>
+          </Cell>
+        ),
+      });
+    const { rerender } = render(renderWithMenus(items));
+    expect(isStatic('Item 25')).toBe(true);
+    const trigger = screen.getByRole('button', {
+      name: 'Actions for Item 25',
+    });
+
+    act(() => trigger.focus());
+    fireEvent.pointerDown(trigger, { pointerType: 'touch' });
+    fireEvent.pointerUp(trigger, { pointerType: 'touch' });
+    fireEvent.click(trigger, { detail: 1 });
+    expect(screen.getByRole('menu')).toBeTruthy();
+
+    rerender(renderWithMenus([{ id: 'item-new', name: 'Item new' }, ...items]));
+
+    expect(screen.getByRole('menu')).toBeTruthy();
+    expect(isStatic('Item 25')).toBe(true);
+  });
+
   it('renders the row React Aria focuses while the scroll range is frozen', () => {
     const manyItems = Array.from({ length: 300 }, (_, index) => ({
       id: `item-${index}`,

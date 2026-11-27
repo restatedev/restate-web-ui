@@ -1107,7 +1107,7 @@ function WindowedRows({
   const isStaticRowInUse = (key: Key) => {
     const container = sizerRef.current?.parentElement;
     if (!container) return false;
-    staticRowsInUse ??= getStaticRowsInUse(container, rows);
+    staticRowsInUse ??= getStaticRowsInUse(container, rowsRef.current);
     return staticRowsInUse.has(key);
   };
   const renderedRows = items.map((item) => {
