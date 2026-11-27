@@ -137,7 +137,7 @@ const sidebarStyles = tv({
       'pointer-events-none absolute inset-x-0 top-0 z-20 flex min-h-16 items-stretch gap-1 px-4.5 pt-3 [&>*]:pointer-events-auto',
     headerCard: 'flex min-w-0 flex-1 items-start gap-2 py-1',
     collapseButton:
-      'absolute top-[var(--sidebar-collapse-top,0.875rem)] right-4.5 z-10 @max-[12rem]/sidebar:hidden',
+      'absolute top-[var(--sidebar-collapse-top,0.875rem)] right-4.5 z-10 group-data-[collapsed=true]/sidebar:hidden max-md:group-not-data-[collapsed=false]/sidebar:hidden @max-[12rem]/sidebar:hidden',
     // flex-[1_0_auto]: grow to fill when the list is short; never shrink below
     // content height, so a long list overflows and the rail scrolls. Top/bottom
     // padding clears the header/footer overlays (measured heights);
