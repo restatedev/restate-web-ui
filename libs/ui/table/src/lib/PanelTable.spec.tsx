@@ -1123,6 +1123,29 @@ describe('PanelTable windowed', () => {
     expect(document.activeElement).toBe(rowOf('Item 26'));
   });
 
+  it('keeps a static row that holds focus static when the mouse moves over it', () => {
+    render(
+      renderWindowed({
+        renderCell: (row) => (
+          <Cell>
+            <span>{row.name}</span>
+            <Button>{`Open ${row.name}`}</Button>
+          </Cell>
+        ),
+      }),
+    );
+    const button = screen.getByRole('button', { name: 'Open Item 25' });
+    act(() => button.focus());
+
+    fireEvent.pointerMove(rowOf('Item 25'), {
+      pointerType: 'mouse',
+      movementX: 2,
+    });
+
+    expect(isStatic('Item 25')).toBe(true);
+    expect(document.activeElement).toBe(button);
+  });
+
   it('keeps a menu open in a static row when rows are added above it', () => {
     const renderWithMenus = (rows: typeof items) =>
       renderWindowed({

@@ -970,7 +970,9 @@ function WindowedRows({
         return;
       }
       const row = getStaticRow(event.target);
-      if (row) flushSync(() => setLiveKeys(addKeys([row.key])));
+      if (row && !getStaticRowsInUse(container, rowsRef.current).has(row.key)) {
+        flushSync(() => setLiveKeys(addKeys([row.key])));
+      }
     };
     const getStaticTarget = (event: Event) => {
       const target = event.target instanceof Element ? event.target : null;
