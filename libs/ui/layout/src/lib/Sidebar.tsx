@@ -233,15 +233,6 @@ export function Sidebar() {
             id={`${ZONE_IDS[LayoutZone.SideBar]}-backdrop`}
             className={s.backdrop()}
           />
-          <div
-            className={s.scrollArea()}
-            // `mask-composite` can't be a Tailwind class (its `-webkit-` auto-
-            // prefix takes invalid values and drops the mask). Standard-only.
-            // Unset var → `add` (single fade layer); cloud sets `intersect`.
-            style={{ maskComposite: 'var(--sidebar-nav-mask-composite)' }}
-          >
-            <nav id={ZONE_IDS[LayoutZone.SideBar]} className={s.navSlot()} />
-          </div>
           <div ref={headerRef} className={s.headerBar()}>
             <div
               id={`${ZONE_IDS[LayoutZone.SideBar]}-header`}
@@ -269,6 +260,15 @@ export function Sidebar() {
                 <Icon name={IconName.SidebarPanel} size="lg" tone="muted" />
               </Button>
             </HoverTooltip>
+          </div>
+          <div
+            className={s.scrollArea()}
+            // `mask-composite` can't be a Tailwind class (its `-webkit-` auto-
+            // prefix takes invalid values and drops the mask). Standard-only.
+            // Unset var → `add` (single fade layer); cloud sets `intersect`.
+            style={{ maskComposite: 'var(--sidebar-nav-mask-composite)' }}
+          >
+            <nav id={ZONE_IDS[LayoutZone.SideBar]} className={s.navSlot()} />
           </div>
           <div
             ref={footerRef}
