@@ -15,7 +15,6 @@ export interface PageDefinition {
   label: string | ((params: Params, search: string) => string);
   icon: IconName;
   Content?: ComponentType<BreadcrumbComponentProps>;
-  Popover?: ComponentType<BreadcrumbComponentProps>;
 }
 
 export interface Crumb {

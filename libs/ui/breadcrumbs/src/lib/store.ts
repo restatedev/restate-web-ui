@@ -1,58 +1,44 @@
-import type { Crumb } from './types';
-
-const STORAGE_KEY = 'restate.breadcrumbs';
+const STORAGE_KEY = 'restate.breadcrumbs.lists';
 const MAX_ENTRIES = 50;
 
-interface StoredTrails {
-  order: string[];
-  entries: Record<string, Crumb[]>;
-}
-
-function load(): StoredTrails {
+function load(): Record<string, string> {
   if (typeof window === 'undefined') {
-    return { order: [], entries: {} };
+    return {};
   }
   try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as StoredTrails;
-      if (Array.isArray(parsed.order) && parsed.entries) {
-        return parsed;
-      }
-    }
+    const parsed: unknown = JSON.parse(
+      window.sessionStorage.getItem(STORAGE_KEY) ?? '{}',
+    );
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? (parsed as Record<string, string>)
+      : {};
   } catch {
-    // ignore corrupted or unavailable storage
+    return {};
   }
-  return { order: [], entries: {} };
 }
 
-function save(data: StoredTrails) {
+export function getListSearch(pathname: string): string | undefined {
+  const search = load()[pathname];
+  return typeof search === 'string' ? search : undefined;
+}
+
+export function storeListSearch(pathname: string, search: string) {
   if (typeof window === 'undefined') {
     return;
   }
+  const entries = load();
+  if (entries[pathname] === search) {
+    return;
+  }
+  delete entries[pathname];
+  entries[pathname] = search;
+  const keys = Object.keys(entries);
+  for (const key of keys.slice(0, Math.max(0, keys.length - MAX_ENTRIES))) {
+    delete entries[key];
+  }
   try {
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   } catch {
-    // ignore unavailable storage
+    return;
   }
-}
-
-export function getStoredTrail(locationKey: string): Crumb[] | undefined {
-  return load().entries[locationKey];
-}
-
-export function storeTrail(locationKey: string, trail: Crumb[]) {
-  const data = load();
-  data.entries[locationKey] = trail;
-  data.order = [
-    ...data.order.filter((key) => key !== locationKey),
-    locationKey,
-  ];
-  while (data.order.length > MAX_ENTRIES) {
-    const evicted = data.order.shift();
-    if (evicted) {
-      delete data.entries[evicted];
-    }
-  }
-  save(data);
 }

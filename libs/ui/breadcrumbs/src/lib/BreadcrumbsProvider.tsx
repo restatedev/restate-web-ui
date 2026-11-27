@@ -4,12 +4,11 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import { useLocation } from 'react-router';
-import { getStoredTrail, storeTrail } from './store';
-import { computeNextTrail, sanitizeCrumb } from './trail';
+import { getListSearch, storeListSearch } from './store';
+import { computeTrail } from './trail';
 import type { Crumb, PageDefinition, TrailCrumb } from './types';
 
 const BreadcrumbsContext = createContext<{
@@ -23,26 +22,20 @@ export function BreadcrumbsProvider({
 }: PropsWithChildren<{ pages: PageDefinition[] }>) {
   const location = useLocation();
   const [trail, setTrail] = useState<Crumb[]>([]);
-  const prevTrailRef = useRef<Crumb[]>([]);
 
   useEffect(() => {
-    const stored = getStoredTrail(location.key);
-    const isRestorable =
-      stored && stored.at(-1)?.pathname === location.pathname;
-    const next = isRestorable
-      ? stored.map(sanitizeCrumb)
-      : computeNextTrail({
-          pages,
-          prevTrail: prevTrailRef.current,
-          pathname: location.pathname,
-          search: location.search,
-        });
-    if (!isRestorable) {
-      storeTrail(location.key, next);
+    const next = computeTrail({
+      pages,
+      pathname: location.pathname,
+      search: location.search,
+      getListSearch,
+    });
+    const current = next.at(-1);
+    if (current?.kind === 'list') {
+      storeListSearch(current.pathname, location.search);
     }
-    prevTrailRef.current = next;
     setTrail(next);
-  }, [location.key, location.pathname, location.search, pages]);
+  }, [location.pathname, location.search, pages]);
 
   const value = useMemo(() => ({ trail, pages }), [trail, pages]);
 

@@ -2,8 +2,6 @@ import { generatePath, matchPath, type Params } from 'react-router';
 import { stripTransientSearch } from '@restate/util-panel';
 import type { Crumb, PageDefinition } from './types';
 
-export const MAX_TRAIL_LENGTH = 20;
-
 export interface ClassifiedPage {
   page: PageDefinition;
   params: Params;
@@ -20,19 +18,6 @@ export function classify(
     }
   }
   return undefined;
-}
-
-function synthesizeListCrumb(
-  list: PageDefinition,
-  detailParams: Params,
-): Crumb | undefined {
-  try {
-    const pathname = generatePath(list.pattern, detailParams);
-    const params = matchPath(list.pattern, pathname)?.params ?? {};
-    return createCrumb({ page: list, params }, pathname, '');
-  } catch {
-    return undefined;
-  }
 }
 
 function createCrumb(
@@ -57,26 +42,34 @@ function createCrumb(
   };
 }
 
-export function sanitizeCrumb(crumb: Crumb): Crumb {
-  const queryIndex = crumb.href.indexOf('?');
-  if (queryIndex === -1) {
-    return crumb;
+function createListCrumb(
+  list: PageDefinition,
+  detailParams: Params,
+  getListSearch?: (pathname: string) => string | undefined,
+): Crumb | undefined {
+  try {
+    const pathname = generatePath(list.pattern, detailParams);
+    const params = matchPath(list.pattern, pathname)?.params ?? {};
+    return createCrumb(
+      { page: list, params },
+      pathname,
+      getListSearch?.(pathname) ?? '',
+    );
+  } catch {
+    return undefined;
   }
-  const search = stripTransientSearch(crumb.href.slice(queryIndex));
-  const href = `${crumb.href.slice(0, queryIndex)}${search}`;
-  return href === crumb.href ? crumb : { ...crumb, href };
 }
 
-export function computeNextTrail({
+export function computeTrail({
   pages,
-  prevTrail = [],
   pathname,
   search = '',
+  getListSearch,
 }: {
   pages: PageDefinition[];
-  prevTrail?: Crumb[];
   pathname: string;
   search?: string;
+  getListSearch?: (pathname: string) => string | undefined;
 }): Crumb[] {
   const matched = classify(pages, pathname);
   if (!matched) {
@@ -86,19 +79,10 @@ export function computeNextTrail({
   if (matched.page.kind === 'list') {
     return [current];
   }
-
-  const cycleIndex = prevTrail.findIndex(
-    (crumb) => crumb.pathname === pathname,
+  const list = pages.find(
+    (page) => page.kind === 'list' && page.resource === matched.page.resource,
   );
-  if (cycleIndex >= 0) {
-    return [...prevTrail.slice(0, cycleIndex), current];
-  }
-  if (prevTrail.length === 0) {
-    const list = pages.find(
-      (page) => page.kind === 'list' && page.resource === matched.page.resource,
-    );
-    const listCrumb = list && synthesizeListCrumb(list, matched.params);
-    return listCrumb ? [listCrumb, current] : [current];
-  }
-  return [...prevTrail, current].slice(-MAX_TRAIL_LENGTH);
+  const listCrumb =
+    list && createListCrumb(list, matched.params, getListSearch);
+  return listCrumb ? [listCrumb, current] : [current];
 }

@@ -1,5 +1,4 @@
 import { useDeploymentLabel } from '@restate/features-deployment';
-import { InvocationPopoverContent } from '@restate/features-invocation-ui';
 import { Scope } from '@restate/features-vqueue-ui';
 import {
   CrumbContent,
@@ -42,10 +41,6 @@ function DeploymentCrumbContent({ crumb }: BreadcrumbComponentProps) {
       <CurrentCopy crumb={crumb} />
     </>
   );
-}
-
-function InvocationCrumbPopover({ crumb }: BreadcrumbComponentProps) {
-  return <InvocationPopoverContent id={String(crumb.params['id'] ?? '')} />;
 }
 
 function VQueueCrumbContent({ crumb }: BreadcrumbComponentProps) {
@@ -149,7 +144,6 @@ export const invocationCrumb: CrumbFragment = {
   label: (params) => params['id'] ?? '',
   icon: IconName.Invocation,
   Content: InvocationCrumbContent,
-  Popover: InvocationCrumbPopover,
 };
 
 export const virtualObjectsCrumb: CrumbFragment = {
