@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   type PropsWithChildren,
+  type RefObject,
 } from 'react';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
@@ -136,7 +137,7 @@ const sidebarStyles = tv({
       'pointer-events-none absolute inset-x-0 top-0 z-20 flex min-h-16 items-stretch gap-1 px-4.5 pt-3 [&>*]:pointer-events-auto',
     headerCard: 'flex min-w-0 flex-1 items-start gap-2 py-1',
     collapseButton:
-      'mt-[var(--sidebar-collapse-mt,0.125rem)] shrink-0 self-start @max-[12rem]/sidebar:hidden',
+      'absolute top-[var(--sidebar-collapse-top,0.875rem)] right-4.5 z-10 @max-[12rem]/sidebar:hidden',
     // flex-[1_0_auto]: grow to fill when the list is short; never shrink below
     // content height, so a long list overflows and the rail scrolls. Top/bottom
     // padding clears the header/footer overlays (measured heights);
@@ -154,9 +155,40 @@ const sidebarStyles = tv({
   },
 });
 
+function moveFocusOnceShown(
+  from: HTMLElement | null,
+  to: RefObject<HTMLElement | null>,
+) {
+  const deadline = performance.now() + 1000;
+  const attempt = () => {
+    const active = document.activeElement;
+    if (active && active !== document.body && active !== from) {
+      return;
+    }
+    to.current?.focus();
+    if (document.activeElement !== to.current && performance.now() < deadline) {
+      requestAnimationFrame(attempt);
+    }
+  };
+  requestAnimationFrame(attempt);
+}
+
 export function Sidebar() {
   const { isCollapsed, toggle, closeDrawer } = useSidebar();
   const s = sidebarStyles();
+
+  const collapseButtonRef = useRef<HTMLButtonElement>(null);
+  const expandButtonRef = useRef<HTMLButtonElement>(null);
+  const toggleFrom = (
+    pointerType: string,
+    from: RefObject<HTMLButtonElement | null>,
+    to: RefObject<HTMLButtonElement | null>,
+  ) => {
+    toggle();
+    if (pointerType === 'keyboard' || pointerType === 'virtual') {
+      moveFocusOnceShown(from.current, to);
+    }
+  };
 
   // Header and footer are absolute overlays (so the nav mask clips only the
   // nav), so they no longer reserve flow space. Measure them and publish the
@@ -222,9 +254,16 @@ export function Sidebar() {
               className={s.collapseButton()}
             >
               <Button
+                ref={collapseButtonRef}
                 variant="icon"
                 size="md"
-                onClick={toggle}
+                onClick={(event) =>
+                  toggleFrom(
+                    event.pointerType,
+                    collapseButtonRef,
+                    expandButtonRef,
+                  )
+                }
                 aria-label="Collapse sidebar"
               >
                 <Icon name={IconName.SidebarPanel} size="lg" tone="muted" />
@@ -242,8 +281,11 @@ export function Sidebar() {
         <div aria-hidden className={s.scrim()} onClick={closeDrawer} />
       )}
       <Button
+        ref={expandButtonRef}
         variant="secondary"
-        onClick={toggle}
+        onClick={(event) =>
+          toggleFrom(event.pointerType, expandButtonRef, collapseButtonRef)
+        }
         className={s.expandButton()}
         aria-label="Expand sidebar"
       >
