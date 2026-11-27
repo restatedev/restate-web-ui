@@ -142,6 +142,7 @@ import { CloudRun } from './custom-icons/CloudRun';
 import { RestateCloud } from './custom-icons/RestateCloud';
 import { LimitKey } from './custom-icons/LimitKey';
 import { FlowControl } from './custom-icons/FlowControl';
+import { SidebarPanel } from './custom-icons/SidebarPanel';
 
 export const enum IconName {
   Settings = 'Settings',
@@ -285,6 +286,7 @@ export const enum IconName {
   Sun = 'Sun',
   Moon = 'Moon',
   Monitor = 'Monitor',
+  SidebarPanel = 'SidebarPanel',
 }
 export type IconSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg';
 
@@ -449,6 +451,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Sun]: Sun,
   [IconName.Moon]: Moon,
   [IconName.Monitor]: Monitor,
+  [IconName.SidebarPanel]: SidebarPanel,
 };
 
 export const ICON_NAMES = Object.keys(ICONS) as IconName[];

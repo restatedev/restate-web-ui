@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import { tv } from '@restate/util-styles';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 import { LayoutOutlet } from './LayoutOutlet';
@@ -134,6 +135,8 @@ const sidebarStyles = tv({
     headerBar:
       'pointer-events-none absolute inset-x-0 top-0 z-20 flex min-h-16 items-stretch gap-1 px-4.5 pt-3 [&>*]:pointer-events-auto',
     headerCard: 'flex min-w-0 flex-1 items-start gap-2 py-1',
+    collapseButton:
+      'mt-[var(--sidebar-collapse-mt,0.125rem)] shrink-0 self-start @max-[12rem]/sidebar:hidden',
     // flex-[1_0_auto]: grow to fill when the list is short; never shrink below
     // content height, so a long list overflows and the rail scrolls. Top/bottom
     // padding clears the header/footer overlays (measured heights);
@@ -146,8 +149,8 @@ const sidebarStyles = tv({
     footerSlot:
       'pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col px-3 pt-1 pb-3 [&>*]:pointer-events-auto',
     scrim: 'fixed inset-0 z-48 bg-backdrop md:hidden',
-    toggleButton:
-      'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-surface p-0 text-muted shadow-xs transition-[left,transform] duration-300 ease-in-out peer-has-[[data-variant=hidden]]:hidden peer-data-[collapsed=false]:left-[16rem] peer-data-[collapsed=false]:-translate-x-1/2 peer-data-[collapsed=false]:rotate-180 hover:bg-subtle hover:text-secondary md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:left-[16rem] xl:rotate-180 xl:peer-data-[collapsed=true]:left-[4.25rem] xl:peer-data-[collapsed=true]:rotate-0',
+    expandButton:
+      'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-surface p-0 text-muted shadow-xs transition-[opacity,visibility] delay-200 duration-150 peer-has-[[data-variant=hidden]]:hidden peer-data-[collapsed=false]:invisible peer-data-[collapsed=false]:opacity-0 peer-data-[collapsed=false]:delay-0 hover:bg-subtle hover:text-secondary md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:peer-not-data-[collapsed=true]:invisible xl:peer-not-data-[collapsed=true]:opacity-0 xl:peer-not-data-[collapsed=true]:delay-0',
   },
 });
 
@@ -212,6 +215,21 @@ export function Sidebar() {
               id={`${ZONE_IDS[LayoutZone.SideBar]}-header`}
               className={s.headerCard()}
             />
+            <HoverTooltip
+              content="Collapse sidebar"
+              placement="bottom"
+              hideAfterPress
+              className={s.collapseButton()}
+            >
+              <Button
+                variant="icon"
+                size="md"
+                onClick={toggle}
+                aria-label="Collapse sidebar"
+              >
+                <Icon name={IconName.SidebarPanel} size="lg" tone="muted" />
+              </Button>
+            </HoverTooltip>
           </div>
           <div
             ref={footerRef}
@@ -226,8 +244,8 @@ export function Sidebar() {
       <Button
         variant="secondary"
         onClick={toggle}
-        className={s.toggleButton()}
-        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        className={s.expandButton()}
+        aria-label="Expand sidebar"
       >
         <Icon
           name={IconName.ChevronRight}
