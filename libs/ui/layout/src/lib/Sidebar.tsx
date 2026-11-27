@@ -151,7 +151,7 @@ const sidebarStyles = tv({
       'pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col px-3 pt-1 pb-3 [&>*]:pointer-events-auto',
     scrim: 'fixed inset-0 z-48 bg-backdrop md:hidden',
     expandButton:
-      'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-surface p-0 text-muted shadow-xs transition-[opacity,visibility] delay-200 duration-150 peer-has-[[data-variant=hidden]]:hidden peer-data-[collapsed=false]:invisible peer-data-[collapsed=false]:opacity-0 peer-data-[collapsed=false]:delay-0 hover:bg-subtle hover:text-secondary md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:peer-not-data-[collapsed=true]:invisible xl:peer-not-data-[collapsed=true]:opacity-0 xl:peer-not-data-[collapsed=true]:delay-0',
+      'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-surface p-0 text-muted shadow-xs transition-[opacity,visibility] delay-200 duration-150 peer-has-[[data-variant=hidden]]:hidden peer-data-[collapsed=false]:invisible peer-data-[collapsed=false]:opacity-0 peer-data-[collapsed=false]:transition-none hover:bg-subtle hover:text-secondary md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:peer-not-data-[collapsed=true]:invisible xl:peer-not-data-[collapsed=true]:opacity-0 xl:peer-not-data-[collapsed=true]:transition-none',
   },
 });
 
