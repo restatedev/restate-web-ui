@@ -343,6 +343,9 @@
     },
     {
       "path": "./libs/ui/heading"
+    },
+    {
+      "path": "./libs/util/render-window"
     }
   ]
 }

@@ -28,52 +28,44 @@ export function syncDataTableColumns(
 ) {
   const headerTable = stickyHeader.querySelector('table');
   if (!headerTable) return;
-  const tableRect = headerTable.getBoundingClientRect();
-  const layout = new Map([
-    [columnKey(LEFT_SPACER_ID), { left: 0, width: SPACER_WIDTH }],
-    [
-      columnKey(RIGHT_SPACER_ID),
-      { left: SPACER_WIDTH + tableRect.width, width: SPACER_WIDTH },
-    ],
+  const widths = new Map([
+    [columnKey(LEFT_SPACER_ID), SPACER_WIDTH],
+    [columnKey(RIGHT_SPACER_ID), SPACER_WIDTH],
   ]);
   stickyHeader.querySelectorAll('thead th[data-key]').forEach((th) => {
-    const rect = th.getBoundingClientRect();
-    layout.set(th.getAttribute('data-key') ?? '', {
-      left: SPACER_WIDTH + rect.left - tableRect.left,
-      width: rect.width,
-    });
+    widths.set(
+      th.getAttribute('data-key') ?? '',
+      th.getBoundingClientRect().width,
+    );
   });
   const keysByIndex = new Map<string, string>();
   dataTable
     .querySelectorAll<HTMLElement>('[role=columnheader][data-key]')
     .forEach((columnHeader) => {
       const key = columnHeader.dataset['key'] ?? '';
-      const column = layout.get(key);
-      if (!column) return;
-      columnHeader.style.width = `${column.width}px`;
+      const width = widths.get(key);
+      if (width === undefined) return;
+      columnHeader.style.width = `${width}px`;
       const index = columnHeader.getAttribute('aria-colindex');
       if (index) keysByIndex.set(index, key);
     });
-  dataTable.querySelectorAll('[aria-colindex]').forEach((element) => {
-    const column = layout.get(
-      keysByIndex.get(element.getAttribute('aria-colindex') ?? '') ?? '',
-    );
-    const wrapper = element.parentElement;
-    if (!column || wrapper?.style.position !== 'absolute') return;
-    wrapper.style.left = `${column.left}px`;
-    wrapper.style.width = `${column.width}px`;
-  });
-  const totalWidth = `${2 * SPACER_WIDTH + tableRect.width}px`;
-  const content = dataTable.querySelector<HTMLElement>(
-    '[role=grid] > [role=presentation]',
-  );
-  if (!content || content.style.width === totalWidth) return;
-  content.style.width = totalWidth;
-  content
+  dataTable
     .querySelectorAll<HTMLElement>(
-      ':scope > [role=presentation], [role=rowgroup] > [role=presentation]',
+      ':not([data-static-row]) > [role=row] > [data-panel-table-cell] > [aria-colindex]',
     )
-    .forEach((wrapper) => {
-      wrapper.style.width = totalWidth;
+    .forEach((element) => {
+      const width = widths.get(
+        keysByIndex.get(element.getAttribute('aria-colindex') ?? '') ?? '',
+      );
+      if (width !== undefined && element.parentElement) {
+        element.parentElement.style.width = `${width}px`;
+      }
     });
+  const totalWidth = `${
+    2 * SPACER_WIDTH + headerTable.getBoundingClientRect().width
+  }px`;
+  const content = dataTable.querySelector<HTMLElement>(
+    ':is([role=grid], [role=treegrid]) > [role=presentation]',
+  );
+  if (content) content.style.width = totalWidth;
 }

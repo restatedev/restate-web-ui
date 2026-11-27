@@ -38,6 +38,9 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../util/render-window/tsconfig.lib.json"
+    },
+    {
       "path": "../form-field/tsconfig.lib.json"
     },
     {
